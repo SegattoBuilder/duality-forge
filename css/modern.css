@@ -1,0 +1,132 @@
+/* === Modern Layout: Responsive Grid === */
+
+/* Override max-width for wider desktop usage */
+body.modern-layout {
+    max-width: 1200px;
+    padding-bottom: 5rem;
+}
+
+/* Character info row — full width, inline on desktop */
+.modern-hero .hero-header {
+    margin-bottom: 1rem;
+}
+.modern-hero .hero-fields {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.75rem;
+}
+
+/* Attributes row — all 6 in one line on desktop */
+.modern-attributes {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Two-column grid for Vitals + Gear */
+.modern-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+/* Cards grid — side by side, wrapping */
+.modern-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+}
+
+/* Inventory grid */
+.modern-inv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 0.75rem;
+}
+
+/* Tablet breakpoint */
+@media (max-width: 900px) {
+    .modern-hero .hero-fields {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .modern-grid-2col {
+        grid-template-columns: 1fr 1fr;
+    }
+    .modern-cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+}
+
+/* Mobile breakpoint — stack everything */
+@media (max-width: 640px) {
+    body.modern-layout {
+        max-width: 100%;
+        padding: 1rem;
+        padding-bottom: 6rem;
+    }
+    .modern-hero .hero-fields {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .modern-attributes {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .modern-grid-2col {
+        grid-template-columns: 1fr;
+    }
+    .modern-cards-grid {
+        grid-template-columns: 1fr;
+    }
+    .modern-inv-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Modern tab buttons */
+.modern-tab-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    transition: all 0.2s;
+    background: #2a2418;
+    color: #6b5d4d;
+    border: 1px solid #3d362a;
+    white-space: nowrap;
+}
+.modern-tab-btn.active {
+    background: linear-gradient(135deg, var(--accent-4), var(--accent-3));
+    color: #fff;
+    border-color: transparent;
+}
+[data-mode="light"] .modern-tab-btn {
+    background: #f0ebe3;
+    color: #6b5d4d;
+    border-color: #d4c9b8;
+}
+[data-mode="light"] .modern-tab-btn.active {
+    background: linear-gradient(135deg, var(--accent-4), var(--accent-3));
+    color: #fff;
+    border-color: transparent;
+}
+@media (max-width: 640px) {
+    .modern-tab-btn {
+        font-size: 9px;
+        padding: 5px 10px;
+    }
+}
+
+/* Switch layout link */
+.switch-layout-link {
+    font-size: 10px;
+    color: #6b5d4d;
+    text-decoration: underline;
+    cursor: pointer;
+    transition: color 0.15s;
+}
+.switch-layout-link:hover {
+    color: var(--accent-1);
+}

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daggerheart Forge — DM Tools</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/textures.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/themes.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body class="max-w-7xl mx-auto p-4 pb-24">
+
+<nav class="nav-header sticky top-0 z-30 bg-[#1a1714]/95 backdrop-blur border-b border-[#3d362a] -mx-4 px-4 py-3 mb-6">
+    <div class="flex flex-col gap-3 items-center">
+        <div class="w-full flex flex-col sm:grid sm:grid-cols-[auto_1fr_auto] gap-3 sm:gap-4 items-center">
+            <div class="flex flex-col items-center sm:items-start">
+                <div class="flex items-center gap-2">
+                    <a href="../" class="text-zinc-600 hover:text-[#d4a017] text-xs" title="Back to Forge">⚒️</a>
+                    <span class="font-[Cinzel] text-sm tracking-widest uppercase" style="color: var(--accent-1)">DM Tools</span>
+                    <label class="relative inline-flex items-center cursor-pointer" title="Toggle light/dark mode">
+                        <input type="checkbox" id="modeToggleChk" class="sr-only peer" onchange="toggleMode()">
+                        <div class="w-9 h-5 bg-[#3d362a] peer-checked:bg-[#d4c9b8] rounded-full transition-colors"></div>
+                        <div id="modeToggleThumb" class="absolute left-0.5 top-0.5 w-4 h-4 rounded-full bg-[#1a1714] flex items-center justify-center text-[9px] transition-transform peer-checked:translate-x-4 peer-checked:bg-white"><span id="modeToggleIcon">🌙</span></div>
+                    </label>
+                </div>
+                <input id="campaignName" type="text" placeholder="Campaign name..." oninput="localStorage.setItem('dh_campaign_name', this.value); this.style.width = Math.min(this.value.length + 2, 56) + 'ch'" class="bg-transparent font-[Cinzel] text-xs font-bold uppercase tracking-widest text-[#d4a017] outline-none border-b border-transparent focus:border-[#d4a017] placeholder-zinc-700" style="width:18ch;max-width:42ch">
+            </div>
+            <div class="flex items-center justify-center gap-4 flex-wrap">
+                <button onclick="switchTab('tracker')" id="tabTracker" class="tab-btn font-[Cinzel] text-[11px] uppercase tracking-wider pb-1 font-bold active">⚔️ Tracker</button>
+                <button onclick="switchTab('vault')" id="tabVault" class="tab-btn font-[Cinzel] text-[11px] uppercase tracking-wider pb-1 font-bold">📦 Vault</button>
+                <button onclick="switchTab('chronicle')" id="tabChronicle" class="tab-btn font-[Cinzel] text-[11px] uppercase tracking-wider pb-1 font-bold">📜 Chronicle</button>
+                <button onclick="switchTab('adversaries')" id="tabAdversaries" class="tab-btn font-[Cinzel] text-[11px] uppercase tracking-wider pb-1 font-bold">👹 Adversaries</button>
+                <button onclick="switchTab('compendium')" id="tabCompendium" class="tab-btn font-[Cinzel] text-[11px] uppercase tracking-wider pb-1 font-bold">📖 Compendium</button>
+                <button onclick="switchTab('support')" id="tabSupport" class="tab-btn font-[Cinzel] text-[11px] uppercase tracking-wider pb-1 font-bold">🤝 Support</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="relative">
+                    <button id="authBtn" class="h-10 px-2 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors" onclick="openAuthModal()"><span class="text-[10px] text-zinc-400">Sign In</span></button>
+                    <span id="syncStatus" class="hidden absolute left-1/2 -translate-x-1/2 top-full mt-1 text-[9px] font-bold text-[#d4a017] whitespace-nowrap pointer-events-none z-50"></span>
+                    <div id="authMenu" class="hidden absolute right-0 top-12 w-48 bg-[#1e1b16] border border-[#4a3f30] rounded-xl shadow-xl z-50 overflow-hidden">
+                        <button onclick="openProfileModal(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">👤 Profile</button>
+                        <button onclick="cloudSave(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">☁️ Save to Cloud</button>
+                        <button onclick="cloudLoad(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">☁️ Load from Cloud</button>
+                        <button onclick="importLocalToCloud(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">📤 Import Local Data</button>
+                        <button onclick="signOut(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors">🚪 Sign Out</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="w-full border-t border-[#3d362a] pt-3">
+            <div class="flex flex-wrap items-center justify-center gap-1.5">
+                <div id="localActions" class="contents">
+                    <button onclick="saveSession()" class="bg-[#2a2418] border border-[#4a3f30] text-[10px] px-2 sm:px-3 py-1.5 rounded-full font-bold uppercase text-zinc-400 font-[Cinzel] hover:border-[#d4a017] hover:text-[#d4a017]">💾 Save</button>
+                    <label class="bg-[#2a2418] border border-[#4a3f30] text-[10px] px-2 sm:px-3 py-1.5 rounded-full font-bold uppercase text-zinc-400 font-[Cinzel] hover:border-[#d4a017] hover:text-[#d4a017] cursor-pointer">📂 Load<input type="file" accept=".json" onchange="loadSession(event)" class="hidden"></label>
+                    <span class="w-px h-5 bg-[#3d362a] mx-1"></span>
+                </div>
+                <div id="cloudActions" class="hidden"></div>
+                <div id="trackerActions" class="contents">
+                    <button onclick="addCounter()" class="bg-[#2a2418] border border-[#4a3f30] text-[10px] px-2 sm:px-3 py-1.5 rounded-full font-bold uppercase text-[#d4a017] font-[Cinzel] hover:border-[#d4a017]">✚ Counter</button>
+                    <button onclick="openAddModal()" class="btn-action text-[10px] px-3 py-1.5 rounded-full font-bold uppercase text-white font-[Cinzel]">+ Adversary</button>
+                    <span class="w-px h-5 bg-[#3d362a] mx-1"></span>
+                    <button onclick="clearCreatures(event)" class="bg-[#2a1a1a] border border-[#4a2a2a] text-[10px] px-2 py-1.5 rounded-full font-bold uppercase text-red-400 font-[Cinzel] hover:border-red-500">🗑 Adversaries</button>
+                    <button onclick="clearCounters(event)" class="bg-[#2a1a1a] border border-[#4a2a2a] text-[10px] px-2 py-1.5 rounded-full font-bold uppercase text-red-400 font-[Cinzel] hover:border-red-500">🗑 Counters</button>
+                    <button onclick="resetFear()" class="bg-[#2a1a1a] border border-[#4a2a2a] text-[10px] px-2 py-1.5 rounded-full font-bold uppercase text-red-400 font-[Cinzel] hover:border-red-500">🗑 Fear</button>
+                    <button onclick="clearAll(event)" class="btn-danger text-[10px] px-3 py-1.5 rounded-full font-bold uppercase text-red-200 font-[Cinzel]">🗑 All</button>
+                </div>
+                <div id="vaultActions" class="hidden contents">
+                    <button onclick="openAddModal()" class="btn-action text-[10px] px-3 py-1.5 rounded-full font-bold uppercase text-white font-[Cinzel]">+ Adversary</button>
+                    <button onclick="clearVault(event)" class="btn-danger text-[10px] px-3 py-1.5 rounded-full font-bold uppercase text-red-200 font-[Cinzel]">🗑 Vault</button>
+                </div>
+                <div id="chronicleActions" class="hidden contents">
+                    <button onclick="addEntry()" class="btn-action text-[10px] px-3 py-1.5 rounded-full font-bold uppercase text-white font-[Cinzel]">+ Chapter</button>
+                    <button onclick="clearChronicle(event)" class="btn-danger text-[10px] px-3 py-1.5 rounded-full font-bold uppercase text-red-200 font-[Cinzel]">🗑 Chapters</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- TRACKER TAB -->
+<div id="panelTracker">
+    <div class="fear-pool mb-6 p-4 rounded-xl border border-[#3d362a] bg-[#1e1b16] text-center" style="min-height:72px">
+        <div class="section-divider flex items-center justify-center gap-3 mb-3 pb-2 border-b border-[#3d362a]"><span class="section-header font-[Cinzel] text-xs uppercase tracking-widest text-zinc-500">Fear Pool</span></div>
+        <div class="flex flex-wrap justify-center gap-2" id="fearDots"></div>
+    </div>
+    <div id="creatureGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div id="emptyState" class="col-span-full text-center py-20"><div class="text-zinc-600 text-sm italic">No creatures yet. Click "+ Adversary" to get started.</div></div>
+    </div>
+</div>
+
+<!-- ADVERSARIES TAB -->
+<div id="panelAdversaries" class="hidden">
+    <div class="space-y-3 mb-4">
+        <div class="flex flex-wrap gap-3 items-end">
+            <div class="flex-1 min-w-[200px]"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Search by Name</label><input id="advSearch" type="text" placeholder="Type to search adversaries..." class="w-full bg-[#1e1b16] border border-[#4a3f30] rounded-xl px-5 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
+            <button onclick="clearAdvSearch()" class="bg-[#2a2418] border border-[#4a3f30] text-[10px] px-3 py-3 rounded-lg font-bold uppercase text-zinc-400 hover:border-[#d4a017] hover:text-[#d4a017]">Clear</button>
+        </div>
+        <div class="flex flex-wrap gap-4 items-end">
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Tier</label><div class="flex items-center gap-1.5"><input id="advTierMin" type="number" placeholder="Min" min="1" max="4" class="w-16 bg-[#1e1b16] border border-[#4a3f30] rounded-lg px-2 py-2.5 text-xs text-center outline-none focus:border-[#d4a017] placeholder-zinc-600"><span class="text-zinc-600 text-xs">–</span><input id="advTierMax" type="number" placeholder="Max" min="1" max="4" class="w-16 bg-[#1e1b16] border border-[#4a3f30] rounded-lg px-2 py-2.5 text-xs text-center outline-none focus:border-[#d4a017] placeholder-zinc-600"></div></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Difficulty</label><div class="flex items-center gap-1.5"><input id="advDiffMin" type="number" placeholder="Min" min="0" max="99" class="w-16 bg-[#1e1b16] border border-[#4a3f30] rounded-lg px-2 py-2.5 text-xs text-center outline-none focus:border-[#d4a017] placeholder-zinc-600"><span class="text-zinc-600 text-xs">–</span><input id="advDiffMax" type="number" placeholder="Max" min="0" max="99" class="w-16 bg-[#1e1b16] border border-[#4a3f30] rounded-lg px-2 py-2.5 text-xs text-center outline-none focus:border-[#d4a017] placeholder-zinc-600"></div></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Type</label><select id="advType" class="bg-[#1e1b16] border border-[#4a3f30] rounded-lg px-3 py-2.5 text-xs outline-none focus:border-[#d4a017] cursor-pointer"><option value="">All</option></select></div>
+        </div>
+    </div>
+    <div id="advStatus" class="text-center text-zinc-600 text-sm py-8">Loading adversaries...</div>
+    <div id="advResults" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+</div>
+
+<!-- COMPENDIUM TAB -->
+<div id="panelCompendium" class="hidden">
+    <div class="mb-4 flex gap-3 items-end">
+        <div class="flex-1"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Search Compendium</label><input id="compendiumSearch" type="text" placeholder="Search weapons, armors, classes, items..." class="w-full bg-[#1e1b16] border border-[#4a3f30] rounded-xl px-5 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
+        <button onclick="clearCompendiumSearch()" class="bg-[#2a2418] border border-[#4a3f30] text-[10px] px-3 py-3 rounded-lg font-bold uppercase text-zinc-400 hover:border-[#d4a017] hover:text-[#d4a017]">Clear</button>
+    </div>
+    <div class="flex flex-wrap gap-2 mb-5" id="categoryFilters">
+        <button class="filter-pill active" onclick="setCategory('all')">All</button>
+        <button class="filter-pill" onclick="setCategory('weapons')">Weapons</button>
+        <button class="filter-pill" onclick="setCategory('armors')">Armors</button>
+        <button class="filter-pill" onclick="setCategory('items')">Items</button>
+        <button class="filter-pill" onclick="setCategory('consumables')">Consumables</button>
+        <button class="filter-pill" onclick="setCategory('classes')">Classes</button>
+        <button class="filter-pill" onclick="setCategory('subclasses')">Subclasses</button>
+        <button class="filter-pill" onclick="setCategory('ancestries')">Ancestries</button>
+        <button class="filter-pill" onclick="setCategory('communities')">Communities</button>
+        <button class="filter-pill" onclick="setCategory('domain-cards')">Domain Cards</button>
+        <button class="filter-pill" onclick="setCategory('rules')">Rules</button>
+    </div>
+    <div id="contextFilters" class="flex flex-wrap gap-3 mb-4 hidden"></div>
+    <div id="compendiumStatus" class="text-center text-zinc-600 text-sm py-8">Loading compendium data...</div>
+    <div id="compendiumResults" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+</div>
+
+<!-- CHRONICLE TAB -->
+<div id="panelChronicle" class="hidden">
+    <div id="chronicleList" class="space-y-4"><div class="text-center py-20"><div class="text-zinc-600 text-sm italic">No chapters yet. Click "+ Chapter" to start your chronicle.</div></div></div>
+</div>
+
+<!-- VAULT TAB -->
+<div id="panelVault" class="hidden">
+    <div id="vaultGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"><div class="col-span-full text-center py-20"><div class="text-zinc-600 text-sm italic">Vault is empty. Use 📦 on tracker cards to stash creatures here.</div></div></div>
+</div>
+
+<!-- SUPPORT TAB -->
+<div id="panelSupport" class="hidden">
+    <div class="max-w-lg mx-auto space-y-4">
+        <div class="p-4 rounded-xl border-l-4 border-[#d4a017] bg-[#1e1b16]" data-theme-border="1">
+            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-4" style="color:#d4a017">Support the Creator</h2>
+            <a href="https://buymeacoffee.com/segattobuilder" target="_blank" rel="noopener" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl transition-colors">
+                <span class="text-2xl">☕</span>
+                <div><div class="support-link-title text-sm font-bold text-[#f5efe6] transition-colors font-[Cinzel]">Buy Me a Coffee</div><div class="text-xs text-zinc-500 mt-0.5">If you enjoy this tool, consider supporting its development!</div></div>
+            </a>
+        </div>
+        <div class="p-4 rounded-xl border-l-4 border-[#d4a017] bg-[#1e1b16]" data-theme-border="1">
+            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-0 cursor-pointer flex items-center justify-between" style="color:#d4a017" onclick="this.parentElement.querySelector('.feedback-content').classList.toggle('hidden'); this.querySelector('.feedback-arrow').classList.toggle('rotate-90')">Feedback<span class="feedback-arrow transition-transform text-[10px]">▶</span></h2>
+            <div class="feedback-content hidden space-y-3 mt-4">
+                <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer text-sm text-[#f5efe6]"><input type="radio" name="reportType" value="bug" class="accent-[#d4a017]" onchange="document.getElementById('feedbackForm').classList.remove('hidden')">🐛 Bug Report</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-sm text-[#f5efe6]"><input type="radio" name="reportType" value="feature" class="accent-[#d4a017]" onchange="document.getElementById('feedbackForm').classList.remove('hidden')">✨ Feature Request</label>
+                </div>
+                <div id="feedbackForm" class="hidden space-y-3">
+                    <textarea id="bugReportText" rows="3" placeholder="Describe your bug or idea..." class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600 resize-y"></textarea>
+                    <button onclick="submitBugReport()" class="btn-action text-[10px] px-4 py-2 rounded-full font-bold uppercase text-white font-[Cinzel]">📨 Submit</button>
+                </div>
+            </div>
+        </div>
+        <div class="p-4 rounded-xl border-l-4 border-[#d4a017] bg-[#1e1b16]" data-theme-border="1">
+            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-0 cursor-pointer flex items-center justify-between" style="color:#d4a017" onclick="this.parentElement.querySelector('.resources-content').classList.toggle('hidden'); this.querySelector('.resources-arrow').classList.toggle('rotate-90')">Resources & Community<span class="resources-arrow transition-transform text-[10px]">▶</span></h2>
+            <div class="resources-content hidden space-y-3 mt-4">
+                <a href="../character/" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl transition-colors"><span class="text-2xl">🗡️</span><div><div class="support-link-title text-sm font-bold text-[#f5efe6] transition-colors font-[Cinzel]">Character Sheet</div><div class="text-xs text-zinc-500 mt-0.5">Digital character sheet for players — part of Daggerheart Forge.</div></div></a>
+                <a href="https://daggersearch.com/" target="_blank" rel="noopener" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl transition-colors"><span class="text-2xl">📖</span><div><div class="support-link-title text-sm font-bold text-[#f5efe6] transition-colors font-[Cinzel]">Daggersearch Compendium</div><div class="text-xs text-zinc-500 mt-0.5">Full SRD compendium search.</div></div></a>
+                <a href="https://www.reddit.com/r/daggerheart/" target="_blank" rel="noopener" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl transition-colors"><span class="text-2xl">🎲</span><div><div class="support-link-title text-sm font-bold text-[#f5efe6] transition-colors font-[Cinzel]">r/Daggerheart</div><div class="text-xs text-zinc-500 mt-0.5">Community hub — tips, builds, homebrew, and discussions.</div></div></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Card Detail Modal -->
+<div id="cardModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-start justify-center pt-12" onclick="if(event.target===this)closeCardModal()">
+    <div class="modal-panel p-6 w-full max-w-2xl relative"><button onclick="closeCardModal()" class="absolute top-4 right-4 text-[#6b5d4d] hover:text-white text-2xl leading-none">✕</button><div id="cardModalContent"></div></div>
+</div>
+
+<!-- Add Type Selection Modal -->
+<div id="addTypeModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-center justify-center" onclick="if(event.target===this)closeAddTypeModal()">
+    <div class="modal-panel p-6 w-full max-w-sm">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5"><h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Add Adversary</h2><button onclick="closeAddTypeModal()" class="text-[#6b5d4d] hover:text-white text-2xl leading-none">✕</button></div>
+        <div class="space-y-3">
+            <button onclick="closeAddTypeModal(); openCharacterModal()" class="w-full flex items-center gap-3 p-4 bg-[#1a1714] border border-[#4a3f30] rounded-xl hover:border-[#d4a017] transition-colors text-left"><span class="text-2xl">🧑</span><div><div class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">Character</div><div class="text-[10px] text-zinc-500">Manual entry — name, evasion, HP, stress, hope, armor</div></div></button>
+            <button onclick="closeAddTypeModal(); openEnemyModal()" class="w-full flex items-center gap-3 p-4 bg-[#1a1714] border border-[#4a3f30] rounded-xl hover:border-[#d4a017] transition-colors text-left"><span class="text-2xl">👹</span><div><div class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">Enemy</div><div class="text-[10px] text-zinc-500">Search SRD adversaries — auto-populates stats</div></div></button>
+            <button onclick="closeAddTypeModal(); openCustomModal()" class="w-full flex items-center gap-3 p-4 bg-[#1a1714] border border-[#4a3f30] rounded-xl hover:border-[#d4a017] transition-colors text-left"><span class="text-2xl">⚙️</span><div><div class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">Custom</div><div class="text-[10px] text-zinc-500">Build your own — difficulty, thresholds, attack, abilities & features</div></div></button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Character Modal -->
+<div id="addModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-center justify-center" onclick="if(event.target===this)closeAddModal()">
+    <div class="modal-panel p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5"><h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Add Character</h2><button onclick="closeAddModal()" class="text-[#6b5d4d] hover:text-white text-2xl leading-none">✕</button></div>
+        <div class="space-y-4">
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Name</label><input id="modalName" type="text" placeholder="Goblin, Bandit, Dragon..." class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017]"></div>
+            <div class="grid grid-cols-3 gap-3"><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Evasion</label><input id="modalEvasion" type="number" value="10" min="0" max="30" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017]"></div><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">HP</label><input id="modalHp" type="number" value="1" min="0" max="30" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017]"></div><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Stress</label><input id="modalStress" type="number" value="0" min="0" max="30" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017]"></div></div>
+            <div class="grid grid-cols-3 gap-3"><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Hope</label><input id="modalHope" type="number" value="0" min="0" max="30" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017]"></div><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Armor</label><input id="modalArmor" type="number" value="0" min="0" max="30" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017]"></div><div id="modalQtyRow"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Quantity</label><input id="modalQty" type="number" value="1" min="1" max="20" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017]"></div></div>
+            <div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Major Threshold</label><input id="modalMajor" type="number" value="" min="0" max="99" placeholder="optional" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017]"></div><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Severe Threshold</label><input id="modalSevere" type="number" value="" min="0" max="99" placeholder="optional" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017]"></div></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Attack</label><input id="modalAtk" type="text" placeholder="optional — e.g. Claws 1d8+3 phy, Melee" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017]"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Features</label><textarea id="modalFeatures" rows="5" placeholder="optional — one per line" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] resize-y"></textarea></div>
+        </div>
+        <div class="flex gap-3 mt-6"><button id="modalSubmitBtn" onclick="addCreatures()" class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">Add</button><button onclick="closeAddModal()" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880]">Cancel</button></div>
+    </div>
+</div>
+
+<!-- Enemy Modal -->
+<div id="enemyModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-center justify-center" onclick="if(event.target===this)closeEnemyModal()">
+    <div class="modal-panel p-6 w-full max-w-md">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5"><h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Add Enemy</h2><button onclick="closeEnemyModal()" class="text-[#6b5d4d] hover:text-white text-2xl leading-none">✕</button></div>
+        <div class="space-y-4">
+            <div class="relative"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Search Adversary</label><input id="enemySearch" type="text" placeholder="Type to search..." autocomplete="off" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017]"><div id="enemyResults" class="absolute z-10 w-full mt-1 max-h-48 overflow-y-auto rounded-lg border border-[#4a3f30] bg-[#1e1b16] hidden"></div></div>
+            <div id="enemyPreview" class="hidden border border-[#3d362a] rounded-xl p-4 bg-[#1a1714]"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Quantity</label><input id="enemyQty" type="number" value="1" min="1" max="20" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017]"></div>
+        </div>
+        <div class="flex gap-3 mt-6"><button id="enemyAddBtn" onclick="addEnemy()" disabled class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white opacity-50 cursor-not-allowed">Add</button><button onclick="closeEnemyModal()" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880]">Cancel</button></div>
+    </div>
+</div>
+
+<!-- Custom Modal -->
+<div id="customModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-center justify-center" onclick="if(event.target===this)closeCustomModal()">
+    <div class="modal-panel p-6 w-full max-w-md lg:max-w-3xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5"><h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Add Custom</h2><button onclick="closeCustomModal()" class="text-[#6b5d4d] hover:text-white text-2xl leading-none">✕</button></div>
+        <div class="space-y-4">
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Name</label><input id="customName" type="text" placeholder="Custom adversary name..." class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] text-center"></div>
+            <div class="grid grid-cols-3 gap-3"><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Difficulty</label><input id="customDifficulty" type="number" value="10" min="0" max="30" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] text-center"></div><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">HP</label><input id="customHp" type="number" value="1" min="0" max="30" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] text-center"></div><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Stress</label><input id="customStress" type="number" value="0" min="0" max="30" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] text-center"></div></div>
+            <div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Major Threshold</label><input id="customMajor" type="number" value="" min="0" max="99" placeholder="e.g. 8" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] text-center"></div><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Severe Threshold</label><input id="customSevere" type="number" value="" min="0" max="99" placeholder="e.g. 15" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] text-center"></div></div>
+            <div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Type</label><input id="customType" type="text" placeholder="e.g. Solo, Standard" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] text-center"></div><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Range</label><input id="customRange" type="text" placeholder="e.g. Melee, Close" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] text-center"></div></div>
+            <div id="customAttacksContainer"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Attacks</label><div id="customAttacksList" class="space-y-2"></div><button type="button" onclick="addCustomAttackRow()" class="mt-2 text-[10px] px-2 py-1 rounded-lg bg-[#2a2418] border border-[#4a3f30] text-[#d4a017] font-bold uppercase hover:border-[#d4a017]">+ Attack</button></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Motives & Tactics</label><input id="customMotives" type="text" placeholder="e.g. Defend lair, fly, freeze" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] text-center"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Experience</label><input id="customExperience" type="text" placeholder="e.g. Magical Knowledge +2" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] text-center"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Description</label><input id="customDescription" type="text" placeholder="e.g. A battle-hardened mage" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] text-center"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Features</label><textarea id="customFeatures" rows="5" placeholder="One feature per line" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] resize-y"></textarea></div>
+            <div id="customQtyRow"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Quantity</label><input id="customQty" type="number" value="1" min="1" max="20" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] text-center"></div>
+        </div>
+        <div class="flex gap-3 mt-6"><button id="customSubmitBtn" onclick="addCustom()" class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">Add</button><button onclick="closeCustomModal()" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880]">Cancel</button></div>
+    </div>
+</div>
+
+<!-- Feedback Toast -->
+<div id="feedbackToast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[999] hidden pointer-events-none">
+    <div class="pointer-events-auto bg-[#1e1b16] backdrop-blur border border-[#d4a017] rounded-xl px-6 py-5 shadow-[0_0_30px_rgba(212,160,23,0.3)] max-w-sm text-center">
+        <div class="text-lg mb-2">✅</div>
+        <div class="font-bold font-[Cinzel] text-[#f5efe6]">Thanks for your feedback!</div>
+        <div class="text-xs text-zinc-400 mt-2">If you're enjoying this tool, consider <a href="https://buymeacoffee.com/segattobuilder" target="_blank" rel="noopener" class="text-[#d4a017] font-bold hover:underline">buying me a coffee ☕</a></div>
+    </div>
+</div>
+
+<!-- Auth Modal -->
+<div id="authModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-center justify-center" onclick="if(event.target===this)closeAuthModal()">
+    <div class="modal-panel p-6 w-full max-w-sm">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5"><h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Sign In</h2><button onclick="closeAuthModal()" class="text-[#6b5d4d] hover:text-white text-2xl leading-none">✕</button></div>
+        <div class="space-y-4">
+            <button onclick="signInWithGoogle()" class="w-full flex items-center justify-center gap-3 p-3 bg-[#1a1714] border border-[#4a3f30] rounded-xl hover:border-[#d4a017] transition-colors">
+                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                <span class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">Continue with Google</span>
+            </button>
+            <div class="flex items-center gap-3"><div class="flex-1 border-t border-[#3d362a]"></div><span class="text-[10px] text-zinc-600 uppercase">or</span><div class="flex-1 border-t border-[#3d362a]"></div></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Email</label><input id="authEmail" type="email" placeholder="your@email.com" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Password</label><input id="authPassword" type="password" placeholder="••••••••" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
+            <div class="flex gap-3"><button onclick="signInWithEmail()" class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">Sign In</button><button onclick="signUpWithEmail()" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880]">Sign Up</button></div>
+            <div class="text-[10px] text-zinc-600 text-center">Sign in to save your sessions to the cloud.</div>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Modal -->
+<div id="profileModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-center justify-center" onclick="if(event.target===this)closeProfileModal()">
+    <div class="modal-panel p-6 w-full max-w-sm">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5"><h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Profile</h2><button onclick="closeProfileModal()" class="text-[#6b5d4d] hover:text-white text-2xl leading-none">✕</button></div>
+        <div class="space-y-4">
+            <div class="flex justify-center"><div id="profileAvatarPreview" class="w-20 h-20 rounded-full border-2 border-[#d4a017] bg-[#2a2418] flex items-center justify-center text-3xl overflow-hidden">🎲</div></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Avatar URL</label><input id="profileAvatar" type="url" placeholder="https://example.com/avatar.png" oninput="previewAvatar(this.value)" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Nickname</label><input id="profileNickname" type="text" placeholder="How should we call you?" maxlength="30" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
+            <div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Country</label><input id="profileCountry" type="text" placeholder="e.g. Canada" maxlength="50" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">State / Region</label><input id="profileState" type="text" placeholder="e.g. California" maxlength="50" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">DM Experience</label><select id="profileExperience" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] cursor-pointer"><option value="">Select...</option><option value="new">New to DMing</option><option value="1-2">1–2 years</option><option value="3-5">3–5 years</option><option value="5-10">5–10 years</option><option value="10+">10+ years veteran</option></select></div>
+        </div>
+        <div class="flex gap-3 mt-6"><button onclick="saveProfile()" class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">Save</button><button onclick="closeProfileModal()" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880]">Cancel</button></div>
+    </div>
+</div>
+
+<!-- Cloud Session Picker Modal -->
+<div id="cloudPickerModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-center justify-center" onclick="if(event.target===this)closeCloudPicker()">
+    <div class="modal-panel p-6 w-full max-w-sm">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5"><h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Cloud Saves</h2><button onclick="closeCloudPicker()" class="text-[#6b5d4d] hover:text-white text-2xl leading-none">✕</button></div>
+        <div id="cloudSessionList" class="space-y-2 max-h-[60vh] overflow-y-auto"></div>
+    </div>
+</div>
+
+<script type="module" src="../js/dm/app.js"></script>
+<script type="module" src="../js/core/analytics.js"></script>
+</body>
+</html>

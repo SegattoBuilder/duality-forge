@@ -1,0 +1,109 @@
+/* === Base: Variables, Typography, Inputs, Layout === */
+
+:root {
+    --accent-1: #d4a017;
+    --accent-2: #b8860b;
+    --accent-3: #9a7209;
+    --accent-4: #7d5c07;
+    --accent-5: #604605;
+}
+
+body {
+    background-color: #1a1714;
+    color: #e8e0d4;
+    font-family: 'Inter', sans-serif;
+}
+
+h1, h2, .section-title {
+    font-family: 'Cinzel', serif;
+}
+
+/* Section header typography */
+.section-header {
+    font-variant: small-caps;
+    letter-spacing: 0.15em;
+}
+
+/* Character sheet card headers */
+.card > div:first-child h2 {
+    font-variant: small-caps;
+    letter-spacing: 0.15em;
+    font-size: 11px;
+}
+
+/* Ornamental divider — DM tools sections */
+.section-divider {
+    position: relative;
+}
+.section-divider::after {
+    content: '⟡';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #4a3f30;
+    background: #1e1b16;
+    padding: 0 6px;
+    line-height: 1;
+}
+[data-mode="light"] .section-divider::after {
+    color: #d4c9b8;
+    background: #f9f5ef;
+}
+
+/* Ornamental divider — Character sheet card headers */
+.card > div:first-child {
+    position: relative;
+}
+.card > div:first-child::after {
+    content: '⟡';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #4a3f30;
+    background: linear-gradient(145deg, #221f1a, #1e1b16);
+    padding: 0 6px;
+    line-height: 1;
+}
+[data-mode="light"] .card > div:first-child::after {
+    color: #d4c9b8;
+    background: linear-gradient(145deg, #ffffff, #f9f5ef);
+}
+
+input, select, textarea {
+    color: #f5efe6 !important;
+}
+
+select {
+    background-color: #1a1714 !important;
+}
+
+.input-underline {
+    background: transparent;
+    border-bottom: 1px solid #4a3f30;
+    outline: none;
+    text-align: center;
+    color: #f5efe6;
+    width: 100%;
+}
+
+.trait-box {
+    border: 1px solid #4a3f30;
+    border-radius: 8px;
+    padding: 8px 6px;
+    text-align: center;
+    background: #1a1714;
+}
+
+.trait-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #a89880;
+    text-transform: uppercase;
+    display: block;
+    letter-spacing: 0.5px;
+    font-family: 'Cinzel', serif;
+}

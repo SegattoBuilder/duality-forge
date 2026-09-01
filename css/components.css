@@ -1,0 +1,354 @@
+/* === Components: Cards, Dots, Modals, Buttons, Tabs, Filters === */
+
+/* Nav/Hero header — shared */
+.nav-header,
+.hero-header {
+    position: relative;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.4);
+}
+.hero-header {
+    background: linear-gradient(135deg, #2a2418 0%, #1e1b16 40%, #221f1a 100%);
+    border: 1px solid #4a3f30;
+}
+.nav-header::before,
+.hero-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' seed='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23p)' opacity='1'/%3E%3C/svg%3E");
+    border-radius: inherit;
+}
+.nav-header::after,
+.hero-header::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px solid rgba(212, 160, 23, 0.15);
+    border-radius: 8px;
+    pointer-events: none;
+    mask-image:
+        linear-gradient(135deg, #000 12px, transparent 12px),
+        linear-gradient(225deg, #000 12px, transparent 12px),
+        linear-gradient(315deg, #000 12px, transparent 12px),
+        linear-gradient(45deg, #000 12px, transparent 12px);
+    mask-composite: add;
+    -webkit-mask-image:
+        linear-gradient(135deg, #000 12px, transparent 12px),
+        linear-gradient(225deg, #000 12px, transparent 12px),
+        linear-gradient(315deg, #000 12px, transparent 12px),
+        linear-gradient(45deg, #000 12px, transparent 12px);
+    -webkit-mask-composite: source-over;
+}
+
+/* Creature / Tracker Cards — TCG feel */
+.creature-card {
+    background: linear-gradient(145deg, #221f1a, #1e1b16);
+    border: 1px solid #3d362a;
+    border-top: 3px solid var(--accent-1);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px #0005, 0 1px 2px rgba(0,0,0,0.2);
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+    position: relative;
+    overflow: hidden;
+}
+.creature-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' seed='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23c)' opacity='1'/%3E%3C/svg%3E");
+}
+.creature-card:hover {
+    border-color: #5a4d3a;
+    box-shadow: 0 4px 16px #0008, 0 2px 4px rgba(0,0,0,0.3);
+    transform: translateY(-1px);
+}
+.creature-card.dead { opacity: 0.4; border-top-color: #4a2020; }
+.creature-card[draggable] { cursor: grab; }
+.creature-card[draggable]:active { cursor: grabbing; }
+.creature-card.drag-over { border-color: #d4a017; box-shadow: 0 0 12px #d4a01740; }
+
+/* Character sheet cards */
+.card {
+    background: linear-gradient(145deg, #221f1a, #1e1b16);
+    border: 1px solid #3d362a;
+    border-left: 3px solid transparent;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 8px #0005;
+    transition: border-left-color 0.2s, border-left-width 0.2s, box-shadow 0.2s;
+}
+.accent-status:hover { border-left-color: var(--accent-1); }
+.accent-combat:hover { border-left-color: var(--accent-2); }
+.accent-gold:hover { border-left-color: var(--accent-3); }
+.accent-abilities:hover { border-left-color: var(--accent-4); }
+.accent-experience:hover { border-left-color: var(--accent-5); }
+.accent-inventory:hover { border-left-color: var(--accent-3); }
+.accent-levelup:hover { border-left-color: var(--accent-1); }
+.accent-backstory:hover { border-left-color: var(--accent-2); }
+.accent-description:hover { border-left-color: var(--accent-3); }
+.accent-connections:hover { border-left-color: var(--accent-4); }
+
+/* Sheet cards (added to character sheet) */
+.sheet-card {
+    background: linear-gradient(145deg, #1a1714, #1e1b16);
+    border: 1px solid #3d362a;
+    border-left: 3px solid #3d362a;
+    border-radius: 10px;
+    padding: 12px 14px;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+.sheet-card:hover { border-color: #5a4d3a; }
+#domainCards .sheet-card { opacity: 0.5; }
+#domainCards .domain-card-selected.sheet-card { opacity: 1; }
+
+/* Domain cards — TCG card feel */
+#domainCards .sheet-card {
+    position: relative;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+#domainCards .sheet-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' seed='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23c)' opacity='1'/%3E%3C/svg%3E");
+}
+#domainCards .sheet-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
+}
+#domainCards .domain-card-selected.sheet-card {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 12px color-mix(in srgb, var(--accent-1) 20%, transparent);
+}
+
+/* Domain icon badge */
+.domain-icon-badge {
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+    border-radius: 6px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+}
+[data-mode="light"] .domain-icon-badge {
+    background: rgba(0,0,0,0.05);
+    border-color: rgba(0,0,0,0.08);
+}
+
+/* Domain card selected shimmer */
+.domain-card-selected {
+    background-color: #2a2418 !important;
+    border: 1px solid var(--accent-1) !important;
+    animation: shimmer 3s ease-in-out infinite;
+}
+@keyframes shimmer {
+    0%, 100% { box-shadow: 0 0 8px color-mix(in srgb, var(--accent-1) 15%, transparent), inset 0 0 6px color-mix(in srgb, var(--accent-1) 8%, transparent); }
+    50% { box-shadow: 0 0 18px color-mix(in srgb, var(--accent-1) 30%, transparent), inset 0 0 12px color-mix(in srgb, var(--accent-1) 15%, transparent); }
+}
+
+/* Tracker Dots — orb/gem effect (shared) */
+.dot {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #4a3f30;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: radial-gradient(circle at 35% 35%, #3d362a 0%, #1a1714 100%);
+}
+.dot:hover { border-color: #8b7355; transform: scale(1.1); }
+
+.dot.filled-hp {
+    border-color: #c0392b;
+    background: radial-gradient(circle at 35% 35%, #e74c3c 0%, #922b21 60%, #641e16 100%);
+    box-shadow: 0 0 8px #c0392b80, inset 0 -2px 4px #00000040;
+}
+.dot.filled-stress {
+    border-color: #8e44ad;
+    background: radial-gradient(circle at 35% 35%, #bb8fce 0%, #7d3c98 60%, #512e5f 100%);
+    box-shadow: 0 0 8px #8e44ad80, inset 0 -2px 4px #00000040;
+}
+.dot.filled-hope {
+    border-color: #d4a017;
+    background: radial-gradient(circle at 35% 35%, #f4d03f 0%, #d4a017 60%, #9a7d0a 100%);
+    box-shadow: 0 0 8px #d4a01780, inset 0 -2px 4px #00000040;
+}
+.dot.filled-armor {
+    border-color: #2980b9;
+    background: radial-gradient(circle at 35% 35%, #5dade2 0%, #2471a3 60%, #1a5276 100%);
+    box-shadow: 0 0 8px #2980b980, inset 0 -2px 4px #00000040;
+}
+.dot.filled-fear {
+    border-color: #7b2fa8;
+    background: radial-gradient(circle at 35% 35%, #a855f7 0%, #6b21a8 60%, #3b0764 100%);
+    box-shadow: 0 0 8px #7b2fa880, inset 0 -2px 4px #00000040;
+}
+
+/* Modal */
+.modal-overlay { backdrop-filter: blur(4px); background: rgba(0,0,0,0.85); }
+.modal-panel {
+    background: linear-gradient(145deg, #252118, #1e1b16);
+    border: 1px solid #4a3f30;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+
+/* Tabs — shared base */
+.tab-btn { transition: all 0.2s; border-bottom: 2px solid transparent; }
+.tab-btn.active { border-bottom-color: var(--accent-1); color: var(--accent-1); }
+.tab-btn:not(.active) { color: #6b5d4d; }
+.tab-btn:hover:not(.active) { color: #a89880; }
+
+/* Classic tab buttons (character sheet) */
+.classic-tab-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 6px 20px;
+    border-radius: 9999px;
+    transition: all 0.2s;
+    background: #2a2418;
+    color: #6b5d4d;
+    border: 1px solid #3d362a;
+}
+.classic-tab-btn.active {
+    background: linear-gradient(135deg, var(--accent-4), var(--accent-3));
+    color: #fff;
+    border-color: transparent;
+}
+
+/* Buttons */
+.btn-action { background: linear-gradient(135deg, var(--accent-3), var(--accent-2)); border: none; }
+.btn-action:hover { background: linear-gradient(135deg, var(--accent-2), var(--accent-1)); }
+.btn-danger { background: linear-gradient(135deg, #6b1a1a, #8b2020); }
+.btn-danger:hover { background: linear-gradient(135deg, #8b2020, #a52a2a); }
+
+/* Compendium cards — TCG feel */
+.compendium-card {
+    background: linear-gradient(145deg, #221f1a, #1e1b16);
+    border: 1px solid #3d362a;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px #0005, 0 1px 2px rgba(0,0,0,0.2);
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+    position: relative;
+    overflow: hidden;
+}
+.compendium-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' seed='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23c)' opacity='1'/%3E%3C/svg%3E");
+}
+.compendium-card:hover {
+    border-color: #5a4d3a;
+    box-shadow: 0 4px 16px #0008, 0 2px 4px rgba(0,0,0,0.3);
+    transform: translateY(-1px);
+}
+.compendium-card .card-category {
+    font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 2px 8px; border-radius: 99px;
+}
+
+/* Category color accents */
+.cat-weapons { background: #3b2a1a; color: #e8a040; border-top: 2px solid #e8a040; }
+.cat-armors { background: #1a2a3b; color: #40a0e8; border-top: 2px solid #40a0e8; }
+.cat-items { background: #2a1a3b; color: #a040e8; border-top: 2px solid #a040e8; }
+.cat-consumables { background: #1a3b2a; color: #40e8a0; border-top: 2px solid #40e8a0; }
+.cat-classes { background: #3b1a2a; color: #e84080; border-top: 2px solid #e84080; }
+.cat-subclasses { background: #3b1a2a; color: #e86080; border-top: 2px solid #e86080; }
+.cat-ancestries { background: #2a3b1a; color: #a0e840; border-top: 2px solid #a0e840; }
+.cat-communities { background: #3b3b1a; color: #e8e040; border-top: 2px solid #e8e040; }
+.cat-domain-cards { background: #1a3b3b; color: #40e8e8; border-top: 2px solid #40e8e8; }
+.cat-rules { background: #2a2a2a; color: #a0a0a0; border-top: 2px solid #a0a0a0; }
+
+/* Card modal scaled text */
+.modal-scaled * { font-size: inherit !important; line-height: 1.7 !important; }
+.modal-scaled { font-size: 1rem; }
+.modal-scaled .flex-wrap span { font-size: 0.8rem !important; padding: 3px 10px !important; }
+.modal-scaled [class*="font-bold"] { font-size: 1.05rem !important; }
+
+/* Card detail modal text (character sheet) */
+.card-detail-content, .card-detail-content * { font-size: 1rem !important; line-height: 1.8 !important; }
+.card-detail-content .text-amber-400 { font-size: 1.1rem !important; font-weight: 700; }
+
+/* Filter pills */
+.filter-pill {
+    font-size: 10px; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid #3d362a; background: #1e1b16; color: #6b5d4d;
+    cursor: pointer; transition: all 0.15s;
+    text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;
+}
+.filter-pill:hover { border-color: #5a4d3a; color: #a89880; }
+.filter-pill.active { border-color: var(--accent-1); color: var(--accent-1); background: #2a2418; }
+
+/* Fear Pool section */
+.fear-pool { position: relative; }
+.fear-pool .section-divider::after { background: #1e1b16; }
+
+/* Theme picker */
+.theme-swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+}
+.theme-swatch:hover { transform: scale(1.15); }
+.theme-swatch.active { border-color: #fff; box-shadow: 0 0 6px rgba(255,255,255,0.3); }
+
+#themeToggleBtn {
+    width: 32px;
+    height: 32px;
+    border: 2px solid color-mix(in srgb, var(--accent-1) 50%, transparent);
+    box-shadow: 0 0 6px color-mix(in srgb, var(--accent-1) 30%, transparent);
+}
+#themeToggleBtn:hover {
+    transform: none;
+    border-color: var(--accent-1);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent-1) 50%, transparent);
+}
+
+/* Chevron rotation */
+.toggle-icon { display: inline-block; transition: transform 0.25s ease; }
+.toggle-icon.collapsed { transform: rotate(-90deg); }
+
+/* Drag & drop reordering */
+.dragging { opacity: 0.4; }
+.drag-over { border-top: 2px solid var(--accent-1); }
+
+/* Info tooltip (character sheet) */
+.info-btn {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1px solid #4a3f30; background: transparent;
+    color: #6b5d4d; font-size: 10px; font-weight: 700;
+    font-style: italic; font-family: 'Cinzel', serif;
+    cursor: pointer; display: inline-flex;
+    align-items: center; justify-content: center;
+    transition: all 0.15s;
+}
+.info-btn:hover { border-color: var(--accent-1); color: var(--accent-1); }
+.info-popup {
+    display: none; background: #1e1b16; border: 1px solid #4a3f30;
+    border-radius: 10px; padding: 10px 14px; margin-top: 8px;
+    font-size: 11px; color: #a89880; line-height: 1.6;
+}
+.info-popup.open { display: block; }
+
+/* Support tab link hover */
+.support-link:hover { border-color: color-mix(in srgb, var(--accent-1) 50%, transparent) !important; }
+.support-link:hover .support-link-title { color: var(--accent-1) !important; }

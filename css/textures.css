@@ -1,0 +1,38 @@
+/* === Textures: Background, Vignette, Atmosphere === */
+
+/* Subtle paper grain noise via inline SVG */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.035;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+}
+
+/* Radial vignette overlay */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.4) 100%);
+}
+
+/* Fantasy mode: cracked stone ground */
+body[data-mode="fantasy"]::before {
+    opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='900'%3E%3Cpath d='M50 0 L95 80 L70 170 L120 270 L80 370 L130 460 L90 560 L140 660 L100 760 L145 860 L110 900' fill='none' stroke='%23000' stroke-width='2' opacity='0.8'/%3E%3Cpath d='M200 0 L260 90 L220 190 L280 300 L240 400 L295 500 L250 610 L300 720 L265 820 L290 900' fill='none' stroke='%23000' stroke-width='1.8' opacity='0.7'/%3E%3Cpath d='M380 0 L340 100 L390 200 L345 310 L400 410 L355 520 L405 620 L360 730 L395 830 L370 900' fill='none' stroke='%23000' stroke-width='1.8' opacity='0.75'/%3E%3Cpath d='M520 0 L480 85 L530 175 L485 280 L540 380 L495 470 L535 570 L490 670 L530 770 L500 870 L515 900' fill='none' stroke='%23000' stroke-width='1.5' opacity='0.65'/%3E%3Cpath d='M130 0 L170 70 L140 150 L185 240 L150 330 L190 430 L155 530 L195 630 L165 740 L200 840 L180 900' fill='none' stroke='%23000' stroke-width='1.5' opacity='0.6'/%3E%3Cpath d='M450 0 L410 80 L455 170 L415 270 L460 360 L420 460 L465 560 L425 660 L460 760 L430 860 L450 900' fill='none' stroke='%23000' stroke-width='1.4' opacity='0.55'/%3E%3Cpath d='M95 80 L140 100 L175 85' fill='none' stroke='%23000' stroke-width='1.5' opacity='0.7'/%3E%3Cpath d='M70 170 L30 185 L5 170' fill='none' stroke='%23000' stroke-width='1.3' opacity='0.6'/%3E%3Cpath d='M260 90 L300 110 L340 95' fill='none' stroke='%23000' stroke-width='1.3' opacity='0.6'/%3E%3Cpath d='M220 190 L180 210 L145 195' fill='none' stroke='%23000' stroke-width='1.2' opacity='0.55'/%3E%3Cpath d='M340 100 L305 120 L270 105' fill='none' stroke='%23000' stroke-width='1.2' opacity='0.55'/%3E%3Cpath d='M390 200 L430 220 L465 205' fill='none' stroke='%23000' stroke-width='1.3' opacity='0.6'/%3E%3Cpath d='M480 85 L520 100 L555 88' fill='none' stroke='%23000' stroke-width='1.1' opacity='0.5'/%3E%3Cpath d='M530 175 L490 195 L455 178' fill='none' stroke='%23000' stroke-width='1.2' opacity='0.55'/%3E%3Cpath d='M120 270 L160 290 L200 272' fill='none' stroke='%23000' stroke-width='1.2' opacity='0.55'/%3E%3Cpath d='M280 300 L320 318 L355 300' fill='none' stroke='%23000' stroke-width='1.2' opacity='0.55'/%3E%3Cpath d='M345 310 L305 330 L270 312' fill='none' stroke='%23000' stroke-width='1.1' opacity='0.5'/%3E%3Cpath d='M400 410 L440 428 L475 412' fill='none' stroke='%23000' stroke-width='1.2' opacity='0.55'/%3E%3Cpath d='M240 400 L200 418 L165 402' fill='none' stroke='%23000' stroke-width='1.1' opacity='0.5'/%3E%3Cpath d='M130 460 L170 478 L210 462' fill='none' stroke='%23000' stroke-width='1.1' opacity='0.5'/%3E%3Cpath d='M495 470 L455 488 L420 472' fill='none' stroke='%23000' stroke-width='1.1' opacity='0.5'/%3E%3Cpath d='M250 610 L290 628 L325 612' fill='none' stroke='%23000' stroke-width='1.1' opacity='0.5'/%3E%3Cpath d='M405 620 L365 638 L330 622' fill='none' stroke='%23000' stroke-width='1.1' opacity='0.5'/%3E%3Cpath d='M140 660 L180 678 L215 660' fill='none' stroke='%23000' stroke-width='1' opacity='0.45'/%3E%3Cpath d='M530 770 L490 788 L455 772' fill='none' stroke='%23000' stroke-width='1' opacity='0.45'/%3E%3C/svg%3E");
+    background-size: 600px 900px;
+    background-repeat: repeat;
+}
+
+/* Light mode: softer vignette, warmer grain */
+[data-mode="light"] body::before {
+    opacity: 0.025;
+}
+[data-mode="light"] body::after {
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.08) 100%);
+}

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daggerheart Forge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;800&display=optional" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚒️</text></svg>">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/textures.css">
+    <style>
+        .choice-card { background: linear-gradient(145deg, #221f1a, #1e1b16); border: 1px solid #3d362a; border-radius: 16px; padding: 32px; cursor: pointer; transition: all 0.2s; }
+        .choice-card:hover { border-color: #d4a017; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-2xl mx-auto px-4">
+        <div class="text-center mb-10">
+            <h1 class="font-[Cinzel] text-3xl font-black tracking-wide text-[#d4a017] mb-2">Daggerheart Forge</h1>
+            <p class="text-sm text-zinc-500">Your toolkit for the table. Pick a tool to get started.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+            <div class="choice-card" onclick="go('dm')">
+                <div class="text-center">
+                    <div class="text-3xl mb-3">⚔️</div>
+                    <h2 class="font-[Cinzel] text-lg font-bold text-[#f5efe6] mb-2">DM Tools</h2>
+                    <p class="text-xs text-zinc-500 leading-relaxed">Combat tracker, adversary vault, chronicle, compendium search. Everything a DM needs at the table.</p>
+                </div>
+            </div>
+            <div class="choice-card" onclick="go('character')">
+                <div class="text-center">
+                    <div class="text-3xl mb-3">🗡️</div>
+                    <h2 class="font-[Cinzel] text-lg font-bold text-[#f5efe6] mb-2">Character Sheet</h2>
+                    <p class="text-xs text-zinc-500 leading-relaxed">Digital character sheet with stats, cards, inventory, gear, and full SRD data integration.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <label class="inline-flex items-center gap-2 cursor-pointer text-xs text-zinc-600">
+                <input type="checkbox" id="rememberChk" checked class="accent-[#d4a017]">
+                <span>Remember my choice</span>
+            </label>
+        </div>
+
+        <div class="text-center mt-8">
+            <p class="text-[10px] text-zinc-700">Fan-made tool — not affiliated with Darrington Press or Critical Role.</p>
+            <p class="text-[10px] text-zinc-700 mt-1">☕ <a href="https://buymeacoffee.com/segattobuilder" target="_blank" rel="noopener" class="text-[#d4a017] hover:underline">Buy me a coffee</a></p>
+        </div>
+    </div>
+
+    <script>
+        const pref = localStorage.getItem('dh_forge_tool');
+        if (pref === 'dm') window.location.replace('dm/');
+        else if (pref === 'character') window.location.replace('character/');
+
+        function go(tool) {
+            if (document.getElementById('rememberChk').checked) {
+                localStorage.setItem('dh_forge_tool', tool);
+            }
+            window.location.href = tool + '/';
+        }
+    </script>
+    <script type="module" src="js/core/analytics.js"></script>
+</body>
+</html>
