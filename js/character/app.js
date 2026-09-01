@@ -1,19 +1,16 @@
 import { SAVE_KEY, THEME_KEY, setRestoring } from './state.js';
 import { renderThemePicker, applyTheme, toggleMode, initMode } from './theme.js';
-import { switchTab, toggleSection, toggleCard } from './ui.js';
+import { toggleSection } from './ui.js';
 import { renderDots, updateThresholds, updateAttackBonus } from './trackers.js';
 import { openDatabase, closeDatabase, fetchData, filterCards, closeCardDetail } from './cards.js';
 import { addInventoryItem } from './inventory.js';
 import { addExperience } from './experience.js';
 import { addGearItem } from './gear.js';
 import { autoCache, saveSheet, loadSheet, clearSheet, updateExportIndicator } from './save.js';
-import { initSortable } from './sort.js';
+import { submitBugReport } from '../core/feedback.js';
 import { initCharAuth } from './char-auth.js';
 
 // Expose to global for inline handlers
-window.switchTab = switchTab;
-window.toggleSection = toggleSection;
-window.toggleCard = toggleCard;
 window.updateThresholds = updateThresholds;
 window.updateAttackBonus = updateAttackBonus;
 window.openDatabase = openDatabase;
@@ -29,6 +26,23 @@ window.loadSheet = loadSheet;
 window.clearSheet = clearSheet;
 window.autoCache = autoCache;
 window.toggleMode = toggleMode;
+window.toggleSection = toggleSection;
+window.submitBugReport = () => submitBugReport(
+    document.getElementById('bugReportText'),
+    'reportType',
+    document.getElementById('feedbackForm'),
+    document.getElementById('feedbackToast')
+);
+
+// Modern tab switching
+const MODERN_TABS = ['tab-combat', 'tab-cards', 'tab-inventory', 'tab-story', 'tab-support'];
+
+window.switchModernTab = function(tabId) {
+    MODERN_TABS.forEach(id => {
+        document.getElementById(id).style.display = id === tabId ? '' : 'none';
+        document.getElementById('btn-' + id).classList.toggle('active', id === tabId);
+    });
+};
 
 window.addEventListener('DOMContentLoaded', () => {
     setRestoring(true);
@@ -54,6 +68,5 @@ window.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('input', () => { updateThresholds(); updateAttackBonus(); autoCache(); });
     document.addEventListener('change', () => { updateThresholds(); updateAttackBonus(); autoCache(); });
 
-    initSortable('sheetSortable');
     initCharAuth();
 });
