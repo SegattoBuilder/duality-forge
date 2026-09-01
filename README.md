@@ -1,6 +1,6 @@
-# Daggerheart Forge ⚒️
+# Duality Forge ⚒️
 
-A unified web toolkit for [Daggerheart](https://www.daggerheart.com/) — combining DM tools and a digital character sheet into one monorepo.
+A unified web toolkit for tabletop RPGs — combining DM tools and a digital character sheet into one monorepo.
 
 ## Tools
 
@@ -33,7 +33,7 @@ A unified web toolkit for [Daggerheart](https://www.daggerheart.com/) — combin
 
 ## Project Structure
 ```
-daggerheart-forge/
+duality-forge/
 ├── index.html              Landing page (tool chooser)
 ├── dm/index.html           DM Tools
 ├── character/index.html    Character Sheet
@@ -54,4 +54,4 @@ npx serve .
 ```
 
 ## License
-Fan-made tool for Daggerheart by Darrington Press. Not affiliated with or endorsed by Darrington Press or Critical Role.
+Fan-made tool for tabletop RPGs. Not affiliated with or endorsed by Darrington Press or Critical Role.
