@@ -6,6 +6,8 @@ import { addInventoryItem, getInventoryData } from './inventory.js';
 import { addGearItem, getGearData, addWeapon, getWeaponData, addArmor, getArmorData, addItem, getItemData, addConsumable, getConsumableData } from './gear.js';
 import { applyTheme } from './theme.js';
 
+import { showConfirm } from '../core/auth.js';
+
 export function autoCache() {
     if (_restoring) return;
     localStorage.setItem(SAVE_KEY, JSON.stringify(gatherData()));
@@ -174,9 +176,10 @@ export function resetSheet() {
 }
 
 export function clearSheet() {
-    if (!confirm('Clear all data? This cannot be undone.')) return;
-    resetSheet();
-    showToast('Sheet cleared!');
+    showConfirm('Clear all data? This cannot be undone.', () => {
+        resetSheet();
+        showToast('Sheet cleared!');
+    });
 }
 
 export function updateExportIndicator() {}

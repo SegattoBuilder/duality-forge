@@ -1,3 +1,5 @@
+import { showAlert } from './auth.js';
+
 // Auto-capture JS errors
 window.onerror = function(msg, src, line, col) {
     fetch('/api/report', {
@@ -24,5 +26,5 @@ export function submitBugReport(inputEl, radioName, formEl, toastEl) {
             toastEl.classList.remove('hidden');
             setTimeout(() => toastEl.classList.add('hidden'), 6000);
         }
-    }).catch(() => alert('Failed to send report. Try again later.'));
+    }).catch(() => showAlert('Failed to send report. Try again later.'));
 }

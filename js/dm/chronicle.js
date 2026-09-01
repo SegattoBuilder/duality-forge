@@ -1,4 +1,5 @@
 import { escHtml, escHtmlAttr } from './app.js';
+import { showConfirm } from '../core/auth.js';
 
 const CHRONICLE_KEY = 'dh_dm_chronicle';
 let _chronicleEntries = [];
@@ -20,7 +21,7 @@ export function addEntry() {
     autoCacheChronicle(); renderChronicle();
 }
 
-function removeEntry(id) { if (!confirm('Remove this chapter?')) return; _chronicleEntries = _chronicleEntries.filter(c => c.id !== id); autoCacheChronicle(); renderChronicle(); }
+function removeEntry(id) { const ch = _chronicleEntries.find(c => c.id === id); showConfirm(`Remove ${ch ? ch.title : 'this chapter'}?`, () => { _chronicleEntries = _chronicleEntries.filter(c => c.id !== id); autoCacheChronicle(); renderChronicle(); }); }
 function updateEntryTitle(id, value) { const ch = _chronicleEntries.find(c => c.id === id); if (ch) { ch.title = value || 'Untitled Chapter'; autoCacheChronicle(); } }
 function updateEntryText(id, value) { const ch = _chronicleEntries.find(c => c.id === id); if (ch) { ch.text = value; autoCacheChronicle(); } }
 function toggleEntry(id) { const ch = _chronicleEntries.find(c => c.id === id); if (ch) { ch.open = !ch.open; autoCacheChronicle(); renderChronicle(); } }
@@ -119,8 +120,9 @@ export function renderChronicle() {
 
 export function clearChronicle(event) {
     if (event) { event.stopPropagation(); event.preventDefault(); }
-    if (!confirm('Clear all chapters? This cannot be undone.')) return;
-    _chronicleEntries = []; autoCacheChronicle(); renderChronicle();
+    showConfirm('Clear all chapters? This cannot be undone.', () => {
+        _chronicleEntries = []; autoCacheChronicle(); renderChronicle();
+    });
 }
 
 // ========== WINDOW BINDINGS ==========

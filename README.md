@@ -21,7 +21,7 @@ A unified web toolkit for [Daggerheart](https://www.daggerheart.com/) — combin
 
 ## Shared Features
 - **Cloud sync** — sign in with Google or email to save/load across devices (Supabase)
-- **Auto-save** — localStorage auto-cache + 30-second cloud sync when signed in
+- **Auto-save** — localStorage auto-cache + 5-minute cloud sync when signed in
 - **Profiles** — nickname, avatar, country/region
 - **Feedback** — built-in bug reports and feature requests
 - **Cloudflare Web Analytics** — privacy-friendly page analytics

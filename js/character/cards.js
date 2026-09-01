@@ -1,6 +1,7 @@
 import { GITHUB_RAW, DOMAIN_COLORS, CATEGORY_LABELS, currentData, setCurrentData, addedCards, selectedDomainCards, savedCardsData, setSavedCardsData } from './state.js';
 import { autoCache } from './save.js';
 import { toggleCard } from './ui.js';
+import { showConfirm, showAlert } from '../core/auth.js';
 
 export function openCardDetail(id) {
     const el = document.getElementById(id);
@@ -304,17 +305,18 @@ export function removeCard(id) {
     const el = document.getElementById(id);
     const cardName = el.getAttribute('data-card-name');
     if (cardName && selectedDomainCards.has(cardName)) {
-        alert('Unmark this card from your loadout before removing it.');
+        showAlert('Unmark this card from your loadout before removing it.');
         return;
     }
-    if (!confirm('Remove this card?')) return;
-    if (cardName) {
-        addedCards.delete(cardName);
-        const idx = savedCardsData.findIndex(c => c.name.toLowerCase() === cardName);
-        if (idx !== -1) savedCardsData.splice(idx, 1);
-    }
-    el.remove();
-    autoCache();
+    showConfirm('Remove this card?', () => {
+        if (cardName) {
+            addedCards.delete(cardName);
+            const idx = savedCardsData.findIndex(c => c.name.toLowerCase() === cardName);
+            if (idx !== -1) savedCardsData.splice(idx, 1);
+        }
+        el.remove();
+        autoCache();
+    });
 }
 
 export function toggleDomainSelect(id) {
@@ -329,7 +331,7 @@ export function toggleDomainSelect(id) {
         btn.textContent = '☆';
         btn.classList.remove('text-yellow-400');
     } else {
-        if (selectedDomainCards.size >= 5) { alert('Max 5 domain cards can be selected.'); return; }
+        if (selectedDomainCards.size >= 5) { showAlert('Max 5 domain cards can be selected.'); return; }
         selectedDomainCards.add(cardName);
         el.classList.add('domain-card-selected');
         if (domainBorder) el.style.borderLeftColor = domainBorder;

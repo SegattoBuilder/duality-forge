@@ -1,4 +1,4 @@
-import { getUser, getProfile, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as coreSignOut, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, escHtml, escHtmlAttr } from '../core/auth.js';
+import { getUser, getProfile, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as coreSignOut, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
 import { creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled, autoCache, renderGrid, renderFearDots } from './tracker.js';
 import { vaultCreatures, setVaultCreatures, autoCacheVault, renderVaultGrid } from './vault.js';
 import { chronicleEntries, setChronicleEntries, autoCacheChronicle, renderChronicle } from './chronicle.js';
@@ -33,7 +33,7 @@ function startCloudAutoSave() {
     cloudAutoSaveInterval = setInterval(async () => {
         if (!getUser() || !cloudDirty) return;
         cloudDirty = false; await cloudSave();
-    }, 30 * 1000);
+    }, 5 * 60 * 1000);
 }
 
 function stopCloudAutoSave() {
@@ -47,15 +47,15 @@ async function cloudSave() {
     const campaign = document.getElementById('campaignName').value.trim() || 'My Campaign';
     const data = { creatures: creatures(), actionCounters: actionCounters(), fearFilled: fearFilled(), campaign, vaultCreatures: vaultCreatures(), chronicleEntries: chronicleEntries() };
     const { error } = await cloudSaveRow('sessions', { campaign_name: campaign }, data);
-    if (error) alert('Cloud save failed: ' + error);
+    if (error) showAlert('Cloud save failed: ' + error);
     else showSyncStatus('☁️ Saved');
 }
 
 async function cloudLoad() {
     if (!getUser()) { openAuthModal(); return; }
     const { rows, error } = await cloudLoadRows('sessions');
-    if (error) { alert('Cloud load failed: ' + error); return; }
-    if (!rows.length) { alert('No cloud saves found.'); return; }
+    if (error) { showAlert('Cloud load failed: ' + error); return; }
+    if (!rows.length) { showAlert('No cloud saves found.'); return; }
     const picker = document.getElementById('cloudSessionList');
     picker.innerHTML = rows.map(s => `<div class="flex items-center gap-2 p-3 bg-[#1a1714] border border-[#4a3f30] rounded-xl hover:border-[#d4a017] cursor-pointer transition-colors" onclick="window._loadCloudSession('${s.id}')">
         <div class="flex-1"><div class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">${escHtml(s.campaign_name)}</div><div class="text-[10px] text-zinc-500">${new Date(s.updated_at).toLocaleString()}</div></div>
@@ -67,7 +67,7 @@ async function cloudLoad() {
 async function loadCloudSession(sessionId) {
     const { rows } = await cloudLoadRows('sessions');
     const session = rows.find(r => r.id === sessionId);
-    if (!session) { alert('Failed to load session.'); return; }
+    if (!session) { showAlert('Failed to load session.'); return; }
     const d = session.data;
     setCreatures(d.creatures || []); setActionCounters(d.actionCounters || []); setFearFilled(d.fearFilled || 0);
     setVaultCreatures(d.vaultCreatures || []); setChronicleEntries(d.chronicleEntries || []);
@@ -77,27 +77,36 @@ async function loadCloudSession(sessionId) {
 }
 
 async function deleteCloudSession(sessionId) {
-    if (!confirm('Delete this cloud save?')) return;
-    const { error } = await cloudDeleteRow('sessions', sessionId);
-    if (error) alert('Delete failed: ' + error); else cloudLoad();
+    showConfirm('Delete this cloud save?', async () => {
+        const { error } = await cloudDeleteRow('sessions', sessionId);
+        if (error) showAlert('Delete failed: ' + error); else cloudLoad();
+    });
 }
 
 async function importLocalToCloud() {
     if (!getUser()) return;
     const hasData = creatures().length || vaultCreatures().length || chronicleEntries().length || actionCounters().length;
-    if (!hasData) { alert('No local data found to import.'); return; }
-    if (!confirm('Upload your current local data to the cloud as a new save?')) return;
-    await cloudSave();
+    if (!hasData) { showAlert('No local data found to import.'); return; }
+    showConfirm('Upload your current local data to the cloud as a new save?', async () => { await cloudSave(); });
 }
 
 async function doSignOut() {
-    if (cloudDirty) { const save = confirm('You have unsaved changes. Save to cloud before signing out?'); if (save) await cloudSave(); }
-    await coreSignOut();
-    setCreatures([]); setActionCounters([]); setFearFilled(0); setVaultCreatures([]); setChronicleEntries([]);
-    document.getElementById('campaignName').value = '';
-    localStorage.removeItem(CAMPAIGN_KEY);
-    autoCache(); autoCacheVault(); autoCacheChronicle(); renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
-    switchTab('tracker');
+    const finishSignOut = async () => {
+        await coreSignOut();
+        setCreatures([]); setActionCounters([]); setFearFilled(0); setVaultCreatures([]); setChronicleEntries([]);
+        document.getElementById('campaignName').value = '';
+        localStorage.removeItem(CAMPAIGN_KEY);
+        autoCache(); autoCacheVault(); autoCacheChronicle(); renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
+        switchTab('tracker');
+    };
+    if (cloudDirty) {
+        showConfirm('You have unsaved changes. Save to cloud before signing out?',
+            async () => { await cloudSave(); await finishSignOut(); },
+            finishSignOut
+        );
+        return;
+    }
+    await finishSignOut();
 }
 
 // ========== AUTH UI ==========

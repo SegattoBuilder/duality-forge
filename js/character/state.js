@@ -1,5 +1,5 @@
 // Shared application state
-export const SAVE_KEY = 'dh_sheet_v1';
+export const SAVE_KEY = 'dh_sheet';
 export const THEME_KEY = 'dh_theme';
 export const EXPORT_KEY = 'dh_last_export';
 

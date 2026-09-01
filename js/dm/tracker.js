@@ -1,5 +1,6 @@
 import { escHtml, escHtmlAttr, SAVE_KEY, FEAR_KEY, COUNTERS_KEY, getNextName, hasNameConflict, isVaultActive } from './app.js';
 import { vaultCreatures, stashToVault } from './vault.js';
+import { showConfirm, showAlert } from '../core/auth.js';
 
 // ========== STATE ==========
 let _creatures = [];
@@ -49,10 +50,10 @@ export function addCounter() {
 }
 
 export function removeCounter(id) {
-    if (!confirm('Remove this counter?')) return;
-    _actionCounters = _actionCounters.filter(c => c.id !== id);
-    autoCache();
-    renderGrid();
+    showConfirm('Remove this counter?', () => {
+        _actionCounters = _actionCounters.filter(c => c.id !== id);
+        autoCache(); renderGrid();
+    });
 }
 
 export function stepCounter(id, delta) {
@@ -111,10 +112,11 @@ function toggleFear(index) {
 }
 
 export function resetFear() {
-    if (!confirm('Reset the fear pool?')) return;
-    _fearFilled = 0;
-    localStorage.setItem(FEAR_KEY, '0');
-    renderFearDots();
+    showConfirm('Reset the fear pool?', () => {
+        _fearFilled = 0;
+        localStorage.setItem(FEAR_KEY, '0');
+        renderFearDots();
+    });
 }
 
 // ========== ADVERSARIES DATA (for enemy search) ==========
@@ -246,7 +248,7 @@ export function addCreatures() {
     const severe = document.getElementById('modalSevere').value.trim();
     const atk = document.getElementById('modalAtk').value.trim();
     const featuresRaw = document.getElementById('modalFeatures').value.trim();
-    if (!name) { alert('Please enter a name.'); return; }
+    if (!name) { showAlert('Please enter a name.'); return; }
 
     const hasExtra = major || severe || atk || featuresRaw;
     let enemyData = null;
@@ -263,7 +265,7 @@ export function addCreatures() {
     if (editId) {
         const creature = _creatures.find(c => c.id === editId) || vaultCreatures().find(c => c.id === editId);
         if (creature) {
-            if (hasNameConflict(name, editId)) { alert('Name already in use.'); return; }
+            if (hasNameConflict(name, editId)) { showAlert('Name already in use.'); return; }
             Object.assign(creature, { name, evasion, hpMax: hp, hpFilled: Math.min(creature.hpFilled, hp), stressMax: stress, stressFilled: Math.min(creature.stressFilled, stress), hopeMax: hope, hopeFilled: Math.min(creature.hopeFilled, hope), armorMax: armor, armorFilled: Math.min(creature.armorFilled, armor), enemyData });
             autoCache(); renderCard(creature); closeAddModal(); return;
         }
@@ -310,7 +312,7 @@ export function addCustomAttackRow(name = '', atk = '', damage = '', range = '')
         <input type="text" placeholder="Damage" value="${escHtmlAttr(damage)}" class="bg-[#1a1714] border border-[#4a3f30] rounded-lg px-3 py-2 text-xs outline-none focus:border-[#d4a017] text-center">
         <input type="text" placeholder="Range" value="${escHtmlAttr(range)}" class="bg-[#1a1714] border border-[#4a3f30] rounded-lg px-3 py-2 text-xs outline-none focus:border-[#d4a017] text-center">
     </div>
-    <button type="button" onclick="if(confirm('Remove this attack?'))this.parentElement.remove()" class="absolute top-1 right-1 text-zinc-700 hover:text-red-500 text-xs leading-none">✕</button>`;
+    <button type="button" onclick="window._removeAttackRow(this)" class="absolute top-1 right-1 text-zinc-700 hover:text-red-500 text-xs leading-none">✕</button>`;
     list.appendChild(row);
 }
 
@@ -395,7 +397,7 @@ export function editEnemyCard(creatureId, fromVault) {
 // ========== ADD CUSTOM ==========
 export function addCustom() {
     const name = document.getElementById('customName').value.trim();
-    if (!name) { alert('Please enter a name.'); return; }
+    if (!name) { showAlert('Please enter a name.'); return; }
     const difficulty = parseInt(document.getElementById('customDifficulty').value) || 10;
     const hp = parseInt(document.getElementById('customHp').value) || 1;
     const stress = parseInt(document.getElementById('customStress').value) || 0;
@@ -420,7 +422,7 @@ export function addCustom() {
     if (editId) {
         const creature = _creatures.find(c => c.id === editId) || vaultCreatures().find(c => c.id === editId);
         if (creature) {
-            if (hasNameConflict(name, editId)) { alert('Name already in use.'); return; }
+            if (hasNameConflict(name, editId)) { showAlert('Name already in use.'); return; }
             Object.assign(creature, { name, evasion: difficulty, hpMax: hp, hpFilled: Math.min(creature.hpFilled, hp), stressMax: stress, stressFilled: Math.min(creature.stressFilled, stress), enemyData });
             autoCache(); renderCard(creature); closeCustomModal(); return;
         }
@@ -447,9 +449,11 @@ export function copyCreature(id) {
 
 export function removeCreature(id, event) {
     if (event) { event.stopPropagation(); event.preventDefault(); }
-    if (!confirm('Remove this creature?')) return;
-    _creatures = _creatures.filter(c => c.id !== id);
-    autoCache(); renderGrid();
+    const creature = _creatures.find(c => c.id === id);
+    showConfirm(`Remove ${creature ? creature.name : 'this creature'}?`, () => {
+        _creatures = _creatures.filter(c => c.id !== id);
+        autoCache(); renderGrid();
+    });
 }
 
 function toggleDot(creatureId, type, index) {
@@ -585,14 +589,15 @@ export function renderGrid() {
 }
 
 // ========== CLEAR FUNCTIONS ==========
-export function clearCreatures(event) { if (event) { event.stopPropagation(); event.preventDefault(); } if (!confirm('Remove all adversaries?')) return; _creatures = []; autoCache(); renderGrid(); }
-export function clearCounters(event) { if (event) { event.stopPropagation(); event.preventDefault(); } if (!confirm('Remove all counters?')) return; _actionCounters = []; autoCache(); renderGrid(); }
+export function clearCreatures(event) { if (event) { event.stopPropagation(); event.preventDefault(); } showConfirm('Remove all adversaries?', () => { _creatures = []; autoCache(); renderGrid(); }); }
+export function clearCounters(event) { if (event) { event.stopPropagation(); event.preventDefault(); } showConfirm('Remove all counters?', () => { _actionCounters = []; autoCache(); renderGrid(); }); }
 export function clearAll(event) {
     if (event) { event.stopPropagation(); event.preventDefault(); }
-    if (!confirm('Clear all creatures, counters and fear pool? This cannot be undone.')) return;
-    _creatures = []; _actionCounters = []; _fearFilled = 0;
-    localStorage.setItem(FEAR_KEY, '0');
-    autoCache(); renderFearDots(); renderGrid();
+    showConfirm('Clear all creatures, counters and fear pool? This cannot be undone.', () => {
+        _creatures = []; _actionCounters = []; _fearFilled = 0;
+        localStorage.setItem(FEAR_KEY, '0');
+        autoCache(); renderFearDots(); renderGrid();
+    });
 }
 
 // ========== WINDOW BINDINGS (for inline onclick handlers) ==========
@@ -629,4 +634,5 @@ window.clearCreatures = clearCreatures;
 window.clearCounters = clearCounters;
 window.clearAll = clearAll;
 window.resetFear = resetFear;
+window._removeAttackRow = (btn) => showConfirm('Remove this attack?', () => btn.parentElement.remove());
 window.onDragOver = onDragOver;

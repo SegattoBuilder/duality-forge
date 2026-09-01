@@ -1,4 +1,5 @@
 import { autoCache } from './save.js';
+import { showConfirm } from '../core/auth.js';
 
 const TRAIT_OPTIONS = '<option value="">—</option><option value="t_agi">Agility</option><option value="t_str">Strength</option><option value="t_fin">Finesse</option><option value="t_inst">Instinct</option><option value="t_pres">Presence</option><option value="t_know">Knowledge</option>';
 
@@ -89,11 +90,12 @@ function toggleEquipWeapon(id) {
 }
 
 function removeWeapon(id) {
-    if (!confirm('Remove this weapon?')) return;
-    document.getElementById(id).remove();
-    showEmpty(document.getElementById('weaponList'));
-    window.updateAttackBonus();
-    autoCache();
+    showConfirm('Remove this weapon?', () => {
+        document.getElementById(id).remove();
+        showEmpty(document.getElementById('weaponList'));
+        window.updateAttackBonus();
+        autoCache();
+    });
 }
 
 export function getWeaponData() {
@@ -169,11 +171,12 @@ function toggleEquipArmor(id) {
 }
 
 function removeArmor(id) {
-    if (!confirm('Remove this armor?')) return;
-    document.getElementById(id).remove();
-    showEmpty(document.getElementById('armorList'));
-    window.updateThresholds();
-    autoCache();
+    showConfirm('Remove this armor?', () => {
+        document.getElementById(id).remove();
+        showEmpty(document.getElementById('armorList'));
+        window.updateThresholds();
+        autoCache();
+    });
 }
 
 export function getArmorData() {
@@ -224,10 +227,11 @@ export function addItem(data) {
 }
 
 function removeItem(id) {
-    if (!confirm('Remove this item?')) return;
-    document.getElementById(id).remove();
-    showEmpty(document.getElementById('itemList'));
-    autoCache();
+    showConfirm('Remove this item?', () => {
+        document.getElementById(id).remove();
+        showEmpty(document.getElementById('itemList'));
+        autoCache();
+    });
 }
 
 export function getItemData() {
@@ -265,10 +269,11 @@ export function addConsumable(data) {
 }
 
 function removeConsumable(id) {
-    if (!confirm('Remove this consumable?')) return;
-    document.getElementById(id).remove();
-    showEmpty(document.getElementById('consumableList'));
-    autoCache();
+    showConfirm('Remove this consumable?', () => {
+        document.getElementById(id).remove();
+        showEmpty(document.getElementById('consumableList'));
+        autoCache();
+    });
 }
 
 export function getConsumableData() {
@@ -305,10 +310,11 @@ export function addGearItem(name, bonus, desc, collapsed) {
 }
 
 export function removeGearItem(id) {
-    if (!confirm('Remove this item?')) return;
-    document.getElementById(id).remove();
-    showEmpty(document.getElementById('gearItemList'));
-    autoCache();
+    showConfirm('Remove this item?', () => {
+        document.getElementById(id).remove();
+        showEmpty(document.getElementById('gearItemList'));
+        autoCache();
+    });
 }
 
 export function getGearData() {

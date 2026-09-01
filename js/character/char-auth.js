@@ -1,4 +1,4 @@
-import { initAuth, getUser, getProfile, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as coreSignOut, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, escHtml, escHtmlAttr } from '../core/auth.js';
+import { initAuth, getUser, getProfile, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as coreSignOut, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
 import { gatherData, applyData, autoCache, resetSheet } from './save.js';
 import { SAVE_KEY } from './state.js';
 
@@ -37,7 +37,7 @@ function startCloudAutoSave() {
     cloudAutoSaveInterval = setInterval(async () => {
         if (!getUser() || !cloudDirty) return;
         cloudDirty = false; await cloudSave();
-    }, 30 * 1000);
+    }, 5 * 60 * 1000);
 }
 
 function stopCloudAutoSave() {
@@ -51,15 +51,15 @@ async function cloudSave() {
     const data = gatherData();
     const charName = data.fields?.charName?.trim() || 'My Character';
     const { error } = await cloudSaveRow('characters', { character_name: charName }, data);
-    if (error) alert('Cloud save failed: ' + error);
+    if (error) showAlert('Cloud save failed: ' + error);
     else showSyncStatus('☁️ Saved');
 }
 
 async function cloudLoad() {
     if (!getUser()) { openAuthModal(); return; }
     const { rows, error } = await cloudLoadRows('characters');
-    if (error) { alert('Cloud load failed: ' + error); return; }
-    if (!rows.length) { alert('No cloud saves found.'); return; }
+    if (error) { showAlert('Cloud load failed: ' + error); return; }
+    if (!rows.length) { showAlert('No cloud saves found.'); return; }
     const picker = document.getElementById('cloudSessionList');
     picker.innerHTML = rows.map(s => `<div class="flex items-center gap-2 p-3 bg-[#1a1714] border border-[#4a3f30] rounded-xl hover:border-[#d4a017] cursor-pointer transition-colors" onclick="window._loadCloudChar('${s.id}')">
         <div class="flex-1"><div class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">${escHtml(s.character_name)}</div><div class="text-[10px] text-zinc-500">${new Date(s.updated_at).toLocaleString()}</div></div>
@@ -71,28 +71,34 @@ async function cloudLoad() {
 async function loadCloudChar(charId) {
     const { rows } = await cloudLoadRows('characters');
     const row = rows.find(r => r.id === charId);
-    if (!row) { alert('Failed to load character.'); return; }
+    if (!row) { showAlert('Failed to load character.'); return; }
     applyData(row.data);
     localStorage.setItem(SAVE_KEY, JSON.stringify(row.data));
     closeCloudPicker(); showSyncStatus('☁️ Loaded');
 }
 
 async function deleteCloudChar(charId) {
-    if (!confirm('Delete this cloud save?')) return;
-    const { error } = await cloudDeleteRow('characters', charId);
-    if (error) alert('Delete failed: ' + error); else cloudLoad();
+    showConfirm('Delete this cloud save?', async () => {
+        const { error } = await cloudDeleteRow('characters', charId);
+        if (error) showAlert('Delete failed: ' + error); else cloudLoad();
+    });
 }
 
 async function importLocalToCloud() {
     if (!getUser()) return;
     const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) { alert('No local data found to import.'); return; }
-    if (!confirm('Upload your current local data to the cloud as a new save?')) return;
-    await cloudSave();
+    if (!raw) { showAlert('No local data found to import.'); return; }
+    showConfirm('Upload your current local data to the cloud as a new save?', async () => { await cloudSave(); });
 }
 
 async function doSignOut() {
-    if (cloudDirty) { const save = confirm('You have unsaved changes. Save to cloud before signing out?'); if (save) await cloudSave(); }
+    if (cloudDirty) {
+        showConfirm('You have unsaved changes. Save to cloud before signing out?',
+            async () => { await cloudSave(); await coreSignOut(); resetSheet(); },
+            async () => { await coreSignOut(); resetSheet(); }
+        );
+        return;
+    }
     await coreSignOut();
     resetSheet();
 }

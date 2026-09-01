@@ -1,4 +1,4 @@
-import { initAuth, onAuthChange, escHtml, escHtmlAttr } from '../core/auth.js';
+import { initAuth, onAuthChange, escHtml, escHtmlAttr, showAlert } from '../core/auth.js';
 import { initTracker, renderGrid, renderFearDots, autoCache, creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled } from './tracker.js';
 import { initVault, renderVaultGrid, autoCacheVault, vaultCreatures, setVaultCreatures } from './vault.js';
 import { initChronicle, renderChronicle, autoCacheChronicle, chronicleEntries, setChronicleEntries } from './chronicle.js';
@@ -101,7 +101,7 @@ export function loadSession(event) {
             renderVaultGrid();
             renderChronicle();
         } catch {
-            alert('Invalid session file.');
+            showAlert('Invalid session file.');
         }
     };
     reader.readAsText(file);

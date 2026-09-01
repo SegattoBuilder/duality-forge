@@ -1,5 +1,6 @@
 import { escHtml, escHtmlAttr, getNextName } from './app.js';
 import { creatures, autoCache, renderGrid, editCharacterCard, editCustomCard, editEnemyCard, renderCard } from './tracker.js';
+import { showConfirm } from '../core/auth.js';
 
 const VAULT_KEY = 'dh_dm_vault';
 let _vaultCreatures = [];
@@ -21,10 +22,12 @@ export function stashToVault(id) {
     const c = creatures();
     const idx = c.findIndex(cr => cr.id === id);
     if (idx === -1) return;
-    if (!confirm('Move this creature to the vault?')) return;
-    const creature = c.splice(idx, 1)[0];
-    _vaultCreatures.push(creature);
-    autoCache(); autoCacheVault(); renderGrid(); renderVaultGrid();
+    const creature = c[idx];
+    showConfirm(`Move ${creature.name} to the vault?`, () => {
+        c.splice(idx, 1);
+        _vaultCreatures.push(creature);
+        autoCache(); autoCacheVault(); renderGrid(); renderVaultGrid();
+    });
 }
 
 function deployToTracker(id, asIs) {
@@ -39,9 +42,11 @@ function deployToTracker(id, asIs) {
 // ========== VAULT CREATURE MANAGEMENT ==========
 function removeVaultCreature(id, event) {
     if (event) { event.stopPropagation(); event.preventDefault(); }
-    if (!confirm('Remove this creature from vault?')) return;
-    _vaultCreatures = _vaultCreatures.filter(c => c.id !== id);
-    autoCacheVault(); renderVaultGrid();
+    const creature = _vaultCreatures.find(c => c.id === id);
+    showConfirm(`Remove ${creature ? creature.name : 'this creature'} from vault?`, () => {
+        _vaultCreatures = _vaultCreatures.filter(c => c.id !== id);
+        autoCacheVault(); renderVaultGrid();
+    });
 }
 
 function copyVaultCreature(id) {
@@ -175,8 +180,9 @@ export function renderVaultGrid() {
 
 export function clearVault(event) {
     if (event) { event.stopPropagation(); event.preventDefault(); }
-    if (!confirm('Clear entire vault? This cannot be undone.')) return;
-    _vaultCreatures = []; autoCacheVault(); renderVaultGrid();
+    showConfirm('Clear entire vault? This cannot be undone.', () => {
+        _vaultCreatures = []; autoCacheVault(); renderVaultGrid();
+    });
 }
 
 // ========== WINDOW BINDINGS ==========

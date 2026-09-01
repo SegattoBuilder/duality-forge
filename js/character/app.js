@@ -57,6 +57,12 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Migrate old key
+    if (!localStorage.getItem(SAVE_KEY) && localStorage.getItem('dh_sheet_v1')) {
+        localStorage.setItem(SAVE_KEY, localStorage.getItem('dh_sheet_v1'));
+        localStorage.removeItem('dh_sheet_v1');
+    }
+
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) loadSheet(true);
     updateThresholds();
