@@ -7,7 +7,6 @@ import { addInventoryItem } from './inventory.js';
 import { addExperience } from './experience.js';
 import { addGearItem } from './gear.js';
 import { autoCache, saveSheet, loadSheet, clearSheet, updateExportIndicator } from './save.js';
-import { submitBugReport } from '../core/feedback.js';
 import { initCharAuth } from './char-auth.js';
 
 // Expose to global for inline handlers
@@ -28,15 +27,9 @@ window.autoCache = autoCache;
 window.toggleMode = toggleMode;
 window.setMode = setMode;
 window.toggleSection = toggleSection;
-window.submitBugReport = () => submitBugReport(
-    document.getElementById('bugReportText'),
-    'reportType',
-    document.getElementById('feedbackForm'),
-    document.getElementById('feedbackToast')
-);
 
 // Modern tab switching
-const MODERN_TABS = ['tab-combat', 'tab-cards', 'tab-inventory', 'tab-story', 'tab-support'];
+const MODERN_TABS = ['tab-combat', 'tab-cards', 'tab-inventory', 'tab-story'];
 
 window.switchModernTab = function(tabId) {
     MODERN_TABS.forEach(id => {

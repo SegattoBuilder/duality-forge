@@ -1,5 +1,4 @@
 import { initAuth, onAuthChange, escHtml, escHtmlAttr } from '../core/auth.js';
-import { submitBugReport } from '../core/feedback.js';
 import { initTracker, renderGrid, renderFearDots, autoCache, creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled } from './tracker.js';
 import { initVault, renderVaultGrid, autoCacheVault, vaultCreatures, setVaultCreatures } from './vault.js';
 import { initChronicle, renderChronicle, autoCacheChronicle, chronicleEntries, setChronicleEntries } from './chronicle.js';
@@ -61,7 +60,7 @@ function initMode() {
 
 // ========== TAB SWITCHING ==========
 export function switchTab(tab) {
-    ['tracker','vault','chronicle','adversaries','compendium','support'].forEach(t => {
+    ['tracker','vault','chronicle','adversaries','compendium'].forEach(t => {
         document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('hidden', tab !== t);
         document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', tab === t);
     });
@@ -119,12 +118,6 @@ window.switchTab = switchTab;
 window.toggleMode = toggleMode;
 window.saveSession = saveSession;
 window.loadSession = loadSession;
-window.submitBugReport = () => submitBugReport(
-    document.getElementById('bugReportText'),
-    'reportType',
-    document.getElementById('feedbackForm'),
-    document.getElementById('feedbackToast')
-);
 
 // ========== INIT ==========
 window.addEventListener('DOMContentLoaded', () => {

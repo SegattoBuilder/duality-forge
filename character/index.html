@@ -21,56 +21,58 @@
 <body class="modern-layout mx-auto p-4">
 
 <!-- Nav Bar -->
-<nav class="fixed top-0 left-0 right-0 z-30 bg-[#1a1714]/95 backdrop-blur border-b border-[#3d362a] px-4 py-2" style="will-change:transform">
+<nav class="fixed top-0 left-0 right-0 z-30 bg-[#1a1714]/95 backdrop-blur border-b border-[#3d362a] px-4 py-3" style="will-change:transform">
     <div class="max-w-[1200px] mx-auto">
-        <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-                <a href="../" class="hover:text-[#d4a017] text-[28px]" title="Back to Forge">⚒️</a>
-                <span class="font-[Cinzel] text-[14px] tracking-widest uppercase font-black italic leading-tight" data-theme-level="1" style="color:#d4a017">Character<br>Sheet</span>
-            </div>
-            <div class="flex items-center gap-3">
-                <div class="relative">
-                    <button id="kebabBtn" onclick="toggleKebab()" class="h-10 w-8 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors text-zinc-400 text-sm font-bold">⋮</button>
-                    <div id="kebabMenu" class="hidden absolute right-0 top-12 w-56 bg-[#1e1b16] border border-[#4a3f30] rounded-xl shadow-xl z-50 overflow-hidden">
-                        <div class="px-4 py-3 border-b border-[#3d362a]">
-                            <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Display Mode</div>
-                            <div class="flex gap-2">
-                                <button onclick="setMode('dark')" class="mode-btn flex-1 text-[10px] py-1.5 rounded-lg bg-[#2a2418] border border-[#3d362a] hover:border-[#d4a017] transition-colors" title="Dark">🌙</button>
-                                <button onclick="setMode('light')" class="mode-btn flex-1 text-[10px] py-1.5 rounded-lg bg-[#2a2418] border border-[#3d362a] hover:border-[#d4a017] transition-colors" title="Light">☀️</button>
-                                <button onclick="setMode('scifi')" class="mode-btn flex-1 text-[10px] py-1.5 rounded-lg bg-[#2a2418] border border-[#3d362a] hover:border-[#d4a017] transition-colors" title="Sci-Fi">🖥️</button>
-                                <button onclick="setMode('fantasy')" class="mode-btn flex-1 text-[10px] py-1.5 rounded-lg bg-[#2a2418] border border-[#3d362a] hover:border-[#d4a017] transition-colors" title="Fantasy">🐉</button>
+        <div class="flex flex-col gap-3 items-center">
+            <div class="w-full flex flex-col sm:grid sm:grid-cols-[auto_1fr_auto] gap-3 sm:gap-4 items-center">
+                <div class="flex items-center gap-2">
+                    <a href="../" class="hover:text-[#d4a017] text-[28px]" title="Back to Forge">⚒️</a>
+                    <span class="font-[Cinzel] text-[14px] tracking-widest uppercase font-black italic leading-tight" data-theme-level="1" style="color:#d4a017">Character<br>Sheet</span>
+                </div>
+                <div class="flex items-center justify-center gap-1 flex-wrap">
+                    <button onclick="switchModernTab('tab-combat')" id="btn-tab-combat" class="modern-tab-btn active">Combat</button>
+                    <button onclick="switchModernTab('tab-cards')" id="btn-tab-cards" class="modern-tab-btn">Cards</button>
+                    <button onclick="switchModernTab('tab-inventory')" id="btn-tab-inventory" class="modern-tab-btn">Inventory</button>
+                    <button onclick="switchModernTab('tab-story')" id="btn-tab-story" class="modern-tab-btn">Story</button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="relative">
+                        <button id="kebabBtn" onclick="toggleKebab()" class="h-10 w-8 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors text-zinc-400 text-sm font-bold">⋮</button>
+                        <div id="kebabMenu" class="hidden absolute right-0 top-12 w-56 bg-[#1e1b16] border border-[#4a3f30] rounded-xl shadow-xl z-50 overflow-hidden">
+                            <div class="px-4 py-3 border-b border-[#3d362a]">
+                                <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Display Mode</div>
+                                <div class="flex gap-2">
+                                    <button onclick="setMode('dark')" class="mode-btn flex-1 text-[10px] py-1.5 rounded-lg bg-[#2a2418] border border-[#3d362a] hover:border-[#d4a017] transition-colors" title="Dark">🌙</button>
+                                    <button onclick="setMode('light')" class="mode-btn flex-1 text-[10px] py-1.5 rounded-lg bg-[#2a2418] border border-[#3d362a] hover:border-[#d4a017] transition-colors" title="Light">☀️</button>
+                                    <button onclick="setMode('scifi')" class="mode-btn flex-1 text-[10px] py-1.5 rounded-lg bg-[#2a2418] border border-[#3d362a] hover:border-[#d4a017] transition-colors" title="Sci-Fi">🖥️</button>
+                                    <button onclick="setMode('fantasy')" class="mode-btn flex-1 text-[10px] py-1.5 rounded-lg bg-[#2a2418] border border-[#3d362a] hover:border-[#d4a017] transition-colors" title="Fantasy">🐉</button>
+                                </div>
                             </div>
+                            <div class="px-4 py-3 border-b border-[#3d362a]">
+                                <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Accent Color</div>
+                                <div id="kebabThemeSwatches" class="grid grid-cols-5 gap-2"></div>
+                            </div>
+                            <button onclick="saveSheet(); document.getElementById('kebabMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">💾 Save to File</button>
+                            <button onclick="loadSheet(); document.getElementById('kebabMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">📂 Load from File</button>
+                            <button onclick="clearSheet(); document.getElementById('kebabMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">🗑 Clear Sheet</button>
+                            <a href="../support/" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors block">🤝 Support</a>
                         </div>
-                        <div class="px-4 py-3 border-b border-[#3d362a]">
-                            <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Accent Color</div>
-                            <div id="kebabThemeSwatches" class="grid grid-cols-5 gap-2"></div>
-                        </div>
-                        <button onclick="saveSheet(); document.getElementById('kebabMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">💾 Save to File</button>
-                        <button onclick="loadSheet(); document.getElementById('kebabMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">📂 Load from File</button>
-                        <button onclick="clearSheet(); document.getElementById('kebabMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors">🗑 Clear Sheet</button>
                     </div>
-                </div>
-                <div id="themePicker" class="hidden"></div>
-                <span id="modeToggleIcon" class="hidden">🌙</span>
-                <div class="relative">
-                    <button id="authBtn" class="h-10 px-3 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors" onclick="openAuthModal()"><span class="text-[10px] text-zinc-400">Sign In</span></button>
-                    <span id="syncStatus" class="hidden absolute left-1/2 -translate-x-1/2 top-full mt-1 text-[9px] font-bold text-[#d4a017] whitespace-nowrap pointer-events-none z-50"></span>
-                    <div id="authMenu" class="hidden absolute right-0 top-12 w-48 bg-[#1e1b16] border border-[#4a3f30] rounded-xl shadow-xl z-50 overflow-hidden">
-                        <button onclick="openProfileModal(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">👤 Profile</button>
-                        <button onclick="cloudSave(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">☁️ Save to Cloud</button>
-                        <button onclick="cloudLoad(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">☁️ Load from Cloud</button>
-                        <button onclick="importLocalToCloud(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">📤 Import Local Data</button>
-                        <button onclick="signOut(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors">🚪 Sign Out</button>
+                    <div id="themePicker" class="hidden"></div>
+                    <span id="modeToggleIcon" class="hidden">🌙</span>
+                    <div class="relative">
+                        <button id="authBtn" class="h-10 px-3 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors" onclick="openAuthModal()"><span class="text-[10px] text-zinc-400">Sign In</span></button>
+                        <span id="syncStatus" class="hidden absolute left-1/2 -translate-x-1/2 top-full mt-1 text-[9px] font-bold text-[#d4a017] whitespace-nowrap pointer-events-none z-50"></span>
+                        <div id="authMenu" class="hidden absolute right-0 top-12 w-48 bg-[#1e1b16] border border-[#4a3f30] rounded-xl shadow-xl z-50 overflow-hidden">
+                            <button onclick="openProfileModal(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">👤 Profile</button>
+                            <button onclick="cloudSave(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">☁️ Save to Cloud</button>
+                            <button onclick="cloudLoad(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">☁️ Load from Cloud</button>
+                            <button onclick="importLocalToCloud(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">📤 Import Local Data</button>
+                            <button onclick="signOut(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors">🚪 Sign Out</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="flex gap-1 justify-center">
-            <button onclick="switchModernTab('tab-combat')" id="btn-tab-combat" class="modern-tab-btn active">Combat</button>
-            <button onclick="switchModernTab('tab-cards')" id="btn-tab-cards" class="modern-tab-btn">Cards</button>
-            <button onclick="switchModernTab('tab-inventory')" id="btn-tab-inventory" class="modern-tab-btn">Inventory</button>
-            <button onclick="switchModernTab('tab-story')" id="btn-tab-story" class="modern-tab-btn">Story</button>
-            <button onclick="switchModernTab('tab-support')" id="btn-tab-support" class="modern-tab-btn">Support</button>
         </div>
     </div>
 </nav>
@@ -267,50 +269,6 @@
     </div>
 </div>
 
-<!-- SUPPORT TAB -->
-<div id="tab-support" class="mt-24" style="display:none">
-    <div class="card" style="border-left-color:#d4a017" data-theme-border="1">
-        <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-4" data-theme-level="1" style="color:#d4a017">Support the Creator</h2>
-        <a href="https://buymeacoffee.com/segattobuilder" target="_blank" rel="noopener" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl transition-colors"><span class="text-2xl">☕</span><div><div class="text-sm font-bold text-[#f5efe6] support-link-title transition-colors font-[Cinzel]">Buy Me a Coffee</div><div class="text-xs text-zinc-500 mt-0.5">If you enjoy this tool, consider supporting its development!</div></div></a>
-    </div>
-    <div class="card" style="border-left-color:#d4a017" data-theme-border="1">
-        <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-4" data-theme-level="1" style="color:#d4a017">How to Use</h2>
-        <div class="text-sm text-zinc-400 space-y-3">
-            <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Tabs:</span> Combat for gameplay stats, Cards for abilities, Inventory for items, Story for narrative.</div>
-            <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Saving:</span> All changes auto-save to your browser. Use Export to download a backup JSON file. Use Import to restore from a file. Sign in to sync to the cloud.</div>
-            <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Cards & Abilities:</span> Tap + Add to browse the SRD library. Click any card on your sheet to read it in full. Star up to 5 domain cards for your active loadout.</div>
-            <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Gear:</span> Two weapon slots and one armor slot are fixed. Use + Gear to add shields, rings, cloaks, etc.</div>
-            <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Theme:</span> Pick an accent color with the color swatch. Click the mode button to cycle between Dark, Light, Sci-Fi, and Fantasy themes.</div>
-        </div>
-    </div>
-    <div class="card" style="border-left-color:#d4a017" data-theme-border="1">
-        <div class="flex justify-between items-center cursor-pointer border-b border-[#363026] pb-3 mb-4" onclick="toggleSection('sec-feedback')">
-            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest" data-theme-level="1" style="color:#d4a017">Feedback</h2>
-            <span class="text-zinc-500 text-xs toggle-icon" id="sec-feedback-tog">▼</span>
-        </div>
-        <div id="sec-feedback">
-            <div class="flex gap-4 mb-3">
-                <label class="flex items-center gap-1.5 cursor-pointer text-sm text-zinc-400"><input type="radio" name="reportType" value="bug" class="accent-[#d4a017]" onchange="document.getElementById('feedbackForm').classList.remove('hidden')"> 🐛 Bug Report</label>
-                <label class="flex items-center gap-1.5 cursor-pointer text-sm text-zinc-400"><input type="radio" name="reportType" value="feature" class="accent-[#d4a017]" onchange="document.getElementById('feedbackForm').classList.remove('hidden')"> ✨ Feature Request</label>
-            </div>
-            <div id="feedbackForm" class="hidden">
-                <textarea id="bugReportText" placeholder="Describe the issue or suggestion..." class="w-full bg-black/40 border border-zinc-800 rounded p-3 text-sm h-24 outline-none text-zinc-300 mb-2"></textarea>
-                <button onclick="submitBugReport()" class="btn-action text-xs px-4 py-2 rounded-full font-bold uppercase text-white">Submit</button>
-            </div>
-        </div>
-    </div>
-    <div class="card" style="border-left-color:#d4a017" data-theme-border="1">
-        <div class="flex justify-between items-center cursor-pointer border-b border-[#363026] pb-3 mb-4" onclick="toggleSection('sec-resources')">
-            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest" data-theme-level="1" style="color:#d4a017">Resources & Community</h2>
-            <span class="text-zinc-500 text-xs toggle-icon" id="sec-resources-tog">▼</span>
-        </div>
-        <div id="sec-resources" class="space-y-3">
-            <a href="../dm/" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl transition-colors"><span class="text-2xl">⚔️</span><div><div class="text-sm font-bold text-[#f5efe6] support-link-title transition-colors font-[Cinzel]">DM Tools</div><div class="text-xs text-zinc-500 mt-0.5">Combat tracker and compendium search for DMs — part of Daggerheart Forge.</div></div></a>
-            <a href="https://daggersearch.com/" target="_blank" rel="noopener" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl transition-colors"><span class="text-2xl">📖</span><div><div class="text-sm font-bold text-[#f5efe6] support-link-title transition-colors font-[Cinzel]">Daggersearch Compendium</div><div class="text-xs text-zinc-500 mt-0.5">Full SRD compendium search.</div></div></a>
-            <a href="https://www.reddit.com/r/daggerheart/" target="_blank" rel="noopener" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl transition-colors"><span class="text-2xl">🎲</span><div><div class="text-sm font-bold text-[#f5efe6] support-link-title transition-colors font-[Cinzel]">r/Daggerheart</div><div class="text-xs text-zinc-500 mt-0.5">Community hub — tips, builds, homebrew, and discussions.</div></div></a>
-        </div>
-    </div>
-</div>
 
 
 

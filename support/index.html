@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daggerheart Forge — Support</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;800&display=optional" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚒️</text></svg>">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/textures.css">
+    <style>
+        .expand-btn { cursor: pointer; user-select: none; }
+        .expand-btn .arrow { display: inline-block; transition: transform 0.2s; font-size: 10px; }
+        .expand-btn.open .arrow { transform: rotate(90deg); }
+        .expand-content { display: none; }
+        .expand-content.open { display: block; }
+        .support-link { transition: border-color 0.2s; }
+        .support-link:hover { border-color: #d4a017 !important; }
+        .support-link:hover .support-link-title { color: #d4a017 !important; }
+    </style>
+</head>
+<body class="max-w-lg mx-auto p-4 py-8">
+
+    <div class="flex items-center gap-3 mb-8">
+        <a href="../" class="hover:text-[#d4a017] text-[20px]" title="Back to Forge">⚒️</a>
+        <h1 class="font-[Cinzel] text-lg font-black tracking-widest uppercase" style="color:#d4a017">Support</h1>
+    </div>
+
+    <div class="space-y-4">
+
+        <!-- Buy Me a Coffee -->
+        <div class="p-4 rounded-xl border-l-4 border-[#d4a017] bg-[#1e1b16] shadow-[0_2px_12px_rgba(255,255,255,0.04)]">
+            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-4" style="color:#d4a017">Support the Creator</h2>
+            <a href="https://buymeacoffee.com/segattobuilder" target="_blank" rel="noopener" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl">
+                <span class="text-2xl">☕</span>
+                <div>
+                    <div class="support-link-title text-sm font-bold text-[#f5efe6] font-[Cinzel]">Buy Me a Coffee</div>
+                    <div class="text-xs text-zinc-500 mt-0.5">If you enjoy this tool, consider supporting its development!</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- How to Use -->
+        <div class="p-4 rounded-xl border-l-4 border-[#d4a017] bg-[#1e1b16] shadow-[0_2px_12px_rgba(255,255,255,0.04)]">
+            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-4" style="color:#d4a017">How to Use</h2>
+
+            <!-- Character Sheet -->
+            <div class="mb-2">
+                <div class="expand-btn flex items-center justify-between p-3 bg-black/40 border border-zinc-800 rounded-xl" onclick="toggleExpand(this)">
+                    <div class="flex items-center gap-2">
+                        <span>🗡️</span>
+                        <span class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">Character Sheet</span>
+                    </div>
+                    <span class="arrow text-zinc-500">▶</span>
+                </div>
+                <div class="expand-content mt-2 px-3 text-sm text-zinc-400 space-y-3">
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Tabs:</span> Combat for gameplay stats, Cards for abilities, Inventory for items, Story for narrative.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Saving:</span> All changes auto-save to your browser. Use the ⋮ menu to export/import a backup JSON file. Sign in to sync to the cloud.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Cards & Abilities:</span> Tap + Add to browse the SRD library. Click any card on your sheet to read it in full. Star up to 5 domain cards for your active loadout.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Gear:</span> Two weapon slots and one armor slot are fixed. Use + Gear to add shields, rings, cloaks, etc.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Theme:</span> Open the ⋮ menu to pick an accent color or switch between Dark, Light, Sci-Fi, and Fantasy display modes.</div>
+                </div>
+            </div>
+
+            <!-- DM Tools -->
+            <div>
+                <div class="expand-btn flex items-center justify-between p-3 bg-black/40 border border-zinc-800 rounded-xl" onclick="toggleExpand(this)">
+                    <div class="flex items-center gap-2">
+                        <span>⚔️</span>
+                        <span class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">DM Tools</span>
+                    </div>
+                    <span class="arrow text-zinc-500">▶</span>
+                </div>
+                <div class="expand-content mt-2 px-3 text-sm text-zinc-400 space-y-3">
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Tracker:</span> Add adversaries, characters, or custom creatures. Track HP, stress, hope, armor with dot trackers. Drag & drop to reorder.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Vault:</span> Stash creatures between encounters using the 📦 button. Pull them back to the tracker when needed.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Chronicle:</span> Session notes organized by chapters. Add NPCs, music cues, and key events.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Adversaries:</span> Search the full SRD adversary database. Filter by tier, difficulty, and type.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Compendium:</span> Browse weapons, armors, items, classes, domain cards, and more from the SRD.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Saving:</span> All changes auto-save to your browser. Use the ⋮ menu to save/load a JSON file. Sign in to sync to the cloud.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="p-4 rounded-xl border-l-4 border-[#d4a017] bg-[#1e1b16] shadow-[0_2px_12px_rgba(255,255,255,0.04)]">
+            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-4" style="color:#d4a017">Feedback</h2>
+            <div class="flex gap-4 mb-3">
+                <label class="flex items-center gap-2 cursor-pointer text-sm text-[#f5efe6]"><input type="radio" name="reportType" value="bug" class="accent-[#d4a017]" onchange="document.getElementById('feedbackForm').classList.remove('hidden')">🐛 Bug Report</label>
+                <label class="flex items-center gap-2 cursor-pointer text-sm text-[#f5efe6]"><input type="radio" name="reportType" value="feature" class="accent-[#d4a017]" onchange="document.getElementById('feedbackForm').classList.remove('hidden')">✨ Feature Request</label>
+            </div>
+            <div id="feedbackForm" class="hidden space-y-3">
+                <textarea id="bugReportText" rows="3" placeholder="Describe your bug or idea..." class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600 resize-y"></textarea>
+                <button onclick="submitBugReport()" class="btn-action text-[10px] px-4 py-2 rounded-full font-bold uppercase text-white font-[Cinzel]">📨 Submit</button>
+            </div>
+        </div>
+
+        <!-- Feedback Toast -->
+        <div id="feedbackToast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[999] hidden pointer-events-none">
+            <div class="pointer-events-auto rounded-xl px-6 py-5 max-w-sm text-center" style="background:#1e1b16;border:1px solid #d4a017;box-shadow:0 0 30px rgba(212,160,23,0.3)">
+                <div class="text-lg mb-2">✅</div>
+                <div class="font-bold font-[Cinzel]" style="color:#f5efe6">Thanks for your feedback!</div>
+                <div class="text-xs mt-2" style="color:#a1a1aa">If you're enjoying this tool, consider
+                <a href="https://buymeacoffee.com/segattobuilder" target="_blank" rel="noopener" style="color:#d4a017" class="font-bold hover:underline">buying me a coffee ☕</a></div>
+            </div>
+        </div>
+
+        <!-- Resources & Community -->
+        <div class="p-4 rounded-xl border-l-4 border-[#d4a017] bg-[#1e1b16] shadow-[0_2px_12px_rgba(255,255,255,0.04)]">
+            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-4" style="color:#d4a017">Resources & Community</h2>
+            <div class="space-y-3">
+                <a href="../character/" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl"><span class="text-2xl">🗡️</span><div><div class="support-link-title text-sm font-bold text-[#f5efe6] font-[Cinzel]">Character Sheet</div><div class="text-xs text-zinc-500 mt-0.5">Digital character sheet for players — part of Daggerheart Forge.</div></div></a>
+                <a href="../dm/" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl"><span class="text-2xl">⚔️</span><div><div class="support-link-title text-sm font-bold text-[#f5efe6] font-[Cinzel]">DM Tools</div><div class="text-xs text-zinc-500 mt-0.5">Combat tracker, adversary vault, chronicle, and compendium search.</div></div></a>
+                <a href="https://daggersearch.com/" target="_blank" rel="noopener" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl"><span class="text-2xl">📖</span><div><div class="support-link-title text-sm font-bold text-[#f5efe6] font-[Cinzel]">Daggersearch Compendium</div><div class="text-xs text-zinc-500 mt-0.5">Full SRD compendium search.</div></div></a>
+                <a href="https://www.reddit.com/r/daggerheart/" target="_blank" rel="noopener" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl"><span class="text-2xl">🎲</span><div><div class="support-link-title text-sm font-bold text-[#f5efe6] font-[Cinzel]">r/Daggerheart</div><div class="text-xs text-zinc-500 mt-0.5">Community hub — tips, builds, homebrew, and discussions.</div></div></a>
+            </div>
+        </div>
+
+        <div class="text-center mt-6">
+            <p class="text-[10px] text-zinc-500">Fan-made tool — not affiliated with Darrington Press or Critical Role.</p>
+        </div>
+    </div>
+
+    <script>
+        function toggleExpand(btn) {
+            btn.classList.toggle('open');
+            btn.nextElementSibling.classList.toggle('open');
+        }
+    </script>
+    <script type="module">
+        import { submitBugReport } from '../js/core/feedback.js';
+        window.submitBugReport = () => submitBugReport(
+            document.getElementById('bugReportText'),
+            'reportType',
+            document.getElementById('feedbackForm'),
+            document.getElementById('feedbackToast')
+        );
+    </script>
+    <script type="module" src="../js/core/analytics.js"></script>
+</body>
+</html>

@@ -36,9 +36,8 @@ A unified web toolkit for [Daggerheart](https://www.daggerheart.com/) — combin
 daggerheart-forge/
 ├── index.html              Landing page (tool chooser)
 ├── dm/index.html           DM Tools
-├── character/
-│   ├── index.html          Redirect → v2.html
-│   └── v2.html             Character Sheet
+├── character/index.html    Character Sheet
+├── support/index.html      Shared support, feedback & how-to-use
 ├── css/                    Shared stylesheets
 ├── js/
 │   ├── core/               Shared auth, config, analytics, feedback

@@ -38,7 +38,6 @@
                 <button onclick="switchTab('chronicle')" id="tabChronicle" class="tab-btn font-[Cinzel] text-[11px] uppercase tracking-wider pb-1 font-bold">📜 Chronicle</button>
                 <button onclick="switchTab('adversaries')" id="tabAdversaries" class="tab-btn font-[Cinzel] text-[11px] uppercase tracking-wider pb-1 font-bold">👹 Adversaries</button>
                 <button onclick="switchTab('compendium')" id="tabCompendium" class="tab-btn font-[Cinzel] text-[11px] uppercase tracking-wider pb-1 font-bold">📖 Compendium</button>
-                <button onclick="switchTab('support')" id="tabSupport" class="tab-btn font-[Cinzel] text-[11px] uppercase tracking-wider pb-1 font-bold">🤝 Support</button>
             </div>
             <div class="flex items-center gap-2">
                 <div class="relative">
@@ -46,7 +45,8 @@
                     <div id="kebabMenu" class="hidden absolute right-0 top-12 w-48 bg-[#1e1b16] border border-[#4a3f30] rounded-xl shadow-xl z-50 overflow-hidden">
                         <button onclick="saveSession(); document.getElementById('kebabMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">💾 Save to File</button>
                         <label class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a] block cursor-pointer">📂 Load from File<input type="file" accept=".json" onchange="loadSession(event); document.getElementById('kebabMenu').classList.add('hidden')" class="hidden"></label>
-                        <button onclick="clearAll(event); document.getElementById('kebabMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors">🗑 Clear All</button>
+                        <button onclick="clearAll(event); document.getElementById('kebabMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">🗑 Clear All</button>
+                        <a href="../support/" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors block">🤝 Support</a>
                     </div>
                 </div>
                 <div class="relative">
@@ -147,39 +147,6 @@
     <div id="vaultGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"><div class="col-span-full text-center py-20"><div class="text-zinc-600 text-sm italic">Vault is empty. Use 📦 on tracker cards to stash creatures here.</div></div></div>
 </div>
 
-<!-- SUPPORT TAB -->
-<div id="panelSupport" class="hidden">
-    <div class="max-w-lg mx-auto space-y-4">
-        <div class="p-4 rounded-xl border-l-4 border-[#d4a017] bg-[#1e1b16]" data-theme-border="1">
-            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-4" style="color:#d4a017">Support the Creator</h2>
-            <a href="https://buymeacoffee.com/segattobuilder" target="_blank" rel="noopener" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl transition-colors">
-                <span class="text-2xl">☕</span>
-                <div><div class="support-link-title text-sm font-bold text-[#f5efe6] transition-colors font-[Cinzel]">Buy Me a Coffee</div><div class="text-xs text-zinc-500 mt-0.5">If you enjoy this tool, consider supporting its development!</div></div>
-            </a>
-        </div>
-        <div class="p-4 rounded-xl border-l-4 border-[#d4a017] bg-[#1e1b16]" data-theme-border="1">
-            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-0 cursor-pointer flex items-center justify-between" style="color:#d4a017" onclick="this.parentElement.querySelector('.feedback-content').classList.toggle('hidden'); this.querySelector('.feedback-arrow').classList.toggle('rotate-90')">Feedback<span class="feedback-arrow transition-transform text-[10px]">▶</span></h2>
-            <div class="feedback-content hidden space-y-3 mt-4">
-                <div class="flex gap-4">
-                    <label class="flex items-center gap-2 cursor-pointer text-sm text-[#f5efe6]"><input type="radio" name="reportType" value="bug" class="accent-[#d4a017]" onchange="document.getElementById('feedbackForm').classList.remove('hidden')">🐛 Bug Report</label>
-                    <label class="flex items-center gap-2 cursor-pointer text-sm text-[#f5efe6]"><input type="radio" name="reportType" value="feature" class="accent-[#d4a017]" onchange="document.getElementById('feedbackForm').classList.remove('hidden')">✨ Feature Request</label>
-                </div>
-                <div id="feedbackForm" class="hidden space-y-3">
-                    <textarea id="bugReportText" rows="3" placeholder="Describe your bug or idea..." class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600 resize-y"></textarea>
-                    <button onclick="submitBugReport()" class="btn-action text-[10px] px-4 py-2 rounded-full font-bold uppercase text-white font-[Cinzel]">📨 Submit</button>
-                </div>
-            </div>
-        </div>
-        <div class="p-4 rounded-xl border-l-4 border-[#d4a017] bg-[#1e1b16]" data-theme-border="1">
-            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-0 cursor-pointer flex items-center justify-between" style="color:#d4a017" onclick="this.parentElement.querySelector('.resources-content').classList.toggle('hidden'); this.querySelector('.resources-arrow').classList.toggle('rotate-90')">Resources & Community<span class="resources-arrow transition-transform text-[10px]">▶</span></h2>
-            <div class="resources-content hidden space-y-3 mt-4">
-                <a href="../character/" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl transition-colors"><span class="text-2xl">🗡️</span><div><div class="support-link-title text-sm font-bold text-[#f5efe6] transition-colors font-[Cinzel]">Character Sheet</div><div class="text-xs text-zinc-500 mt-0.5">Digital character sheet for players — part of Daggerheart Forge.</div></div></a>
-                <a href="https://daggersearch.com/" target="_blank" rel="noopener" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl transition-colors"><span class="text-2xl">📖</span><div><div class="support-link-title text-sm font-bold text-[#f5efe6] transition-colors font-[Cinzel]">Daggersearch Compendium</div><div class="text-xs text-zinc-500 mt-0.5">Full SRD compendium search.</div></div></a>
-                <a href="https://www.reddit.com/r/daggerheart/" target="_blank" rel="noopener" class="support-link flex items-start gap-3 p-4 bg-black/40 border border-zinc-800 rounded-xl transition-colors"><span class="text-2xl">🎲</span><div><div class="support-link-title text-sm font-bold text-[#f5efe6] transition-colors font-[Cinzel]">r/Daggerheart</div><div class="text-xs text-zinc-500 mt-0.5">Community hub — tips, builds, homebrew, and discussions.</div></div></a>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Card Detail Modal -->
 <div id="cardModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-start justify-center pt-12" onclick="if(event.target===this)closeCardModal()">
