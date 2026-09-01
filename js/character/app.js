@@ -2,7 +2,7 @@ import { SAVE_KEY, THEME_KEY, setRestoring } from './state.js';
 import { renderThemePicker, applyTheme, toggleMode, setMode, initMode } from './theme.js';
 import { toggleSection } from './ui.js';
 import { renderDots, updateThresholds, updateAttackBonus } from './trackers.js';
-import { openDatabase, closeDatabase, fetchData, filterCards, closeCardDetail } from './cards.js';
+import { openDatabase, closeDatabase, fetchData, filterCards, closeCardDetail, addCardToSheet } from './cards.js';
 import { addInventoryItem } from './inventory.js';
 import { addExperience } from './experience.js';
 import { addGearItem, addWeapon, addArmor, addItem, addConsumable } from './gear.js';
@@ -68,5 +68,5 @@ window.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('change', () => { updateThresholds(); updateAttackBonus(); autoCache(); });
 
     initCharAuth();
-    loadCompendium({ characterMode: true, onAddWeapon: addWeapon, onAddArmor: addArmor, onAddItem: addItem, onAddConsumable: addConsumable, onAddGear: addGearItem, onAddInventory: addInventoryItem });
+    loadCompendium({ characterMode: true, onAddWeapon: addWeapon, onAddArmor: addArmor, onAddItem: addItem, onAddConsumable: addConsumable, onAddGear: addGearItem, onAddInventory: addInventoryItem, onAddDomainCard: addCardToSheet, onAddGeneral: addCardToSheet });
 });

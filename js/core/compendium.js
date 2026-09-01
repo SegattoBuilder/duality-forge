@@ -14,6 +14,8 @@ let _onAddGear = null;
 let _onAddInventory = null;
 let _onAddItem = null;
 let _onAddConsumable = null;
+let _onAddDomainCard = null;
+let _onAddGeneral = null;
 
 function getLocStr(obj) {
     if (!obj) return '';
@@ -29,6 +31,8 @@ export async function loadCompendium(opts = {}) {
     _onAddInventory = opts.onAddInventory || null;
     _onAddItem = opts.onAddItem || null;
     _onAddConsumable = opts.onAddConsumable || null;
+    _onAddDomainCard = opts.onAddDomainCard || null;
+    _onAddGeneral = opts.onAddGeneral || null;
 
     document.getElementById('compendiumSearch').addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(runSearch, 200); });
 
@@ -166,6 +170,14 @@ function addToSheetButton(item) {
     if (cat === 'consumables') {
         return `<button onclick="event.stopPropagation(); window._compAddConsumable(${idx})" class="mt-3 w-full btn-action text-xs py-2 rounded-lg font-bold uppercase text-white">🧪 Add to Consumables</button>`;
     }
+    if (cat === 'domain-cards') {
+        return `<button onclick="event.stopPropagation(); window._compAddDomainCard(${idx})" class="mt-3 w-full btn-action text-xs py-2 rounded-lg font-bold uppercase text-white">🃏 Add to Domain Cards</button>`;
+    }
+    const generalCats = ['classes','subclasses','ancestries','communities'];
+    if (generalCats.includes(cat)) {
+        const labels = { classes: '📜 Add to Cards', subclasses: '📜 Add to Cards', ancestries: '🧬 Add to Cards', communities: '🏘️ Add to Cards' };
+        return `<button onclick="event.stopPropagation(); window._compAddGeneral(${idx})" class="mt-3 w-full btn-action text-xs py-2 rounded-lg font-bold uppercase text-white">${labels[cat]}</button>`;
+    }
     return '';
 }
 
@@ -174,7 +186,8 @@ function openCardModal(index) {
     const name = getLocStr(item.name) || item.title || 'Unnamed', catClass = 'cat-' + item._category;
     const card = renderCompendiumCard(item);
     const addBtn = addToSheetButton(item);
-    document.getElementById('cardModalContent').innerHTML = `<div class="flex items-start justify-between mb-4"><span class="font-black text-2xl font-[Cinzel] text-[#f5efe6]">${escHtml(name)}</span><span class="card-category ${catClass} ml-2 whitespace-nowrap">${item._category.replace('-', ' ')}</span></div><div class="modal-scaled">${card}</div>${addBtn}`;
+    const staticCard = card.replace('cursor-pointer', '').replace(/onclick="[^"]*"/g, '');
+    document.getElementById('cardModalContent').innerHTML = `<div class="mb-4"><span class="font-black text-2xl font-[Cinzel] text-[#f5efe6]">${escHtml(name)}</span></div><div class="modal-scaled">${staticCard}</div>${addBtn}`;
     document.getElementById('cardModal').classList.remove('hidden');
 }
 
@@ -220,6 +233,45 @@ function handleAddInventory(index) {
     closeCardModal();
 }
 
+function buildCardSheetData(item) {
+    const name = getLocStr(item.name) || item.title || '';
+    const cat = item._category;
+    const descHtml = item.description && Array.isArray(item.description) ? renderDescBlocks(item.description) : '';
+    const featureHtml = flattenFeaturesHtml(item);
+    const skipDesc = ['communities','ancestries','classes'].includes(cat);
+    return {
+        name, desc: skipDesc ? '' : descHtml, feature: featureHtml,
+        category: cat + '.json', domain: item.domain || '', type: item.type || '',
+        level: item.level, recallCost: item.recallCost
+    };
+}
+
+function flattenFeaturesHtml(item) {
+    const parts = [];
+    const srcs = [item.features, item.classFeatures, item.hopeFeature ? [item.hopeFeature] : null, item.foundation?.features, item.specialization?.features, item.mastery?.features];
+    for (const src of srcs) {
+        if (!Array.isArray(src)) continue;
+        for (const f of src) {
+            const fn = f.name ? getLocStr(f.name) : '';
+            const fd = f.description ? renderDescBlocks(f.description) : '';
+            parts.push(fn ? `<div class="text-[11px] font-bold text-amber-400 mt-1">${escHtml(fn)}</div><div class="text-[11px] text-zinc-400 leading-relaxed">${fd}</div>` : `<div class="text-[11px] text-zinc-400 leading-relaxed">${fd}</div>`);
+        }
+    }
+    return parts.join('');
+}
+
+function handleAddDomainCard(index) {
+    const item = compendiumData[index]; if (!item || !_onAddDomainCard) return;
+    _onAddDomainCard(buildCardSheetData(item));
+    closeCardModal();
+}
+
+function handleAddGeneral(index) {
+    const item = compendiumData[index]; if (!item || !_onAddGeneral) return;
+    _onAddGeneral(buildCardSheetData(item));
+    closeCardModal();
+}
+
 function closeCardModal() { document.getElementById('cardModal').classList.add('hidden'); }
 function clearCompendiumSearch() { document.getElementById('compendiumSearch').value = ''; setCategory('all'); }
 
@@ -235,5 +287,7 @@ window._compAddArmor = (idx) => handleAddGear(idx);
 window._compAddItem = handleAddItem;
 window._compAddConsumable = handleAddConsumable;
 window._compAddInventory = handleAddInventory;
+window._compAddDomainCard = handleAddDomainCard;
+window._compAddGeneral = handleAddGeneral;
 
 export { getLocStr };

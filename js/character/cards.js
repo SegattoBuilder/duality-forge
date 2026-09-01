@@ -244,10 +244,12 @@ export function addCardToSheet(opts) {
     const id = 'card-' + Math.random().toString(36).substr(2, 9);
     const dc = isDomain ? domainColor(domain) : null;
 
+    const collapsed = opts.collapsed || false;
     const html = `
-    <div class="sheet-card relative mb-2" style="border-left-color:${dc ? '#3d362a' : 'var(--accent-1)'}; ${dc ? `border-top: 2px solid ${dc.border};` : ''}" id="${id}" data-card-name="${cardKey}" data-level="${level || 0}" data-domain-border="${dc ? dc.border : ''}">
+    <div class="sheet-card relative mb-2" style="border-left-color:${dc ? '#3d362a' : 'var(--accent-1)'}; ${dc ? `border-top: 2px solid ${dc.border};` : ''}" id="${id}" data-card-name="${cardKey}" data-level="${level || 0}" data-domain-border="${dc ? dc.border : ''}" data-collapsed="${collapsed}">
         <div class="flex justify-between items-center">
             <div class="flex items-center gap-1.5 cursor-pointer card-toggle" data-id="${id}">
+                <span class="collapse-btn text-zinc-500 text-xs" data-id="${id}">${collapsed ? '▸' : '▾'}</span>
                 ${isDomain ? `<button class="text-zinc-600 hover:text-yellow-400 text-base leading-none domain-sel-btn" data-id="${id}" id="${id}-sel" title="Select for loadout">☆</button>` : ''}
                 ${dc ? `<img src="${dc.icon}" class="domain-icon-badge" alt="${domain}">` : ''}
                 <span class="text-xs font-black uppercase" ${dc ? `style="color:${dc.text}"` : ''}>${name}</span>
@@ -259,7 +261,7 @@ export function addCardToSheet(opts) {
                 <button class="text-zinc-700 hover:text-red-500 text-sm card-remove" data-id="${id}">✕</button>
             </div>
         </div>
-        <div id="${id}-body" class="mt-2">
+        <div id="${id}-body" class="mt-2" ${collapsed ? 'style="display:none"' : ''}>
             ${feature ? `<div class="leading-relaxed mb-1 text-xs">${feature.replace(/text-zinc-200/g, 'text-amber-400')}</div>` : ''}
             ${desc ? `<div class="text-xs text-zinc-500 leading-relaxed">${desc}</div>` : ''}
         </div>
@@ -271,6 +273,7 @@ export function addCardToSheet(opts) {
     cardEl.querySelectorAll('.card-toggle').forEach(el => {
         el.addEventListener('click', (e) => {
             if (e.target.classList.contains('domain-sel-btn')) return;
+            if (e.target.classList.contains('collapse-btn')) { toggleCardCollapse(id); return; }
             openCardDetail(id);
         });
     });
@@ -280,6 +283,20 @@ export function addCardToSheet(opts) {
         selBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleDomainSelect(id); });
     }
 
+    autoCache();
+}
+
+function toggleCardCollapse(id) {
+    const el = document.getElementById(id);
+    const body = document.getElementById(id + '-body');
+    const btn = el.querySelector('.collapse-btn');
+    const collapsed = el.getAttribute('data-collapsed') === 'true';
+    el.setAttribute('data-collapsed', !collapsed);
+    body.style.display = collapsed ? '' : 'none';
+    btn.textContent = collapsed ? '▾' : '▸';
+    const cardName = el.getAttribute('data-card-name');
+    const saved = savedCardsData.find(c => c.name.toLowerCase() === cardName);
+    if (saved) saved.collapsed = !collapsed;
     autoCache();
 }
 

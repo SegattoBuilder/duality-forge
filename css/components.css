@@ -258,6 +258,11 @@
     box-shadow: 0 4px 16px #0008, 0 2px 4px rgba(0,0,0,0.3);
     transform: translateY(-1px);
 }
+.modal-scaled .compendium-card,
+.modal-scaled .compendium-card:hover {
+    pointer-events: none;
+    transform: none;
+}
 .compendium-card .card-category {
     font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
     padding: 2px 8px; border-radius: 99px;
