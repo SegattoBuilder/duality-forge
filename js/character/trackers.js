@@ -14,8 +14,9 @@ export function renderDots(type, count) {
 
 export function updateThresholds() {
     const lvl = parseInt(document.getElementById('charLevel').value) || 0;
-    const baseMajor = parseInt(document.getElementById('armor_thresh_major').value) || 0;
-    const baseSevere = parseInt(document.getElementById('armor_thresh_severe').value) || 0;
+    const equipped = document.querySelector('#armorList > div[data-equipped="true"]');
+    const baseMajor = equipped ? (parseInt(equipped.querySelector('.arm-major')?.value) || 0) : 0;
+    const baseSevere = equipped ? (parseInt(equipped.querySelector('.arm-severe')?.value) || 0) : 0;
     const extraMajor = parseInt(document.getElementById('thresh_major_extra').value) || 0;
     const extraSevere = parseInt(document.getElementById('thresh_severe_extra').value) || 0;
     document.getElementById('thresh_major').textContent = baseMajor + lvl + extraMajor;
@@ -23,14 +24,10 @@ export function updateThresholds() {
 }
 
 export function updateAttackBonus() {
-    [1, 2].forEach(n => {
-        const traitId = document.getElementById(`wep${n}_trait`).value;
-        const atkEl = document.getElementById(`wep${n}_atk`);
-        if (traitId) {
-            atkEl.textContent = document.getElementById(traitId).value || '0';
-        } else {
-            atkEl.textContent = '—';
-        }
+    document.querySelectorAll('#weaponList > div[id^="wep-"]').forEach(el => {
+        const traitId = el.querySelector('.wep-trait').value;
+        const atkEl = el.querySelector('.wep-atk');
+        atkEl.textContent = traitId ? (document.getElementById(traitId)?.value || '0') : '—';
     });
 }
 

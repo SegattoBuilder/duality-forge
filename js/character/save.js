@@ -3,7 +3,7 @@ import { getDotStates, setDotStates, renderDots, updateThresholds, updateAttackB
 import { addCardToSheet, updateDomainSelection, reorderDomainCards } from './cards.js';
 import { addExperience, getExperienceData } from './experience.js';
 import { addInventoryItem, getInventoryData } from './inventory.js';
-import { addGearItem, getGearData } from './gear.js';
+import { addGearItem, getGearData, addWeapon, getWeaponData, addArmor, getArmorData, addItem, getItemData, addConsumable, getConsumableData } from './gear.js';
 import { applyTheme } from './theme.js';
 
 export function autoCache() {
@@ -16,6 +16,8 @@ export function gatherData() {
         fields: {}, textareas: {}, dots: getDotStates(),
         cards: savedCardsData, experience: getExperienceData(),
         inventory: getInventoryData(), gear: getGearData(),
+        weapons: getWeaponData(), armors: getArmorData(),
+        items: getItemData(), consumables: getConsumableData(),
         selectedDomain: Array.from(selectedDomainCards),
         theme: localStorage.getItem(THEME_KEY) || 'gold',
         lastExport: localStorage.getItem(EXPORT_KEY) || null
@@ -50,7 +52,37 @@ export function applyData(data) {
         }
         document.getElementById('gearItemList').innerHTML = '<div class="text-center text-xs text-zinc-600 italic">None</div>';
         if (data.gear && data.gear.length) {
-            data.gear.forEach(g => addGearItem(g.name, g.bonus, g.desc));
+            data.gear.forEach(g => addGearItem(g.name, g.bonus, g.desc, g.collapsed));
+        }
+        // Dynamic items
+        document.getElementById('itemList').innerHTML = '<div class="text-center text-xs text-zinc-600 italic">None</div>';
+        if (data.items && data.items.length) {
+            data.items.forEach(i => addItem(i));
+        }
+        // Dynamic consumables
+        document.getElementById('consumableList').innerHTML = '<div class="text-center text-xs text-zinc-600 italic">None</div>';
+        if (data.consumables && data.consumables.length) {
+            data.consumables.forEach(c => addConsumable(c));
+        }
+        // Dynamic weapons
+        document.getElementById('weaponList').innerHTML = '<div class="text-center text-xs text-zinc-600 italic">None</div>';
+        if (data.weapons && data.weapons.length) {
+            data.weapons.forEach(w => addWeapon(w));
+        } else if (data.fields) {
+            // Backward compat: migrate old fixed weapon slots
+            [1, 2].forEach(n => {
+                const name = data.fields[`wep${n}_name`];
+                if (name) addWeapon({ name, trait: data.fields[`wep${n}_trait`] || '', range: data.fields[`wep${n}_range`] || '', dmg: data.fields[`wep${n}_dmg`] || '', feature: data.fields[`wep${n}_feature`] || '', equipped: n === 1 });
+            });
+        }
+        // Dynamic armors
+        document.getElementById('armorList').innerHTML = '<div class="text-center text-xs text-zinc-600 italic">None</div>';
+        if (data.armors && data.armors.length) {
+            data.armors.forEach(a => addArmor(a));
+        } else if (data.fields) {
+            // Backward compat: migrate old fixed armor slot
+            const aName = data.fields['armor_name'];
+            if (aName) addArmor({ name: aName, major: data.fields['armor_thresh_major'] || '0', severe: data.fields['armor_thresh_severe'] || '0', score: data.fields['armor_score'] || '', feature: data.fields['armor_feature'] || '', equipped: true });
         }
         updateThresholds();
         if (data.theme) applyTheme(data.theme);
@@ -130,8 +162,10 @@ export function resetSheet() {
     document.getElementById('experienceList').innerHTML = '<div class="text-center text-[10px] text-zinc-600 italic">None</div>';
     document.getElementById('inventoryList').innerHTML = '<div class="text-center text-[10px] text-zinc-600 italic">None</div>';
     document.getElementById('gearItemList').innerHTML = '<div class="text-center text-xs text-zinc-600 italic">None</div>';
-    document.getElementById('armor_thresh_major').value = '0';
-    document.getElementById('armor_thresh_severe').value = '0';
+    document.getElementById('itemList').innerHTML = '<div class="text-center text-xs text-zinc-600 italic">None</div>';
+    document.getElementById('consumableList').innerHTML = '<div class="text-center text-xs text-zinc-600 italic">None</div>';
+    document.getElementById('weaponList').innerHTML = '<div class="text-center text-xs text-zinc-600 italic">None</div>';
+    document.getElementById('armorList').innerHTML = '<div class="text-center text-xs text-zinc-600 italic">None</div>';
     document.getElementById('thresh_major_extra').value = '0';
     document.getElementById('thresh_severe_extra').value = '0';
     updateThresholds();

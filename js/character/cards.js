@@ -54,7 +54,7 @@ function parseItem(item) {
 }
 
 export function openDatabase() {
-    document.getElementById('cardModal').classList.remove('hidden');
+    document.getElementById('srdModal').classList.remove('hidden');
     document.getElementById('dataType').value = '';
     document.getElementById('cardSearch').value = '';
     document.getElementById('cardSearch').classList.add('hidden');
@@ -67,7 +67,7 @@ export function openDatabase() {
 }
 
 export function closeDatabase() {
-    document.getElementById('cardModal').classList.add('hidden');
+    document.getElementById('srdModal').classList.add('hidden');
 }
 
 export async function fetchData() {

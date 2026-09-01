@@ -5,9 +5,10 @@ import { renderDots, updateThresholds, updateAttackBonus } from './trackers.js';
 import { openDatabase, closeDatabase, fetchData, filterCards, closeCardDetail } from './cards.js';
 import { addInventoryItem } from './inventory.js';
 import { addExperience } from './experience.js';
-import { addGearItem } from './gear.js';
+import { addGearItem, addWeapon, addArmor, addItem, addConsumable } from './gear.js';
 import { autoCache, saveSheet, loadSheet, clearSheet, updateExportIndicator } from './save.js';
 import { initCharAuth } from './char-auth.js';
+import { loadCompendium } from '../core/compendium.js';
 
 // Expose to global for inline handlers
 window.updateThresholds = updateThresholds;
@@ -20,6 +21,10 @@ window.filterCards = filterCards;
 window.addInventoryItem = addInventoryItem;
 window.addExperience = addExperience;
 window.addGearItem = addGearItem;
+window.addWeapon = addWeapon;
+window.addArmor = addArmor;
+window.addItem = addItem;
+window.addConsumable = addConsumable;
 window.saveSheet = saveSheet;
 window.loadSheet = loadSheet;
 window.clearSheet = clearSheet;
@@ -29,7 +34,7 @@ window.setMode = setMode;
 window.toggleSection = toggleSection;
 
 // Modern tab switching
-const MODERN_TABS = ['tab-combat', 'tab-cards', 'tab-inventory', 'tab-story'];
+const MODERN_TABS = ['tab-combat', 'tab-cards', 'tab-inventory', 'tab-story', 'tab-compendium'];
 
 window.switchModernTab = function(tabId) {
     MODERN_TABS.forEach(id => {
@@ -63,4 +68,5 @@ window.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('change', () => { updateThresholds(); updateAttackBonus(); autoCache(); });
 
     initCharAuth();
+    loadCompendium({ characterMode: true, onAddWeapon: addWeapon, onAddArmor: addArmor, onAddItem: addItem, onAddConsumable: addConsumable, onAddGear: addGearItem, onAddInventory: addInventoryItem });
 });

@@ -18,8 +18,6 @@ export function setRestoring(val) { _restoring = val; }
 export const FIELD_IDS = ['charName','charPronouns','charLevel','charHeritage','charClass',
     'track_ev','track_prof','t_agi','t_str','t_fin','t_inst','t_pres','t_know',
     'hp_max','stress_max','hope_max','armor_max',
-    'wep1_name','wep1_trait','wep1_range','wep1_dmg','wep1_feature','wep2_name','wep2_trait','wep2_range','wep2_dmg','wep2_feature',
-    'armor_name','armor_thresh_major','armor_thresh_severe','armor_score','armor_feature',
     'thresh_major_extra','thresh_severe_extra',
     'desc_clothes','desc_eyes','desc_body','desc_skin','desc_attitude',
     'gold_hand','gold_bags'];

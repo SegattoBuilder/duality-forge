@@ -285,6 +285,13 @@
 .card-detail-content, .card-detail-content * { font-size: 1rem !important; line-height: 1.8 !important; }
 .card-detail-content .text-amber-400 { font-size: 1.1rem !important; font-weight: 700; }
 
+/* Equip star */
+.equip-star { color: var(--accent-1, #d4a017); transition: transform 0.15s; }
+.equip-star:hover { transform: scale(1.2); }
+
+/* Collapse toggle */
+.collapse-btn { cursor: pointer; font-family: monospace; transition: color 0.15s; }
+
 /* Filter pills */
 .filter-pill {
     font-size: 10px; padding: 4px 12px; border-radius: 99px;

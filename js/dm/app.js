@@ -2,7 +2,7 @@ import { initAuth, onAuthChange, escHtml, escHtmlAttr } from '../core/auth.js';
 import { initTracker, renderGrid, renderFearDots, autoCache, creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled } from './tracker.js';
 import { initVault, renderVaultGrid, autoCacheVault, vaultCreatures, setVaultCreatures } from './vault.js';
 import { initChronicle, renderChronicle, autoCacheChronicle, chronicleEntries, setChronicleEntries } from './chronicle.js';
-import { loadCompendium } from './compendium.js';
+import { loadCompendium, getLocStr as _getLocStr } from '../core/compendium.js';
 import { initAdversariesTab } from './adversaries.js';
 import { initDmAuth } from './dm-auth.js';
 
@@ -17,11 +17,7 @@ const MODE_KEY = 'dh_dm_mode';
 export { escHtml, escHtmlAttr };
 
 // ========== HELPERS ==========
-export function getLocStr(obj) {
-    if (!obj) return '';
-    if (typeof obj === 'string') return obj;
-    return obj['en-US'] || obj['en'] || Object.values(obj)[0] || '';
-}
+export function getLocStr(obj) { return _getLocStr(obj); }
 
 export function getNextName(baseName) {
     const all = [...creatures(), ...vaultCreatures()];

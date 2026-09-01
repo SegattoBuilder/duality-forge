@@ -34,6 +34,7 @@
                     <button onclick="switchModernTab('tab-cards')" id="btn-tab-cards" class="modern-tab-btn">Cards</button>
                     <button onclick="switchModernTab('tab-inventory')" id="btn-tab-inventory" class="modern-tab-btn">Inventory</button>
                     <button onclick="switchModernTab('tab-story')" id="btn-tab-story" class="modern-tab-btn">Story</button>
+                    <button onclick="switchModernTab('tab-compendium')" id="btn-tab-compendium" class="modern-tab-btn">📖 Compendium</button>
                 </div>
                 <div class="flex items-center gap-2">
                     <div class="relative">
@@ -135,38 +136,25 @@
                 <button class="info-btn" onclick="document.getElementById('info-gear').classList.toggle('open')">i</button>
             </div>
             <div id="info-gear" class="info-popup mb-3">
-                <div>• <strong>Atk Bonus</strong> — equals your selected trait's modifier, updates automatically</div>
-                <div>• <strong>Armor</strong> — Major/Severe values feed directly into your Damage Thresholds</div>
-                <div>• <strong>Additional Gear</strong> — use for any equippable item (rings, cloaks, shields, etc.)</div>
-            </div>
-            <div class="border-b border-zinc-800 pb-3 mb-4">
-                <input id="wep1_name" type="text" placeholder="Weapon Name" class="bg-transparent text-base w-full font-bold outline-none">
-                <div class="grid grid-cols-4 gap-2 text-zinc-500 mt-2">
-                    <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">TRAIT</div><select id="wep1_trait" class="w-full bg-black/40 border border-zinc-800 rounded px-1 py-1.5 text-center outline-none text-xs" onchange="updateAttackBonus()"><option value="">—</option><option value="t_agi">Agility</option><option value="t_str">Strength</option><option value="t_fin">Finesse</option><option value="t_inst">Instinct</option><option value="t_pres">Presence</option><option value="t_know">Knowledge</option></select></div>
-                    <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">RANGE</div><input id="wep1_range" type="text" placeholder="—" class="w-full bg-black/40 border border-zinc-800 rounded px-1 py-1.5 text-center outline-none text-xs"></div>
-                    <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">DAMAGE</div><input id="wep1_dmg" type="text" placeholder="—" class="w-full bg-black/40 border border-zinc-800 rounded px-1 py-1.5 text-center outline-none text-xs"></div>
-                    <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">ATK BONUS</div><div id="wep1_atk" class="w-full bg-gray-800 border border-gray-700 rounded py-1.5 text-center font-bold text-indigo-400 text-sm">—</div></div>
-                </div>
-                <div class="mt-2"><div class="text-[10px] text-zinc-600 mb-1">FEATURE</div><input id="wep1_feature" type="text" placeholder="Weapon feature..." class="w-full bg-black/40 border border-zinc-800 rounded px-3 py-1.5 text-xs outline-none"></div>
-            </div>
-            <div class="border-b border-zinc-800 pb-3 mb-4">
-                <input id="wep2_name" type="text" placeholder="Weapon Name" class="bg-transparent text-base w-full font-bold outline-none">
-                <div class="grid grid-cols-4 gap-2 text-zinc-500 mt-2">
-                    <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">TRAIT</div><select id="wep2_trait" class="w-full bg-black/40 border border-zinc-800 rounded px-1 py-1.5 text-center outline-none text-xs" onchange="updateAttackBonus()"><option value="">—</option><option value="t_agi">Agility</option><option value="t_str">Strength</option><option value="t_fin">Finesse</option><option value="t_inst">Instinct</option><option value="t_pres">Presence</option><option value="t_know">Knowledge</option></select></div>
-                    <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">RANGE</div><input id="wep2_range" type="text" placeholder="—" class="w-full bg-black/40 border border-zinc-800 rounded px-1 py-1.5 text-center outline-none text-xs"></div>
-                    <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">DAMAGE</div><input id="wep2_dmg" type="text" placeholder="—" class="w-full bg-black/40 border border-zinc-800 rounded px-1 py-1.5 text-center outline-none text-xs"></div>
-                    <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">ATK BONUS</div><div id="wep2_atk" class="w-full bg-gray-800 border border-gray-700 rounded py-1.5 text-center font-bold text-indigo-400 text-sm">—</div></div>
-                </div>
-                <div class="mt-2"><div class="text-[10px] text-zinc-600 mb-1">FEATURE</div><input id="wep2_feature" type="text" placeholder="Weapon feature..." class="w-full bg-black/40 border border-zinc-800 rounded px-3 py-1.5 text-xs outline-none"></div>
+                <div>• <strong>★ Equip</strong> — star a weapon/armor to mark it as equipped (feeds into Atk Bonus & Thresholds)</div>
+                <div>• <strong>Atk Bonus</strong> — equals your equipped weapon's trait modifier, updates automatically</div>
+                <div>• <strong>Armor</strong> — equipped armor's Major/Severe values feed into your Damage Thresholds</div>
             </div>
             <div class="mb-4">
-                <input id="armor_name" type="text" placeholder="Armor Name" class="bg-transparent text-base w-full font-bold outline-none">
-                <div class="grid grid-cols-3 gap-2 text-zinc-500 mt-2">
-                    <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">MAJOR</div><input id="armor_thresh_major" type="number" placeholder="0" class="w-full bg-black/40 border border-zinc-800 rounded px-1 py-1.5 text-center outline-none text-sm" value="0" oninput="updateThresholds()"></div>
-                    <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">SEVERE</div><input id="armor_thresh_severe" type="number" placeholder="0" class="w-full bg-black/40 border border-zinc-800 rounded px-1 py-1.5 text-center outline-none text-sm" value="0" oninput="updateThresholds()"></div>
-                    <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">SCORE</div><input id="armor_score" type="text" placeholder="0" class="w-full bg-black/40 border border-zinc-800 rounded px-1 py-1.5 text-center outline-none text-sm"></div>
-                </div>
-                <div class="mt-2"><div class="text-[10px] text-zinc-600 mb-1">FEATURE</div><input id="armor_feature" type="text" placeholder="Armor feature..." class="w-full bg-black/40 border border-zinc-800 rounded px-3 py-1.5 text-xs outline-none"></div>
+                <div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-zinc-500 uppercase font-[Cinzel] tracking-wide">Weapons</span><button class="btn-action text-xs px-4 py-1.5 rounded-full font-bold uppercase text-white" onclick="addWeapon()">+ Weapon</button></div>
+                <div id="weaponList" class="space-y-2"><div class="text-center text-xs text-zinc-600 italic">None</div></div>
+            </div>
+            <div class="border-t border-[#363026] pt-4 mb-4">
+                <div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-zinc-500 uppercase font-[Cinzel] tracking-wide">Armor</span><button class="btn-action text-xs px-4 py-1.5 rounded-full font-bold uppercase text-white" onclick="addArmor()">+ Armor</button></div>
+                <div id="armorList" class="space-y-2"><div class="text-center text-xs text-zinc-600 italic">None</div></div>
+            </div>
+            <div class="border-t border-[#363026] pt-4 mb-4">
+                <div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-zinc-500 uppercase font-[Cinzel] tracking-wide">Items</span><button class="btn-action text-xs px-4 py-1.5 rounded-full font-bold uppercase text-white" onclick="addItem()">+ Item</button></div>
+                <div id="itemList" class="space-y-2"><div class="text-center text-xs text-zinc-600 italic">None</div></div>
+            </div>
+            <div class="border-t border-[#363026] pt-4 mb-4">
+                <div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-zinc-500 uppercase font-[Cinzel] tracking-wide">Consumables</span><button class="btn-action text-xs px-4 py-1.5 rounded-full font-bold uppercase text-white" onclick="addConsumable()">+ Consumable</button></div>
+                <div id="consumableList" class="space-y-2"><div class="text-center text-xs text-zinc-600 italic">None</div></div>
             </div>
             <div class="border-t border-[#363026] pt-4">
                 <div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-zinc-500 uppercase font-[Cinzel] tracking-wide">Additional Gear</span><button class="btn-action text-xs px-4 py-1.5 rounded-full font-bold uppercase text-white" onclick="addGearItem()">+ Gear</button></div>
@@ -271,6 +259,35 @@
 
 
 
+<!-- COMPENDIUM TAB -->
+<div id="tab-compendium" class="mt-24" style="display:none">
+    <div class="mb-4 flex gap-3 items-end">
+        <div class="flex-1"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Search Compendium</label><input id="compendiumSearch" type="text" placeholder="Search weapons, armors, classes, items..." class="w-full bg-[#1e1b16] border border-[#4a3f30] rounded-xl px-5 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
+        <button onclick="clearCompendiumSearch()" class="bg-[#2a2418] border border-[#4a3f30] text-[10px] px-3 py-3 rounded-lg font-bold uppercase text-zinc-400 hover:border-[#d4a017] hover:text-[#d4a017]">Clear</button>
+    </div>
+    <div class="flex flex-wrap gap-2 mb-5" id="categoryFilters">
+        <button class="filter-pill active" onclick="setCategory('all')">All</button>
+        <button class="filter-pill" onclick="setCategory('weapons')">Weapons</button>
+        <button class="filter-pill" onclick="setCategory('armors')">Armors</button>
+        <button class="filter-pill" onclick="setCategory('items')">Items</button>
+        <button class="filter-pill" onclick="setCategory('consumables')">Consumables</button>
+        <button class="filter-pill" onclick="setCategory('classes')">Classes</button>
+        <button class="filter-pill" onclick="setCategory('subclasses')">Subclasses</button>
+        <button class="filter-pill" onclick="setCategory('ancestries')">Ancestries</button>
+        <button class="filter-pill" onclick="setCategory('communities')">Communities</button>
+        <button class="filter-pill" onclick="setCategory('domain-cards')">Domain Cards</button>
+        <button class="filter-pill" onclick="setCategory('rules')">Rules</button>
+    </div>
+    <div id="contextFilters" class="flex flex-wrap gap-3 mb-4 hidden"></div>
+    <div id="compendiumStatus" class="text-center text-zinc-600 text-sm py-8">Loading compendium data...</div>
+    <div id="compendiumResults" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+</div>
+
+<!-- Compendium Card Modal -->
+<div id="cardModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-start justify-center pt-12" onclick="if(event.target===this)closeCardModal()">
+    <div class="modal-panel p-6 w-full max-w-2xl relative"><button onclick="closeCardModal()" class="absolute top-4 right-4 text-[#6b5d4d] hover:text-white text-2xl leading-none">✕</button><div id="cardModalContent"></div></div>
+</div>
+
 <!-- Card Detail Modal -->
 <div id="cardDetailModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-center justify-center" onclick="closeCardDetail()">
     <div class="w-full max-w-2xl modal-panel p-8 rounded-xl border border-[#3d362a] bg-[#1e1b16]" onclick="event.stopPropagation()">
@@ -283,7 +300,7 @@
 </div>
 
 <!-- SRD Library Modal -->
-<div id="cardModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto">
+<div id="srdModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto">
     <div class="max-w-lg mx-auto modal-panel p-5 mt-8 mb-8">
         <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-4">
             <h2 class="font-black text-[#d4a017] text-base uppercase font-[Cinzel] tracking-wide">SRD Library</h2>

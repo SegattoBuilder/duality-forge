@@ -1,4 +1,4 @@
-import { escHtml, getLocStr } from './app.js';
+import { escHtml } from './auth.js';
 
 const GITHUB_RAW = "https://raw.githubusercontent.com/daggersearch/daggerheart-data/main/core/";
 const CATEGORIES = ['ancestries','armors','classes','communities','consumables','domain-cards','items','rules','subclasses','weapons'];
@@ -7,9 +7,29 @@ let compendiumData = [];
 let activeCategory = 'all';
 let activeFilters = {};
 let searchTimeout = null;
+let _characterMode = false;
+let _onAddWeapon = null;
+let _onAddArmor = null;
+let _onAddGear = null;
+let _onAddInventory = null;
+let _onAddItem = null;
+let _onAddConsumable = null;
 
-export async function loadCompendium() {
-    // Bind search listener up front so it works regardless of cache/fetch path
+function getLocStr(obj) {
+    if (!obj) return '';
+    if (typeof obj === 'string') return obj;
+    return obj['en-US'] || obj['en'] || Object.values(obj)[0] || '';
+}
+
+export async function loadCompendium(opts = {}) {
+    _characterMode = opts.characterMode || false;
+    _onAddWeapon = opts.onAddWeapon || null;
+    _onAddArmor = opts.onAddArmor || null;
+    _onAddGear = opts.onAddGear || null;
+    _onAddInventory = opts.onAddInventory || null;
+    _onAddItem = opts.onAddItem || null;
+    _onAddConsumable = opts.onAddConsumable || null;
+
     document.getElementById('compendiumSearch').addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(runSearch, 200); });
 
     const cached = localStorage.getItem(COMPENDIUM_CACHE_KEY);
@@ -87,18 +107,34 @@ function renderDescBlocks(descArr) {
     return descArr.map(d => { if (d.paragraph) return `<p>${escHtml(getLocStr(d.paragraph))}</p>`; if (d.list) return `<ul class="ml-4 list-disc">${d.list.map(li => `<li>${escHtml(getLocStr(li))}</li>`).join('')}</ul>`; return ''; }).join('');
 }
 
+function flattenFeatures(item) {
+    const parts = [];
+    const featureSources = [item.features, item.classFeatures, item.hopeFeature ? [item.hopeFeature] : null, item.foundation?.features, item.specialization?.features, item.mastery?.features];
+    for (const src of featureSources) {
+        if (!Array.isArray(src)) continue;
+        for (const f of src) {
+            const fn = f.name ? getLocStr(f.name) : '';
+            const fd = f.description ? f.description.map(d => d.paragraph ? getLocStr(d.paragraph) : (d.list ? d.list.map(li => getLocStr(li)).join(', ') : '')).filter(Boolean).join('; ') : '';
+            parts.push(fn ? `${fn}: ${fd}` : fd);
+        }
+    }
+    return parts.filter(Boolean).join(' | ');
+}
+
 function renderCompendiumCard(item) {
     const cat = item._category, name = getLocStr(item.name) || item.title || 'Unnamed', catClass = 'cat-' + cat;
     let body = '';
-    // Simplified — render tags + features for all categories
     const tags = [];
     if (item.tier) tags.push(`Tier ${item.tier}`);
     if (item.domain) tags.push(item.domain);
     if (item.type) tags.push(item.type);
     if (item.level !== undefined) tags.push(`Lv ${item.level}`);
+    if (item.trait) tags.push(item.trait);
     if (item.range) tags.push(item.range);
     if (item.burden) tags.push(item.burden.replace(/_/g, ' '));
     if (item.baseScore) tags.push(`Score ${item.baseScore}`);
+    if (item.baseMajorThreshold) tags.push(`Major ${item.baseMajorThreshold}+`);
+    if (item.baseSevereThreshold) tags.push(`Severe ${item.baseSevereThreshold}+`);
     if (item.class) tags.push(item.class);
     if (item.domains && item.domains.length) tags.push(...item.domains);
     if (tags.length) body += `<div class="flex flex-wrap gap-2 mb-1.5">${tags.map(t => `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-400">${escHtml(t)}</span>`).join('')}</div>`;
@@ -114,13 +150,74 @@ function renderCompendiumCard(item) {
         <div class="flex items-start justify-between mb-2"><span class="font-black text-sm font-[Cinzel] text-[#f5efe6]">${escHtml(name)}</span><span class="card-category ${catClass} ml-2 whitespace-nowrap">${cat.replace('-', ' ')}</span></div>${body}</div>`;
 }
 
+function addToSheetButton(item) {
+    if (!_characterMode) return '';
+    const cat = item._category;
+    const idx = compendiumData.indexOf(item);
+    if (cat === 'weapons') {
+        return `<button onclick="event.stopPropagation(); window._compAddWeapon(${idx})" class="mt-3 w-full btn-action text-xs py-2 rounded-lg font-bold uppercase text-white">🗡️ Add to Weapons</button>`;
+    }
+    if (cat === 'armors') {
+        return `<button onclick="event.stopPropagation(); window._compAddArmor(${idx})" class="mt-3 w-full btn-action text-xs py-2 rounded-lg font-bold uppercase text-white">🛡️ Add to Armor</button>`;
+    }
+    if (cat === 'items') {
+        return `<button onclick="event.stopPropagation(); window._compAddItem(${idx})" class="mt-3 w-full btn-action text-xs py-2 rounded-lg font-bold uppercase text-white">🔧 Add to Items</button>`;
+    }
+    if (cat === 'consumables') {
+        return `<button onclick="event.stopPropagation(); window._compAddConsumable(${idx})" class="mt-3 w-full btn-action text-xs py-2 rounded-lg font-bold uppercase text-white">🧪 Add to Consumables</button>`;
+    }
+    return '';
+}
+
 function openCardModal(index) {
     const item = compendiumData[index]; if (!item) return;
     const name = getLocStr(item.name) || item.title || 'Unnamed', catClass = 'cat-' + item._category;
-    // Reuse same card body but in modal
     const card = renderCompendiumCard(item);
-    document.getElementById('cardModalContent').innerHTML = `<div class="flex items-start justify-between mb-4"><span class="font-black text-2xl font-[Cinzel] text-[#f5efe6]">${escHtml(name)}</span><span class="card-category ${catClass} ml-2 whitespace-nowrap">${item._category.replace('-', ' ')}</span></div><div class="modal-scaled">${card}</div>`;
+    const addBtn = addToSheetButton(item);
+    document.getElementById('cardModalContent').innerHTML = `<div class="flex items-start justify-between mb-4"><span class="font-black text-2xl font-[Cinzel] text-[#f5efe6]">${escHtml(name)}</span><span class="card-category ${catClass} ml-2 whitespace-nowrap">${item._category.replace('-', ' ')}</span></div><div class="modal-scaled">${card}</div>${addBtn}`;
     document.getElementById('cardModal').classList.remove('hidden');
+}
+
+function handleAddGear(index) {
+    const item = compendiumData[index]; if (!item) return;
+    const name = getLocStr(item.name) || '';
+    const cat = item._category;
+    if (cat === 'weapons' && _onAddWeapon) {
+        const trait = item.trait ? 't_' + item.trait.toLowerCase().slice(0, 3).replace('ins', 'inst').replace('pre', 'pres').replace('kno', 'know').replace('str', 'str').replace('agi', 'agi').replace('fin', 'fin') : '';
+        const traitMap = { AGILITY: 't_agi', STRENGTH: 't_str', FINESSE: 't_fin', INSTINCT: 't_inst', PRESENCE: 't_pres', KNOWLEDGE: 't_know' };
+        let dmg = '';
+        if (item.damage) { dmg = item.damage.dice || ''; if (item.damage.modifier) dmg += `+${item.damage.modifier}`; if (item.damage.type) dmg += ` ${item.damage.type.toLowerCase()}`; }
+        _onAddWeapon({ name, trait: traitMap[item.trait] || '', range: item.range || '', dmg, feature: flattenFeatures(item), equipped: false });
+        closeCardModal();
+        return;
+    }
+    if (cat === 'armors' && _onAddArmor) {
+        _onAddArmor({ name, major: String(item.baseMajorThreshold || '0'), severe: String(item.baseSevereThreshold || '0'), score: String(item.baseScore || ''), feature: flattenFeatures(item), equipped: false });
+        closeCardModal();
+        return;
+    }
+    // Fallback to generic gear
+    let bonus = '', desc = '';
+    desc = flattenFeatures(item);
+    if (_onAddGear) { _onAddGear(name, bonus, desc); closeCardModal(); }
+}
+
+function handleAddItem(index) {
+    const item = compendiumData[index]; if (!item || !_onAddItem) return;
+    _onAddItem({ name: getLocStr(item.name) || '', desc: flattenFeatures(item) });
+    closeCardModal();
+}
+
+function handleAddConsumable(index) {
+    const item = compendiumData[index]; if (!item || !_onAddConsumable) return;
+    _onAddConsumable({ name: getLocStr(item.name) || '', qty: '1', desc: flattenFeatures(item) });
+    closeCardModal();
+}
+
+function handleAddInventory(index) {
+    const item = compendiumData[index]; if (!item || !_onAddInventory) return;
+    _onAddInventory(getLocStr(item.name) || '', '1');
+    closeCardModal();
 }
 
 function closeCardModal() { document.getElementById('cardModal').classList.add('hidden'); }
@@ -132,3 +229,11 @@ window._setFilter = setFilter;
 window._openCardModal = openCardModal;
 window.closeCardModal = closeCardModal;
 window.clearCompendiumSearch = clearCompendiumSearch;
+window._compAddGear = handleAddGear;
+window._compAddWeapon = (idx) => handleAddGear(idx);
+window._compAddArmor = (idx) => handleAddGear(idx);
+window._compAddItem = handleAddItem;
+window._compAddConsumable = handleAddConsumable;
+window._compAddInventory = handleAddInventory;
+
+export { getLocStr };
