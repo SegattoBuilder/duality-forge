@@ -40,48 +40,32 @@ export function applyTheme(name) {
 }
 
 export function renderThemePicker() {
-    const container = document.getElementById('themePicker');
+    const container = document.getElementById('kebabThemeSwatches') || document.getElementById('themePicker');
+    if (!container) return;
     const current = localStorage.getItem(THEME_KEY) || 'gold';
-    const currentColor = hexFromRgb(...(THEMES[current] || THEMES.gold).base);
-    container.innerHTML = `<div class="relative flex items-center">
-        <button class="theme-swatch active flex items-center justify-center" style="background:${currentColor}" title="Change theme" id="themeToggleBtn"></button>
-        <div id="themeDropdown" class="hidden absolute right-0 top-10 bg-[#221f1a] border border-[#4a3f30] rounded-xl p-3 shadow-xl z-50 min-w-[160px]">
-            <div class="grid grid-cols-4 gap-3">${Object.entries(THEMES).map(([name, t]) => {
-                const color = hexFromRgb(...t.base);
-                return `<div class="theme-swatch ${name === current ? 'active' : ''}" style="background:${color}" data-theme="${name}" title="${name}"></div>`;
-            }).join('')}</div>
-        </div>
-    </div>`;
-
-    document.getElementById('themeToggleBtn').addEventListener('click', toggleThemeDropdown);
+    container.innerHTML = Object.entries(THEMES).map(([name, t]) => {
+        const color = hexFromRgb(...t.base);
+        return `<div class="theme-swatch ${name === current ? 'active' : ''}" style="background:${color}" data-theme="${name}" title="${name}"></div>`;
+    }).join('');
     container.querySelectorAll('[data-theme]').forEach(el => {
         el.addEventListener('click', (e) => { e.stopPropagation(); applyTheme(el.dataset.theme); });
     });
-    document.addEventListener('click', closeThemeDropdown);
-}
-
-function toggleThemeDropdown(e) {
-    e.stopPropagation();
-    document.getElementById('themeDropdown').classList.toggle('hidden');
-}
-
-function closeThemeDropdown(e) {
-    const dd = document.getElementById('themeDropdown');
-    if (!dd || dd.classList.contains('hidden')) return;
-    const picker = document.getElementById('themePicker');
-    if (!picker.contains(e.target)) dd.classList.add('hidden');
 }
 
 const MODE_CYCLE = ['dark', 'light', 'scifi', 'fantasy'];
 const MODE_ICONS = { dark: '🌙', light: '☀️', scifi: '🖥️', fantasy: '🐉' };
 
+export function setMode(mode) {
+    document.body.setAttribute('data-mode', mode);
+    localStorage.setItem(MODE_KEY, mode);
+    const icon = document.getElementById('modeToggleIcon');
+    if (icon) icon.textContent = MODE_ICONS[mode];
+}
+
 export function toggleMode() {
     const current = document.body.getAttribute('data-mode') || 'dark';
     const idx = MODE_CYCLE.indexOf(current);
-    const newMode = MODE_CYCLE[(idx + 1) % MODE_CYCLE.length];
-    document.body.setAttribute('data-mode', newMode);
-    localStorage.setItem(MODE_KEY, newMode);
-    document.getElementById('modeToggleIcon').textContent = MODE_ICONS[newMode];
+    setMode(MODE_CYCLE[(idx + 1) % MODE_CYCLE.length]);
 }
 
 export function initMode() {

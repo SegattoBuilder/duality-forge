@@ -102,6 +102,20 @@ function closeAuthModal() { document.getElementById('authModal').classList.add('
 function closeCloudPicker() { document.getElementById('cloudPickerModal').classList.add('hidden'); }
 
 let authMenuHandler = null;
+let kebabMenuHandler = null;
+
+function toggleKebab(e) {
+    if (e) e.stopPropagation();
+    const menu = document.getElementById('kebabMenu');
+    const wasHidden = menu.classList.contains('hidden');
+    menu.classList.toggle('hidden');
+    if (kebabMenuHandler) { document.removeEventListener('click', kebabMenuHandler); kebabMenuHandler = null; }
+    if (wasHidden) {
+        kebabMenuHandler = (ev) => { if (!menu.contains(ev.target) && !document.getElementById('kebabBtn').contains(ev.target)) { menu.classList.add('hidden'); document.removeEventListener('click', kebabMenuHandler); kebabMenuHandler = null; } };
+        setTimeout(() => document.addEventListener('click', kebabMenuHandler), 0);
+    }
+}
+
 function toggleAuthMenu(e) {
     if (e) e.stopPropagation();
     const menu = document.getElementById('authMenu');
@@ -161,6 +175,7 @@ async function doSaveProfile() {
 
 // ========== WINDOW BINDINGS ==========
 window.openAuthModal = openAuthModal;
+window.toggleKebab = toggleKebab;
 window.closeAuthModal = closeAuthModal;
 window.signInWithGoogle = signInWithGoogle;
 window.signInWithEmail = () => signInWithEmail(document.getElementById('authEmail').value.trim(), document.getElementById('authPassword').value);

@@ -1,5 +1,5 @@
 import { SAVE_KEY, THEME_KEY, setRestoring } from './state.js';
-import { renderThemePicker, applyTheme, toggleMode, initMode } from './theme.js';
+import { renderThemePicker, applyTheme, toggleMode, setMode, initMode } from './theme.js';
 import { toggleSection } from './ui.js';
 import { renderDots, updateThresholds, updateAttackBonus } from './trackers.js';
 import { openDatabase, closeDatabase, fetchData, filterCards, closeCardDetail } from './cards.js';
@@ -26,6 +26,7 @@ window.loadSheet = loadSheet;
 window.clearSheet = clearSheet;
 window.autoCache = autoCache;
 window.toggleMode = toggleMode;
+window.setMode = setMode;
 window.toggleSection = toggleSection;
 window.submitBugReport = () => submitBugReport(
     document.getElementById('bugReportText'),

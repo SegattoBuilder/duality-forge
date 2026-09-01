@@ -18,19 +18,40 @@
     <link rel="stylesheet" href="../css/modern.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
-<body class="modern-layout mx-auto p-4 pb-24">
+<body class="modern-layout mx-auto p-4">
 
 <!-- Nav Bar -->
 <nav class="fixed top-0 left-0 right-0 z-30 bg-[#1a1714]/95 backdrop-blur border-b border-[#3d362a] px-4 py-2" style="will-change:transform">
     <div class="max-w-[1200px] mx-auto">
         <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
-                <a href="../" class="text-zinc-600 hover:text-[#d4a017] text-xs" title="Back to Forge">⚒️</a>
-                <span class="font-[Cinzel] text-[14px] tracking-widest uppercase font-black italic leading-tight" data-theme-level="1" style="color:#d4a017">Dagger<br>heart</span>
+                <a href="../" class="hover:text-[#d4a017] text-[28px]" title="Back to Forge">⚒️</a>
+                <span class="font-[Cinzel] text-[14px] tracking-widest uppercase font-black italic leading-tight" data-theme-level="1" style="color:#d4a017">Character<br>Sheet</span>
             </div>
             <div class="flex items-center gap-3">
-                <button onclick="toggleMode()" class="w-8 h-8 rounded-full bg-[#2a2418] border border-[#4a3f30] flex items-center justify-center text-[14px] cursor-pointer hover:border-[#d4a017] transition-colors" title="Cycle: Dark / Light / Sci-Fi / Fantasy"><span id="modeToggleIcon">🌙</span></button>
-                <div id="themePicker" class="flex gap-1.5 items-center"></div>
+                <div class="relative">
+                    <button id="kebabBtn" onclick="toggleKebab()" class="h-10 w-8 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors text-zinc-400 text-sm font-bold">⋮</button>
+                    <div id="kebabMenu" class="hidden absolute right-0 top-12 w-56 bg-[#1e1b16] border border-[#4a3f30] rounded-xl shadow-xl z-50 overflow-hidden">
+                        <div class="px-4 py-3 border-b border-[#3d362a]">
+                            <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Display Mode</div>
+                            <div class="flex gap-2">
+                                <button onclick="setMode('dark')" class="mode-btn flex-1 text-[10px] py-1.5 rounded-lg bg-[#2a2418] border border-[#3d362a] hover:border-[#d4a017] transition-colors" title="Dark">🌙</button>
+                                <button onclick="setMode('light')" class="mode-btn flex-1 text-[10px] py-1.5 rounded-lg bg-[#2a2418] border border-[#3d362a] hover:border-[#d4a017] transition-colors" title="Light">☀️</button>
+                                <button onclick="setMode('scifi')" class="mode-btn flex-1 text-[10px] py-1.5 rounded-lg bg-[#2a2418] border border-[#3d362a] hover:border-[#d4a017] transition-colors" title="Sci-Fi">🖥️</button>
+                                <button onclick="setMode('fantasy')" class="mode-btn flex-1 text-[10px] py-1.5 rounded-lg bg-[#2a2418] border border-[#3d362a] hover:border-[#d4a017] transition-colors" title="Fantasy">🐉</button>
+                            </div>
+                        </div>
+                        <div class="px-4 py-3 border-b border-[#3d362a]">
+                            <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Accent Color</div>
+                            <div id="kebabThemeSwatches" class="grid grid-cols-5 gap-2"></div>
+                        </div>
+                        <button onclick="saveSheet(); document.getElementById('kebabMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">💾 Save to File</button>
+                        <button onclick="loadSheet(); document.getElementById('kebabMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">📂 Load from File</button>
+                        <button onclick="clearSheet(); document.getElementById('kebabMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors">🗑 Clear Sheet</button>
+                    </div>
+                </div>
+                <div id="themePicker" class="hidden"></div>
+                <span id="modeToggleIcon" class="hidden">🌙</span>
                 <div class="relative">
                     <button id="authBtn" class="h-10 px-3 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors" onclick="openAuthModal()"><span class="text-[10px] text-zinc-400">Sign In</span></button>
                     <span id="syncStatus" class="hidden absolute left-1/2 -translate-x-1/2 top-full mt-1 text-[9px] font-bold text-[#d4a017] whitespace-nowrap pointer-events-none z-50"></span>
@@ -291,17 +312,7 @@
     </div>
 </div>
 
-<!-- Bottom Bar -->
-<div class="fixed bottom-0 left-0 right-0 bg-[#1a1714]/95 backdrop-blur border-t border-[#3d362a] p-3 z-40" style="will-change:transform">
-    <div class="max-w-[1200px] mx-auto">
-        <div class="flex gap-3">
-            <button id="exportBtn" onclick="saveSheet()" class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white flex items-center justify-center gap-1.5"><span>⬇</span> Export</button>
-            <button onclick="loadSheet()" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880] flex items-center justify-center gap-1.5"><span>⬆</span> Import</button>
-            <button onclick="clearSheet()" class="flex-1 btn-danger text-xs py-3 rounded-xl font-bold uppercase text-red-200 flex items-center justify-center gap-1.5"><span>🗑</span> Clear</button>
-        </div>
-        <div id="lastExportInfo" class="text-center text-[10px] text-zinc-600 mt-1.5"></div>
-    </div>
-</div>
+
 
 <!-- Card Detail Modal -->
 <div id="cardDetailModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-center justify-center" onclick="closeCardDetail()">

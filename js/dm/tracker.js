@@ -111,6 +111,7 @@ function toggleFear(index) {
 }
 
 export function resetFear() {
+    if (!confirm('Reset the fear pool?')) return;
     _fearFilled = 0;
     localStorage.setItem(FEAR_KEY, '0');
     renderFearDots();

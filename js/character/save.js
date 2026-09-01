@@ -78,11 +78,7 @@ export function saveSheet() {
     a.click();
     URL.revokeObjectURL(url);
     localStorage.setItem(EXPORT_KEY, Date.now().toString());
-    updateExportIndicator();
-    const btn = document.getElementById('exportBtn');
-    btn.textContent = '✓ Saved!';
-    btn.classList.add('bg-green-800');
-    setTimeout(() => { btn.textContent = '⬇ Export'; btn.classList.remove('bg-green-800'); }, 2000);
+    showToast('✓ Exported!');
 }
 
 export function loadSheet(silent) {
@@ -145,15 +141,7 @@ export function clearSheet() {
     showToast('Sheet cleared!');
 }
 
-export function updateExportIndicator() {
-    const el = document.getElementById('lastExportInfo');
-    const ts = localStorage.getItem(EXPORT_KEY);
-    if (!ts) { el.textContent = 'Last export: never'; return; }
-    const days = Math.floor((Date.now() - parseInt(ts)) / 86400000);
-    let text = days === 0 ? 'Last export: today' : days === 1 ? 'Last export: yesterday' : `Last export: ${days} days ago`;
-    el.textContent = text;
-    el.style.color = days >= 7 ? '#b8860b' : '';
-}
+export function updateExportIndicator() {}
 
 function showToast(msg) {
     const mode = document.body.getAttribute('data-mode') || 'dark';

@@ -42,6 +42,14 @@
             </div>
             <div class="flex items-center gap-2">
                 <div class="relative">
+                    <button id="kebabBtn" onclick="toggleKebab()" class="h-10 w-8 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors text-zinc-400 text-sm font-bold">⋮</button>
+                    <div id="kebabMenu" class="hidden absolute right-0 top-12 w-48 bg-[#1e1b16] border border-[#4a3f30] rounded-xl shadow-xl z-50 overflow-hidden">
+                        <button onclick="saveSession(); document.getElementById('kebabMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">💾 Save to File</button>
+                        <label class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a] block cursor-pointer">📂 Load from File<input type="file" accept=".json" onchange="loadSession(event); document.getElementById('kebabMenu').classList.add('hidden')" class="hidden"></label>
+                        <button onclick="clearAll(event); document.getElementById('kebabMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors">🗑 Clear All</button>
+                    </div>
+                </div>
+                <div class="relative">
                     <button id="authBtn" class="h-10 px-2 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors" onclick="openAuthModal()"><span class="text-[10px] text-zinc-400">Sign In</span></button>
                     <span id="syncStatus" class="hidden absolute left-1/2 -translate-x-1/2 top-full mt-1 text-[9px] font-bold text-[#d4a017] whitespace-nowrap pointer-events-none z-50"></span>
                     <div id="authMenu" class="hidden absolute right-0 top-12 w-48 bg-[#1e1b16] border border-[#4a3f30] rounded-xl shadow-xl z-50 overflow-hidden">
@@ -56,12 +64,6 @@
         </div>
         <div class="w-full border-t border-[#3d362a] pt-3">
             <div class="flex flex-wrap items-center justify-center gap-1.5">
-                <div id="localActions" class="contents">
-                    <button onclick="saveSession()" class="bg-[#2a2418] border border-[#4a3f30] text-[10px] px-2 sm:px-3 py-1.5 rounded-full font-bold uppercase text-zinc-400 font-[Cinzel] hover:border-[#d4a017] hover:text-[#d4a017]">💾 Save</button>
-                    <label class="bg-[#2a2418] border border-[#4a3f30] text-[10px] px-2 sm:px-3 py-1.5 rounded-full font-bold uppercase text-zinc-400 font-[Cinzel] hover:border-[#d4a017] hover:text-[#d4a017] cursor-pointer">📂 Load<input type="file" accept=".json" onchange="loadSession(event)" class="hidden"></label>
-                    <span class="w-px h-5 bg-[#3d362a] mx-1"></span>
-                </div>
-                <div id="cloudActions" class="hidden"></div>
                 <div id="trackerActions" class="contents">
                     <button onclick="addCounter()" class="bg-[#2a2418] border border-[#4a3f30] text-[10px] px-2 sm:px-3 py-1.5 rounded-full font-bold uppercase text-[#d4a017] font-[Cinzel] hover:border-[#d4a017]">✚ Counter</button>
                     <button onclick="openAddModal()" class="btn-action text-[10px] px-3 py-1.5 rounded-full font-bold uppercase text-white font-[Cinzel]">+ Adversary</button>
@@ -69,7 +71,6 @@
                     <button onclick="clearCreatures(event)" class="bg-[#2a1a1a] border border-[#4a2a2a] text-[10px] px-2 py-1.5 rounded-full font-bold uppercase text-red-400 font-[Cinzel] hover:border-red-500">🗑 Adversaries</button>
                     <button onclick="clearCounters(event)" class="bg-[#2a1a1a] border border-[#4a2a2a] text-[10px] px-2 py-1.5 rounded-full font-bold uppercase text-red-400 font-[Cinzel] hover:border-red-500">🗑 Counters</button>
                     <button onclick="resetFear()" class="bg-[#2a1a1a] border border-[#4a2a2a] text-[10px] px-2 py-1.5 rounded-full font-bold uppercase text-red-400 font-[Cinzel] hover:border-red-500">🗑 Fear</button>
-                    <button onclick="clearAll(event)" class="btn-danger text-[10px] px-3 py-1.5 rounded-full font-bold uppercase text-red-200 font-[Cinzel]">🗑 All</button>
                 </div>
                 <div id="vaultActions" class="hidden contents">
                     <button onclick="openAddModal()" class="btn-action text-[10px] px-3 py-1.5 rounded-full font-bold uppercase text-white font-[Cinzel]">+ Adversary</button>

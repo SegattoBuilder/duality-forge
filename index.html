@@ -40,30 +40,14 @@
             </div>
         </div>
 
-        <div class="text-center">
-            <label class="inline-flex items-center gap-2 cursor-pointer text-xs text-zinc-600">
-                <input type="checkbox" id="rememberChk" checked class="accent-[#d4a017]">
-                <span>Remember my choice</span>
-            </label>
-        </div>
-
         <div class="text-center mt-8">
-            <p class="text-[10px] text-zinc-700">Fan-made tool — not affiliated with Darrington Press or Critical Role.</p>
-            <p class="text-[10px] text-zinc-700 mt-1">☕ <a href="https://buymeacoffee.com/segattobuilder" target="_blank" rel="noopener" class="text-[#d4a017] hover:underline">Buy me a coffee</a></p>
+            <p class="text-[10px] text-zinc-500">Fan-made tool — not affiliated with Darrington Press or Critical Role.</p>
+            <p class="text-[10px] text-zinc-500 mt-1">☕ <a href="https://buymeacoffee.com/segattobuilder" target="_blank" rel="noopener" class="text-[#d4a017] hover:underline">Buy me a coffee</a></p>
         </div>
     </div>
 
     <script>
-        const pref = localStorage.getItem('dh_forge_tool');
-        if (pref === 'dm') window.location.replace('dm/');
-        else if (pref === 'character') window.location.replace('character/');
-
-        function go(tool) {
-            if (document.getElementById('rememberChk').checked) {
-                localStorage.setItem('dh_forge_tool', tool);
-            }
-            window.location.href = tool + '/';
-        }
+        function go(tool) { window.location.href = tool + '/'; }
     </script>
     <script type="module" src="js/core/analytics.js"></script>
 </body>

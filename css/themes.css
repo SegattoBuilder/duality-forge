@@ -100,6 +100,11 @@
 [data-mode="light"] .bg-zinc-900 { background-color: #f0ebe3 !important; }
 [data-mode="light"] .bg-gray-800 { background-color: #e8e4f0 !important; }
 
+/* Inline dark badges */
+[data-mode="light"] .bg-\[\#1a2a3b\] { background-color: #e8f0fa !important; }
+[data-mode="light"] .border-\[\#2a3d5a\] { border-color: #b8cce0 !important; }
+[data-mode="light"] .text-blue-300 { color: #1a5276 !important; }
+
 /* Border overrides */
 [data-mode="light"] .border-\[\#3d362a\] { border-color: #d4c9b8 !important; }
 [data-mode="light"] .border-\[\#4a3f30\] { border-color: #d4c9b8 !important; }
@@ -159,15 +164,21 @@
 [data-mode="light"] .support-link { border-color: #d4c9b8 !important; }
 [data-mode="light"] .support-link:hover { border-color: color-mix(in srgb, var(--accent-1) 60%, transparent) !important; }
 
-/* Auth menu — light mode */
-[data-mode="light"] #authMenu {
+/* Auth & kebab menus — light mode */
+[data-mode="light"] #authMenu,
+[data-mode="light"] #kebabMenu {
     background: #fff !important;
     border-color: #d4c9b8 !important;
     box-shadow: 0 4px 20px rgba(0,0,0,0.12);
 }
-[data-mode="light"] #authMenu button { color: #2a2418 !important; }
-[data-mode="light"] #authMenu button:hover { background: #f5f0e8 !important; }
-[data-mode="light"] #authMenu button:last-child { color: #c0392b !important; }
+[data-mode="light"] #authMenu button,
+[data-mode="light"] #kebabMenu button,
+[data-mode="light"] #kebabMenu label { color: #2a2418 !important; }
+[data-mode="light"] #authMenu button:hover,
+[data-mode="light"] #kebabMenu button:hover,
+[data-mode="light"] #kebabMenu label:hover { background: #f5f0e8 !important; }
+[data-mode="light"] #authMenu button:last-child,
+[data-mode="light"] #kebabMenu > button:last-child { color: #c0392b !important; }
 
 /* Nav bar light */
 [data-mode="light"] nav { background-color: rgba(245,240,232,0.95) !important; border-color: #d4c9b8 !important; }
