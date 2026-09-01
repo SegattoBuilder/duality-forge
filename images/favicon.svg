@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff1a8"/>
+      <stop offset=".35" stop-color="#d8a83e"/>
+      <stop offset=".7" stop-color="#8b5a16"/>
+      <stop offset="1" stop-color="#ffe58a"/>
+    </linearGradient>
+
+    <linearGradient id="blue" x1="0" y1="1" x2="1" y2="0">
+      <stop stop-color="#1826a8"/>
+      <stop offset=".5" stop-color="#36d9ff"/>
+      <stop offset="1" stop-color="#8aa8ff"/>
+    </linearGradient>
+
+    <linearGradient id="fire" x1="0" y1="1" x2="1" y2="0">
+      <stop stop-color="#8c1600"/>
+      <stop offset=".45" stop-color="#ff4b00"/>
+      <stop offset="1" stop-color="#ffd23f"/>
+    </linearGradient>
+
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#20252d"/>
+      <stop offset=".5" stop-color="#777b80"/>
+      <stop offset="1" stop-color="#171a20"/>
+    </linearGradient>
+
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Split magical heart -->
+  <path
+    d="M256 390
+       C225 350 125 285 125 190
+       C125 130 195 105 236 155
+       L256 180
+       L256 390Z"
+    fill="url(#blue)"
+    stroke="url(#gold)"
+    stroke-width="9"/>
+
+  <path
+    d="M256 390
+       C287 350 387 285 387 190
+       C387 130 317 105 276 155
+       L256 180
+       L256 390Z"
+    fill="url(#fire)"
+    stroke="url(#gold)"
+    stroke-width="9"/>
+
+  <!-- Arcane/fire curls -->
+  <path d="M155 270 C80 230 115 145 180 155 C125 115 205 85 220 150"
+        fill="none" stroke="#39dfff" stroke-width="18"
+        stroke-linecap="round" filter="url(#glow)"/>
+
+  <path d="M357 270 C432 230 397 145 332 155 C387 115 307 85 292 150"
+        fill="none" stroke="#ff6418" stroke-width="18"
+        stroke-linecap="round" filter="url(#glow)"/>
+
+  <!-- Dagger -->
+  <path d="M256 32 L276 80 L270 225 L256 285 L242 225 L236 80 Z"
+        fill="url(#steel)" stroke="url(#gold)" stroke-width="8"/>
+
+  <path d="M256 32 L270 52 L256 67 L242 52 Z"
+        fill="url(#gold)" stroke="#fff0a0" stroke-width="4"/>
+
+  <!-- Crossguard -->
+  <path d="M190 105 L238 105 L256 88 L274 105 L322 105
+           L300 130 L274 125 L256 145 L238 125 L212 130 Z"
+        fill="url(#gold)" stroke="#5b3a12" stroke-width="7"/>
+
+  <!-- Forge/anvil -->
+  <path d="M155 360 L357 360 L335 400 L177 400 Z"
+        fill="url(#steel)" stroke="url(#gold)" stroke-width="8"/>
+
+  <path d="M185 400 L327 400 L315 470 L197 470 Z"
+        fill="#252932" stroke="url(#gold)" stroke-width="8"/>
+
+  <path d="M165 470 L347 470 L330 495 L182 495 Z"
+        fill="url(#steel)" stroke="url(#gold)" stroke-width="8"/>
+
+  <!-- Center forge diamond -->
+  <path d="M256 407 L270 425 L256 447 L242 425 Z"
+        fill="url(#fire)" stroke="#ffd76a" stroke-width="5"/>
+
+  <!-- Small sparks -->
+  <g fill="#fff0a0">
+    <circle cx="118" cy="230" r="5"/>
+    <circle cx="394" cy="230" r="5"/>
+    <circle cx="145" cy="125" r="4"/>
+    <circle cx="367" cy="125" r="4"/>
+  </g>
+
+  <!-- Nameplate -->
+  <path d="M82 285 L430 285 L410 350 L102 350 Z"
+        fill="#171a20" stroke="url(#gold)" stroke-width="9"/>
+
+  <text x="256" y="326"
+        text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="48"
+        font-weight="bold"
+        letter-spacing="1"
+        fill="url(#gold)"
+        stroke="#4b3210"
+        stroke-width="1">
+    DAGGERHEART
+  </text>
+
+  <path d="M155 350 L357 350 L345 388 L167 388 Z"
+        fill="#171a20" stroke="url(#gold)" stroke-width="7"/>
+
+  <text x="256" y="379"
+        text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="31"
+        font-weight="bold"
+        letter-spacing="5"
+        fill="#ff6a16">
+    FORGE
+  </text>
+</svg>

@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daggerheart Forge — DM Tools</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+    <link rel="icon" href="../images/favicon.ico" sizes="32x32">
+    <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="../images/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,28 +15,30 @@
     <link rel="stylesheet" href="../css/textures.css">
     <link rel="stylesheet" href="../css/components.css">
     <link rel="stylesheet" href="../css/themes.css">
+    <link rel="stylesheet" href="../css/modern.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
-<body class="max-w-7xl mx-auto p-4 pb-24">
+<body class="max-w-[1200px] mx-auto p-4 pb-24">
 
-<nav class="nav-header sticky top-0 z-30 bg-[#1a1714]/95 backdrop-blur border-b border-[#3d362a] -mx-4 px-4 py-3 mb-6">
-    <div class="flex flex-col gap-3 items-center">
-        <div class="w-full flex flex-col sm:grid sm:grid-cols-[auto_1fr_auto] gap-3 sm:gap-4 items-center">
-            <div class="flex flex-col items-center sm:items-start">
-                <div class="flex items-center gap-2">
-                    <a href="../" class="text-zinc-600 hover:text-[#d4a017] text-xs" title="Back to Forge">⚒️</a>
-                    <span class="font-[Cinzel] text-sm tracking-widest uppercase" style="color: var(--accent-1)">DM Tools</span>
+<nav class="nav-header fixed top-0 left-0 right-0 z-30 bg-[#1a1714]/95 backdrop-blur border-b border-[#3d362a] px-4 py-3" style="will-change:transform">
+    <div class="max-w-[1200px] mx-auto">
+        <div class="flex flex-col gap-3 items-center">
+            <div class="w-full flex flex-col sm:grid sm:grid-cols-[auto_1fr_auto] gap-3 sm:gap-4 items-center">
+                <div class="flex flex-col items-center sm:items-start">
+                    <div class="flex items-center gap-2">
+                        <a href="../" class="hover:opacity-80 transition-opacity" title="Back to Forge"><img src="../images/icon-32.png" alt="Forge" class="w-7 h-7"></a>
+                        <span class="font-[Cinzel] text-[14px] tracking-widest uppercase font-black italic leading-tight" data-theme-level="1" style="color: var(--accent-1)">DM Tools</span>
+                    </div>
+                    <input id="campaignName" type="text" placeholder="Campaign name..." oninput="localStorage.setItem('dh_campaign_name', this.value); this.style.width = Math.min(this.value.length + 2, 56) + 'ch'" class="bg-transparent font-[Cinzel] text-xs font-bold uppercase tracking-widest text-[#d4a017] outline-none border-b border-transparent focus:border-[#d4a017] placeholder-zinc-700" style="width:18ch;max-width:42ch">
                 </div>
-                <input id="campaignName" type="text" placeholder="Campaign name..." oninput="localStorage.setItem('dh_campaign_name', this.value); this.style.width = Math.min(this.value.length + 2, 56) + 'ch'" class="bg-transparent font-[Cinzel] text-xs font-bold uppercase tracking-widest text-[#d4a017] outline-none border-b border-transparent focus:border-[#d4a017] placeholder-zinc-700" style="width:18ch;max-width:42ch">
-            </div>
-            <div class="flex items-center justify-center gap-4 flex-wrap">
-                <button onclick="switchTab('tracker')" id="tabTracker" class="tab-btn font-[Cinzel] text-[11px] uppercase tracking-wider pb-1 font-bold active">⚔️ Tracker</button>
-                <button onclick="switchTab('vault')" id="tabVault" class="tab-btn font-[Cinzel] text-[11px] uppercase tracking-wider pb-1 font-bold">📦 Vault</button>
-                <button onclick="switchTab('chronicle')" id="tabChronicle" class="tab-btn font-[Cinzel] text-[11px] uppercase tracking-wider pb-1 font-bold">📜 Chronicle</button>
-                <button onclick="switchTab('adversaries')" id="tabAdversaries" class="tab-btn font-[Cinzel] text-[11px] uppercase tracking-wider pb-1 font-bold">👹 Adversaries</button>
-                <button onclick="switchTab('compendium')" id="tabCompendium" class="tab-btn font-[Cinzel] text-[11px] uppercase tracking-wider pb-1 font-bold">📖 Compendium</button>
-            </div>
-            <div class="flex items-center gap-2">
+                <div class="flex items-center justify-center gap-1 flex-wrap">
+                    <button onclick="switchTab('tracker')" id="tabTracker" class="modern-tab-btn active">⚔️ Tracker</button>
+                    <button onclick="switchTab('vault')" id="tabVault" class="modern-tab-btn">📦 Vault</button>
+                    <button onclick="switchTab('chronicle')" id="tabChronicle" class="modern-tab-btn">📜 Chronicle</button>
+                    <button onclick="switchTab('adversaries')" id="tabAdversaries" class="modern-tab-btn">👹 Adversaries</button>
+                    <button onclick="switchTab('compendium')" id="tabCompendium" class="modern-tab-btn">📖 Compendium</button>
+                </div>
+                <div class="flex items-center gap-2">
                 <div class="relative">
                     <button id="gearBtn" onclick="toggleGear()" class="h-10 w-10 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors text-zinc-400 text-base">⚙️</button>
                     <div id="gearMenu" class="hidden absolute right-0 top-12 w-52 bg-[#1e1b16] border border-[#4a3f30] rounded-xl shadow-xl z-50 overflow-hidden">
@@ -48,11 +52,13 @@
                         <button onclick="saveSession(); closeGear()" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">💾 Save to File</button>
                         <label class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a] block cursor-pointer">📂 Load from File<input type="file" accept=".json" onchange="loadSession(event); closeGear()" class="hidden"></label>
                         <button onclick="clearAll(event); closeGear()" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">🗑 Clear All</button>
+                        <button id="actionBarGearBtn" onclick="toggleActionBar(); closeGear()" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">📐 Collapse Actions</button>
+                        <button id="fearGearBtn" onclick="toggleFearPool(); closeGear()" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">🕳️ Collapse Fear Pool</button>
                         <a href="../support/" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors block">🤝 Support</a>
                     </div>
                 </div>
                 <div class="relative">
-                    <button id="authBtn" class="h-10 px-2 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors" onclick="openAuthModal()"><span class="text-[10px] text-zinc-400">Sign In</span></button>
+                    <button id="authBtn" class="h-10 px-3 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors" onclick="openAuthModal()"><span class="text-[10px] text-zinc-400">Sign In</span></button>
                     <span id="syncStatus" class="hidden absolute left-1/2 -translate-x-1/2 top-full mt-1 text-[9px] font-bold text-[#d4a017] whitespace-nowrap pointer-events-none z-50"></span>
                     <div id="authMenu" class="hidden absolute right-0 top-12 w-48 bg-[#1e1b16] border border-[#4a3f30] rounded-xl shadow-xl z-50 overflow-hidden">
                         <button onclick="openProfileModal(); closeAuthMenu()" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">👤 Profile</button>
@@ -63,7 +69,7 @@
                 </div>
             </div>
         </div>
-        <div class="w-full border-t border-[#3d362a] pt-3">
+        <div id="actionBarRow" class="w-full border-t border-[#3d362a] pt-3">
             <div class="flex flex-wrap items-center justify-center gap-1.5">
                 <div id="trackerActions" class="contents">
                     <button onclick="addCounter()" class="bg-[#2a2418] border border-[#4a3f30] text-[10px] px-2 sm:px-3 py-1.5 rounded-full font-bold uppercase text-[#d4a017] font-[Cinzel] hover:border-[#d4a017]">✚ Counter</button>
@@ -87,8 +93,8 @@
 </nav>
 
 <!-- TRACKER TAB -->
-<div id="panelTracker">
-    <div class="fear-pool mb-6 p-4 rounded-xl border border-[#3d362a] bg-[#1e1b16] text-center" style="min-height:72px">
+<div id="panelTracker" class="mt-52 sm:mt-36">
+    <div id="fearPoolRow" class="fear-pool mb-6 p-4 rounded-xl border border-[#3d362a] bg-[#1e1b16] text-center" style="min-height:72px">
         <div class="section-divider flex items-center justify-center gap-3 mb-3 pb-2 border-b border-[#3d362a]"><span class="section-header font-[Cinzel] text-xs uppercase tracking-widest text-zinc-500">Fear Pool</span></div>
         <div class="flex flex-wrap justify-center gap-2" id="fearDots"></div>
     </div>
@@ -98,7 +104,7 @@
 </div>
 
 <!-- ADVERSARIES TAB -->
-<div id="panelAdversaries" class="hidden">
+<div id="panelAdversaries" class="hidden mt-52 sm:mt-36">
     <div class="space-y-3 mb-4">
         <div class="flex flex-wrap gap-3 items-end">
             <div class="flex-1 min-w-[200px]"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Search by Name</label><input id="advSearch" type="text" placeholder="Type to search adversaries..." class="w-full bg-[#1e1b16] border border-[#4a3f30] rounded-xl px-5 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
@@ -115,7 +121,7 @@
 </div>
 
 <!-- COMPENDIUM TAB -->
-<div id="panelCompendium" class="hidden">
+<div id="panelCompendium" class="hidden mt-52 sm:mt-36">
     <div class="mb-4 flex gap-3 items-end">
         <div class="flex-1"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Search Compendium</label><input id="compendiumSearch" type="text" placeholder="Search weapons, armors, classes, items..." class="w-full bg-[#1e1b16] border border-[#4a3f30] rounded-xl px-5 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
         <button onclick="clearCompendiumSearch()" class="bg-[#2a2418] border border-[#4a3f30] text-[10px] px-3 py-3 rounded-lg font-bold uppercase text-zinc-400 hover:border-[#d4a017] hover:text-[#d4a017]">Clear</button>
@@ -139,12 +145,12 @@
 </div>
 
 <!-- CHRONICLE TAB -->
-<div id="panelChronicle" class="hidden">
+<div id="panelChronicle" class="hidden mt-52 sm:mt-36">
     <div id="chronicleList" class="space-y-4"><div class="text-center py-20"><div class="text-zinc-600 text-sm italic">No chapters yet. Click "+ Chapter" to start your chronicle.</div></div></div>
 </div>
 
 <!-- VAULT TAB -->
-<div id="panelVault" class="hidden">
+<div id="panelVault" class="hidden mt-52 sm:mt-36">
     <div id="vaultGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"><div class="col-span-full text-center py-20"><div class="text-zinc-600 text-sm italic">Vault is empty. Use 📦 on tracker cards to stash creatures here.</div></div></div>
 </div>
 
