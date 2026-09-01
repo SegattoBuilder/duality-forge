@@ -24,11 +24,6 @@
                 <div class="flex items-center gap-2">
                     <a href="../" class="text-zinc-600 hover:text-[#d4a017] text-xs" title="Back to Forge">⚒️</a>
                     <span class="font-[Cinzel] text-sm tracking-widest uppercase" style="color: var(--accent-1)">DM Tools</span>
-                    <label class="relative inline-flex items-center cursor-pointer" title="Toggle light/dark mode">
-                        <input type="checkbox" id="modeToggleChk" class="sr-only peer" onchange="toggleMode()">
-                        <div class="w-9 h-5 bg-[#3d362a] peer-checked:bg-[#d4c9b8] rounded-full transition-colors"></div>
-                        <div id="modeToggleThumb" class="absolute left-0.5 top-0.5 w-4 h-4 rounded-full bg-[#1a1714] flex items-center justify-center text-[9px] transition-transform peer-checked:translate-x-4 peer-checked:bg-white"><span id="modeToggleIcon">🌙</span></div>
-                    </label>
                 </div>
                 <input id="campaignName" type="text" placeholder="Campaign name..." oninput="localStorage.setItem('dh_campaign_name', this.value); this.style.width = Math.min(this.value.length + 2, 56) + 'ch'" class="bg-transparent font-[Cinzel] text-xs font-bold uppercase tracking-widest text-[#d4a017] outline-none border-b border-transparent focus:border-[#d4a017] placeholder-zinc-700" style="width:18ch;max-width:42ch">
             </div>
@@ -41,11 +36,18 @@
             </div>
             <div class="flex items-center gap-2">
                 <div class="relative">
-                    <button id="kebabBtn" onclick="toggleKebab()" class="h-10 w-8 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors text-zinc-400 text-sm font-bold">⋮</button>
-                    <div id="kebabMenu" class="hidden absolute right-0 top-12 w-48 bg-[#1e1b16] border border-[#4a3f30] rounded-xl shadow-xl z-50 overflow-hidden">
-                        <button onclick="saveSession(); document.getElementById('kebabMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">💾 Save to File</button>
-                        <label class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a] block cursor-pointer">📂 Load from File<input type="file" accept=".json" onchange="loadSession(event); document.getElementById('kebabMenu').classList.add('hidden')" class="hidden"></label>
-                        <button onclick="clearAll(event); document.getElementById('kebabMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">🗑 Clear All</button>
+                    <button id="gearBtn" onclick="toggleGear()" class="h-10 w-10 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors text-zinc-400 text-base">⚙️</button>
+                    <div id="gearMenu" class="hidden absolute right-0 top-12 w-52 bg-[#1e1b16] border border-[#4a3f30] rounded-xl shadow-xl z-50 overflow-hidden">
+                        <div class="px-4 py-3 border-b border-[#3d362a]">
+                            <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Display Mode</div>
+                            <div class="flex gap-2">
+                                <button onclick="setMode('dark')" class="flex-1 text-[10px] py-1.5 rounded-lg bg-[#2a2418] border border-[#3d362a] hover:border-[#d4a017] transition-colors" title="Dark">🌙</button>
+                                <button onclick="setMode('light')" class="flex-1 text-[10px] py-1.5 rounded-lg bg-[#2a2418] border border-[#3d362a] hover:border-[#d4a017] transition-colors" title="Light">☀️</button>
+                            </div>
+                        </div>
+                        <button onclick="saveSession(); closeGear()" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">💾 Save to File</button>
+                        <label class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a] block cursor-pointer">📂 Load from File<input type="file" accept=".json" onchange="loadSession(event); closeGear()" class="hidden"></label>
+                        <button onclick="clearAll(event); closeGear()" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">🗑 Clear All</button>
                         <a href="../support/" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors block">🤝 Support</a>
                     </div>
                 </div>
@@ -53,11 +55,10 @@
                     <button id="authBtn" class="h-10 px-2 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors" onclick="openAuthModal()"><span class="text-[10px] text-zinc-400">Sign In</span></button>
                     <span id="syncStatus" class="hidden absolute left-1/2 -translate-x-1/2 top-full mt-1 text-[9px] font-bold text-[#d4a017] whitespace-nowrap pointer-events-none z-50"></span>
                     <div id="authMenu" class="hidden absolute right-0 top-12 w-48 bg-[#1e1b16] border border-[#4a3f30] rounded-xl shadow-xl z-50 overflow-hidden">
-                        <button onclick="openProfileModal(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">👤 Profile</button>
-                        <button onclick="cloudSave(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">☁️ Save to Cloud</button>
-                        <button onclick="cloudLoad(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">☁️ Load from Cloud</button>
-                        <button onclick="importLocalToCloud(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">📤 Import Local Data</button>
-                        <button onclick="signOut(); document.getElementById('authMenu').classList.add('hidden')" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors">🚪 Sign Out</button>
+                        <button onclick="openProfileModal(); closeAuthMenu()" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">👤 Profile</button>
+                        <button onclick="cloudSave(); closeAuthMenu()" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">☁️ Save to Cloud</button>
+                        <button onclick="cloudLoad(); closeAuthMenu()" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">☁️ Load from Cloud</button>
+                        <button onclick="signOut(); closeAuthMenu()" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors">🚪 Sign Out</button>
                     </div>
                 </div>
             </div>

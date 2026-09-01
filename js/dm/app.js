@@ -42,20 +42,19 @@ export function isVaultActive() {
 }
 
 // ========== MODE TOGGLE ==========
+export function setMode(mode) {
+    document.body.setAttribute('data-mode', mode);
+    localStorage.setItem(MODE_KEY, mode);
+}
+
 export function toggleMode() {
     const isLight = document.body.getAttribute('data-mode') === 'light';
-    const newMode = isLight ? 'dark' : 'light';
-    document.body.setAttribute('data-mode', newMode);
-    localStorage.setItem(MODE_KEY, newMode);
-    document.getElementById('modeToggleIcon').textContent = newMode === 'light' ? '☀️' : '🌙';
+    setMode(isLight ? 'dark' : 'light');
 }
 
 function initMode() {
     const saved = localStorage.getItem(MODE_KEY) || 'dark';
     document.body.setAttribute('data-mode', saved);
-    const chk = document.getElementById('modeToggleChk');
-    if (chk) chk.checked = saved === 'light';
-    document.getElementById('modeToggleIcon').textContent = saved === 'light' ? '☀️' : '🌙';
 }
 
 // ========== TAB SWITCHING ==========
@@ -116,6 +115,7 @@ export function loadSession(event) {
 // ========== EXPOSE TO INLINE HANDLERS ==========
 window.switchTab = switchTab;
 window.toggleMode = toggleMode;
+window.setMode = setMode;
 window.saveSession = saveSession;
 window.loadSession = loadSession;
 

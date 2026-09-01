@@ -105,20 +105,22 @@ function openAuthModal() { document.getElementById('authModal').classList.remove
 function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
 function closeCloudPicker() { document.getElementById('cloudPickerModal').classList.add('hidden'); }
 
+let gearMenuHandler = null;
 let authMenuHandler = null;
-let kebabMenuHandler = null;
 
-function toggleKebab(e) {
+function toggleGear(e) {
     if (e) e.stopPropagation();
-    const menu = document.getElementById('kebabMenu');
+    const menu = document.getElementById('gearMenu');
     const wasHidden = menu.classList.contains('hidden');
     menu.classList.toggle('hidden');
-    if (kebabMenuHandler) { document.removeEventListener('click', kebabMenuHandler); kebabMenuHandler = null; }
+    if (gearMenuHandler) { document.removeEventListener('click', gearMenuHandler); gearMenuHandler = null; }
     if (wasHidden) {
-        kebabMenuHandler = (ev) => { if (!menu.contains(ev.target) && !document.getElementById('kebabBtn').contains(ev.target)) { menu.classList.add('hidden'); document.removeEventListener('click', kebabMenuHandler); kebabMenuHandler = null; } };
-        setTimeout(() => document.addEventListener('click', kebabMenuHandler), 0);
+        gearMenuHandler = (ev) => { if (!menu.contains(ev.target) && !document.getElementById('gearBtn').contains(ev.target)) { menu.classList.add('hidden'); document.removeEventListener('click', gearMenuHandler); gearMenuHandler = null; } };
+        setTimeout(() => document.addEventListener('click', gearMenuHandler), 0);
     }
 }
+
+function closeGear() { document.getElementById('gearMenu').classList.add('hidden'); }
 
 function toggleAuthMenu(e) {
     if (e) e.stopPropagation();
@@ -132,9 +134,12 @@ function toggleAuthMenu(e) {
     }
 }
 
+function closeAuthMenu() { document.getElementById('authMenu').classList.add('hidden'); }
+
 function renderAuthUI() {
     const user = getUser(), profile = getProfile();
     const btn = document.getElementById('authBtn');
+    if (!btn) return;
     if (user) {
         const avatarUrl = profile?.avatar_url || user.user_metadata?.picture || '';
         const name = profile?.nickname || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
@@ -144,7 +149,7 @@ function renderAuthUI() {
     } else {
         btn.innerHTML = '<span class="text-[10px] text-zinc-400">Sign In</span>';
         btn.onclick = openAuthModal;
-        btn.className = 'h-10 px-3 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors';
+        btn.className = 'h-10 px-2 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors';
     }
 }
 
@@ -178,7 +183,9 @@ async function doSaveProfile() {
 
 // ========== WINDOW BINDINGS ==========
 window.openAuthModal = openAuthModal;
-window.toggleKebab = toggleKebab;
+window.toggleGear = toggleGear;
+window.closeGear = closeGear;
+window.closeAuthMenu = closeAuthMenu;
 window.closeAuthModal = closeAuthModal;
 window.signInWithGoogle = signInWithGoogle;
 window.signInWithEmail = () => signInWithEmail(document.getElementById('authEmail').value.trim(), document.getElementById('authPassword').value);

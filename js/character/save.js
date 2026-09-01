@@ -110,8 +110,7 @@ export function loadSheet(silent) {
     applyData(JSON.parse(raw));
 }
 
-export function clearSheet() {
-    if (!confirm('Clear all data? This cannot be undone.')) return;
+export function resetSheet() {
     localStorage.removeItem(SAVE_KEY);
     FIELD_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.value = el.type === 'number' ? '0' : ''; });
     document.getElementById('track_ev').value = '10';
@@ -138,6 +137,11 @@ export function clearSheet() {
     updateThresholds();
     updateAttackBonus();
     autoCache();
+}
+
+export function clearSheet() {
+    if (!confirm('Clear all data? This cannot be undone.')) return;
+    resetSheet();
     showToast('Sheet cleared!');
 }
 

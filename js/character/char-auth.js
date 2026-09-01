@@ -1,5 +1,5 @@
 import { initAuth, getUser, getProfile, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as coreSignOut, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, escHtml, escHtmlAttr } from '../core/auth.js';
-import { gatherData, applyData, autoCache } from './save.js';
+import { gatherData, applyData, autoCache, resetSheet } from './save.js';
 import { SAVE_KEY } from './state.js';
 
 let cloudDirty = false;
@@ -94,6 +94,7 @@ async function importLocalToCloud() {
 async function doSignOut() {
     if (cloudDirty) { const save = confirm('You have unsaved changes. Save to cloud before signing out?'); if (save) await cloudSave(); }
     await coreSignOut();
+    resetSheet();
 }
 
 // ========== AUTH UI ==========
@@ -101,20 +102,22 @@ function openAuthModal() { document.getElementById('authModal').classList.remove
 function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
 function closeCloudPicker() { document.getElementById('cloudPickerModal').classList.add('hidden'); }
 
+let gearMenuHandler = null;
 let authMenuHandler = null;
-let kebabMenuHandler = null;
 
-function toggleKebab(e) {
+function toggleGear(e) {
     if (e) e.stopPropagation();
-    const menu = document.getElementById('kebabMenu');
+    const menu = document.getElementById('gearMenu');
     const wasHidden = menu.classList.contains('hidden');
     menu.classList.toggle('hidden');
-    if (kebabMenuHandler) { document.removeEventListener('click', kebabMenuHandler); kebabMenuHandler = null; }
+    if (gearMenuHandler) { document.removeEventListener('click', gearMenuHandler); gearMenuHandler = null; }
     if (wasHidden) {
-        kebabMenuHandler = (ev) => { if (!menu.contains(ev.target) && !document.getElementById('kebabBtn').contains(ev.target)) { menu.classList.add('hidden'); document.removeEventListener('click', kebabMenuHandler); kebabMenuHandler = null; } };
-        setTimeout(() => document.addEventListener('click', kebabMenuHandler), 0);
+        gearMenuHandler = (ev) => { if (!menu.contains(ev.target) && !document.getElementById('gearBtn').contains(ev.target)) { menu.classList.add('hidden'); document.removeEventListener('click', gearMenuHandler); gearMenuHandler = null; } };
+        setTimeout(() => document.addEventListener('click', gearMenuHandler), 0);
     }
 }
+
+function closeGear() { document.getElementById('gearMenu').classList.add('hidden'); }
 
 function toggleAuthMenu(e) {
     if (e) e.stopPropagation();
@@ -127,6 +130,8 @@ function toggleAuthMenu(e) {
         setTimeout(() => document.addEventListener('click', authMenuHandler), 0);
     }
 }
+
+function closeAuthMenu() { document.getElementById('authMenu').classList.add('hidden'); }
 
 function renderAuthUI() {
     const user = getUser(), profile = getProfile();
@@ -175,7 +180,9 @@ async function doSaveProfile() {
 
 // ========== WINDOW BINDINGS ==========
 window.openAuthModal = openAuthModal;
-window.toggleKebab = toggleKebab;
+window.toggleGear = toggleGear;
+window.closeGear = closeGear;
+window.closeAuthMenu = closeAuthMenu;
 window.closeAuthModal = closeAuthModal;
 window.signInWithGoogle = signInWithGoogle;
 window.signInWithEmail = () => signInWithEmail(document.getElementById('authEmail').value.trim(), document.getElementById('authPassword').value);
