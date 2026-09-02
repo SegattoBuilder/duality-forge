@@ -71,6 +71,7 @@
 .creature-card[draggable] { cursor: grab; }
 .creature-card[draggable]:active { cursor: grabbing; }
 .creature-card.drag-over { border-color: #d4a017; box-shadow: 0 0 12px #d4a01740; }
+.vault-group-drop-over { background: #2a241880; outline: 2px dashed #d4a017; outline-offset: -2px; }
 
 /* Character sheet cards */
 .card {

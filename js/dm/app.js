@@ -1,6 +1,6 @@
-import { initAuth, onAuthChange, escHtml, escHtmlAttr, showAlert } from '../core/auth.js';
+import { initAuth, onAuthChange, escHtml, escHtmlAttr, showAlert, showConfirm } from '../core/auth.js';
 import { initTracker, renderGrid, renderFearDots, autoCache, creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled } from './tracker.js';
-import { initVault, renderVaultGrid, autoCacheVault, vaultCreatures, setVaultCreatures } from './vault.js';
+import { initVault, renderVaultGrid, autoCacheVault, vaultCreatures, setVaultCreatures, vaultGroups, setVaultGroups } from './vault.js';
 import { initChronicle, renderChronicle, autoCacheChronicle, chronicleEntries, setChronicleEntries } from './chronicle.js';
 import { loadCompendium, getLocStr as _getLocStr } from '../core/compendium.js';
 import { initAdversariesTab } from './adversaries.js';
@@ -122,7 +122,7 @@ export function switchTab(tab) {
 export function saveSession() {
     const campaign = document.getElementById('campaignName').value.trim();
     const slug = campaign ? campaign.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' : '';
-    const data = { creatures: creatures(), actionCounters: actionCounters(), fearFilled: fearFilled(), campaign, vaultCreatures: vaultCreatures(), chronicleEntries: chronicleEntries() };
+    const data = { creatures: creatures(), actionCounters: actionCounters(), fearFilled: fearFilled(), campaign, vaultCreatures: vaultCreatures(), vaultGroups: vaultGroups(), chronicleEntries: chronicleEntries() };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -142,6 +142,7 @@ export function loadSession(event) {
             setActionCounters(data.actionCounters || []);
             setFearFilled(data.fearFilled || 0);
             setVaultCreatures(data.vaultCreatures || []);
+            setVaultGroups(data.vaultGroups || []);
             setChronicleEntries(data.chronicleEntries || []);
             if (data.campaign) {
                 document.getElementById('campaignName').value = data.campaign;
@@ -162,6 +163,22 @@ export function loadSession(event) {
     event.target.value = '';
 }
 
+// ========== NEW CAMPAIGN ==========
+export function newCampaign(event) {
+    if (event) { event.stopPropagation(); event.preventDefault(); }
+    showConfirm('Start a new campaign? This will clear all tracker, vault, chronicle, counters and fear data.', () => {
+        setCreatures([]); setActionCounters([]); setFearFilled(0);
+        setVaultCreatures([]); setVaultGroups([]);
+        setChronicleEntries([]);
+        document.getElementById('campaignName').value = '';
+        document.getElementById('campaignName').style.width = '18ch';
+        localStorage.removeItem(CAMPAIGN_KEY);
+        autoCache(); autoCacheVault(); autoCacheChronicle();
+        renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
+        switchTab('tracker');
+    });
+}
+
 // ========== EXPOSE TO INLINE HANDLERS ==========
 window.switchTab = switchTab;
 window.toggleMode = toggleMode;
@@ -170,6 +187,7 @@ window.saveSession = saveSession;
 window.loadSession = loadSession;
 window.toggleActionBar = toggleActionBar;
 window.toggleFearPool = toggleFearPool;
+window.newCampaign = newCampaign;
 
 // ========== INIT ==========
 window.addEventListener('DOMContentLoaded', () => {

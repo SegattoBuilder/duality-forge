@@ -149,7 +149,7 @@ function ensureModal(id, html) {
 
 export function showConfirm(message, onYes, onNo) {
     const modal = ensureModal('customConfirmModal', `<div class="modal-panel p-6 w-full max-w-sm text-center"><p id="customConfirmMsg" class="text-sm text-[#f5efe6] mb-5 font-[Cinzel]"></p><div class="flex gap-3"><button id="customConfirmYes" class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">Yes</button><button id="customConfirmNo" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880]">No</button></div></div>`);
-    document.getElementById('customConfirmMsg').textContent = message;
+    document.getElementById('customConfirmMsg').innerHTML = message;
     modal.classList.remove('hidden');
     const cleanup = () => { modal.classList.add('hidden'); };
     document.getElementById('customConfirmYes').onclick = () => { cleanup(); if (onYes) onYes(); };

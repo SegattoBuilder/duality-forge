@@ -6,9 +6,10 @@ import { openDatabase, closeDatabase, fetchData, filterCards, closeCardDetail, a
 import { addInventoryItem } from './inventory.js';
 import { addExperience } from './experience.js';
 import { addGearItem, addWeapon, addArmor, addItem, addConsumable } from './gear.js';
-import { autoCache, saveSheet, loadSheet, clearSheet, updateExportIndicator } from './save.js';
+import { autoCache, saveSheet, loadSheet, clearSheet, resetSheet, updateExportIndicator } from './save.js';
 import { initCharAuth } from './char-auth.js';
 import { loadCompendium } from '../core/compendium.js';
+import { showConfirm } from '../core/auth.js';
 
 // Expose to global for inline handlers
 window.updateThresholds = updateThresholds;
@@ -25,9 +26,18 @@ window.addWeapon = addWeapon;
 window.addArmor = addArmor;
 window.addItem = addItem;
 window.addConsumable = addConsumable;
+function newCharacter(event) {
+    if (event) { event.stopPropagation(); event.preventDefault(); }
+    showConfirm('Start a new character? This will clear all sheet data.', () => {
+        resetSheet();
+        switchModernTab('tab-combat');
+    });
+}
+
 window.saveSheet = saveSheet;
 window.loadSheet = loadSheet;
 window.clearSheet = clearSheet;
+window.newCharacter = newCharacter;
 window.autoCache = autoCache;
 window.toggleMode = toggleMode;
 window.setMode = setMode;

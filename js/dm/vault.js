@@ -1,20 +1,33 @@
-import { escHtml, escHtmlAttr, getNextName } from './app.js';
+import { escHtml, escHtmlAttr, getNextName, switchTab } from './app.js';
 import { creatures, autoCache, renderGrid, editCharacterCard, editCustomCard, editEnemyCard, renderCard } from './tracker.js';
 import { showConfirm } from '../core/auth.js';
 
 const VAULT_KEY = 'dh_dm_vault';
+const VAULT_GROUPS_KEY = 'dh_dm_vault_groups';
+const VAULT_COLLAPSED_KEY = 'dh_dm_vault_collapsed';
 let _vaultCreatures = [];
+let _vaultGroups = [];
+let _collapsedGroups = {};
 
 export function vaultCreatures() { return _vaultCreatures; }
 export function setVaultCreatures(v) { _vaultCreatures = v; }
+export function vaultGroups() { return _vaultGroups; }
+export function setVaultGroups(v) { _vaultGroups = v; }
 
 export function autoCacheVault() {
     localStorage.setItem(VAULT_KEY, JSON.stringify(_vaultCreatures));
+    localStorage.setItem(VAULT_GROUPS_KEY, JSON.stringify(_vaultGroups));
+    localStorage.setItem(VAULT_COLLAPSED_KEY, JSON.stringify(_collapsedGroups));
     if (typeof window._markCloudDirty === 'function') window._markCloudDirty();
 }
 
 export function initVault() {
     try { _vaultCreatures = JSON.parse(localStorage.getItem(VAULT_KEY)) || []; } catch { _vaultCreatures = []; }
+    try {
+        const raw = JSON.parse(localStorage.getItem(VAULT_GROUPS_KEY)) || [];
+        _vaultGroups = raw.map(g => typeof g === 'string' ? { name: g, disposable: false } : g);
+    } catch { _vaultGroups = []; }
+    try { _collapsedGroups = JSON.parse(localStorage.getItem(VAULT_COLLAPSED_KEY)) || {}; } catch { _collapsedGroups = {}; }
 }
 
 // ========== STASH / DEPLOY ==========
@@ -37,6 +50,29 @@ function deployToTracker(id, asIs) {
     if (!asIs) { creature.hpFilled = creature.hpMax; creature.stressFilled = creature.stressMax; creature.hopeFilled = creature.hopeMax; creature.armorFilled = creature.armorMax; }
     creatures().push(creature);
     autoCache(); autoCacheVault(); renderGrid(); renderVaultGrid();
+}
+
+function deployGroupToTracker(group) {
+    const groupNames = _vaultGroups.map(g => g.name);
+    const members = _vaultCreatures.filter(c => group === '__ungrouped' ? (!c.vaultGroup || !groupNames.includes(c.vaultGroup)) : c.vaultGroup === group);
+    if (!members.length) return;
+    const label = group === '__ungrouped' ? 'all ungrouped creatures' : `all creatures from &quot;${escHtml(group)}&quot;`;
+    const gObj = _vaultGroups.find(g => g.name === group);
+    const extra = gObj?.disposable ? `<label class="flex items-center gap-2 mt-3 cursor-pointer"><input type="checkbox" id="deployDeleteGroup" class="accent-[#d4a017]" checked><span class="text-xs text-zinc-400">Delete group after deploy</span></label>` : '';
+    showConfirm(`Deploy ${label} to tracker?${extra}`, () => {
+        const deleteGroup = gObj?.disposable && document.getElementById('deployDeleteGroup')?.checked;
+        members.forEach(c => {
+            c.hpFilled = c.hpMax; c.stressFilled = c.stressMax; c.hopeFilled = c.hopeMax; c.armorFilled = c.armorMax;
+            creatures().push(c);
+        });
+        _vaultCreatures = _vaultCreatures.filter(c => !members.includes(c));
+        if (deleteGroup) {
+            _vaultGroups = _vaultGroups.filter(g => g.name !== group);
+            delete _collapsedGroups[group];
+        }
+        autoCache(); autoCacheVault(); renderGrid(); renderVaultGrid();
+        switchTab('tracker');
+    });
 }
 
 // ========== VAULT CREATURE MANAGEMENT ==========
@@ -143,7 +179,7 @@ function renderVaultCard(creature) {
 // ========== VAULT DRAG & DROP ==========
 let vaultDraggedId = null;
 function onVaultDragStart(e, id) { vaultDraggedId = id; e.dataTransfer.effectAllowed = 'move'; e.target.style.opacity = '0.4'; }
-function onVaultDragEnd(e) { e.target.style.opacity = ''; vaultDraggedId = null; }
+function onVaultDragEnd(e) { e.target.style.opacity = ''; vaultDraggedId = null; document.querySelectorAll('.vault-group-drop-over').forEach(el => el.classList.remove('vault-group-drop-over')); }
 function onVaultDrop(e, targetId) {
     e.preventDefault();
     if (!vaultDraggedId || vaultDraggedId === targetId) return;
@@ -153,16 +189,73 @@ function onVaultDrop(e, targetId) {
     _vaultCreatures.splice(toIdx, 0, moved);
     autoCacheVault(); renderVaultGrid();
 }
+function onGroupDrop(e, group) {
+    e.preventDefault(); e.stopPropagation();
+    e.currentTarget.classList.remove('vault-group-drop-over');
+    if (!vaultDraggedId) return;
+    const c = _vaultCreatures.find(c => c.id === vaultDraggedId);
+    if (!c) return;
+    if (group === '__ungrouped') delete c.vaultGroup; else c.vaultGroup = group;
+    autoCacheVault(); renderVaultGrid();
+}
 
-// ========== VAULT GRID ==========
-export function renderVaultGrid() {
-    const grid = document.getElementById('vaultGrid');
-    if (_vaultCreatures.length === 0) {
-        grid.innerHTML = '<div class="col-span-full text-center py-20"><div class="text-zinc-600 text-sm italic">Vault is empty. Use 📦 on tracker cards to stash creatures here.</div></div>';
-        return;
-    }
-    grid.innerHTML = '';
-    _vaultCreatures.forEach(creature => {
+// ========== VAULT GROUPS ==========
+function addVaultGroup() {
+    const input = document.getElementById('vaultGroupInput');
+    const name = (input.value || '').trim();
+    if (!name || _vaultGroups.some(g => g.name === name)) { input.value = ''; return; }
+    const disposable = document.getElementById('vaultGroupDisposable').checked;
+    _vaultGroups.push({ name, disposable });
+    input.value = '';
+    document.getElementById('vaultGroupDisposable').checked = false;
+    hideVaultGroupForm();
+    autoCacheVault(); renderVaultGrid();
+}
+
+function showVaultGroupForm() {
+    document.getElementById('vaultGroupForm').classList.remove('hidden');
+    document.getElementById('vaultGroupToggle').classList.add('hidden');
+    document.getElementById('vaultGroupInput').focus();
+}
+
+function hideVaultGroupForm() {
+    document.getElementById('vaultGroupForm').classList.add('hidden');
+    document.getElementById('vaultGroupToggle').classList.remove('hidden');
+    document.getElementById('vaultGroupInput').value = '';
+}
+
+function renameVaultGroup(oldName) {
+    const newName = prompt('Rename group:', oldName);
+    if (!newName || newName.trim() === oldName || _vaultGroups.some(g => g.name === newName.trim())) return;
+    const trimmed = newName.trim();
+    const gObj = _vaultGroups.find(g => g.name === oldName);
+    if (gObj) gObj.name = trimmed;
+    _vaultCreatures.forEach(c => { if (c.vaultGroup === oldName) c.vaultGroup = trimmed; });
+    autoCacheVault(); renderVaultGrid();
+}
+
+function removeVaultGroup(name) {
+    _vaultGroups = _vaultGroups.filter(g => g.name !== name);
+    _vaultCreatures.forEach(c => { if (c.vaultGroup === name) delete c.vaultGroup; });
+    delete _collapsedGroups[name];
+    autoCacheVault(); renderVaultGrid();
+}
+
+function toggleVaultGroupCollapse(name) {
+    _collapsedGroups[name] = !_collapsedGroups[name];
+    localStorage.setItem(VAULT_COLLAPSED_KEY, JSON.stringify(_collapsedGroups));
+    renderVaultGrid();
+}
+
+function assignVaultGroup(creatureId, group) {
+    const c = _vaultCreatures.find(c => c.id === creatureId);
+    if (!c) return;
+    if (group) c.vaultGroup = group; else delete c.vaultGroup;
+    autoCacheVault(); renderVaultGrid();
+}
+
+function renderVaultGroupCards(list, container) {
+    list.forEach(creature => {
         const div = document.createElement('div');
         div.id = 'v-' + creature.id;
         div.className = `creature-card ${creature.hpFilled <= 0 ? 'dead' : ''}`;
@@ -170,12 +263,83 @@ export function renderVaultGrid() {
         div.ondragstart = (e) => onVaultDragStart(e, creature.id);
         div.ondragend = onVaultDragEnd;
         div.ondragover = (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; };
-        div.ondragenter = (e) => { if (creature.id !== vaultDraggedId) div.classList.add('drag-over'); };
+        div.ondragenter = () => { if (creature.id !== vaultDraggedId) div.classList.add('drag-over'); };
         div.ondragleave = () => div.classList.remove('drag-over');
         div.ondrop = (e) => onVaultDrop(e, creature.id);
         div.innerHTML = buildVaultCardInner(creature);
-        grid.appendChild(div);
+        container.appendChild(div);
     });
+}
+
+// ========== VAULT GRID ==========
+export function renderVaultGrid() {
+    const grid = document.getElementById('vaultGrid');
+    if (_vaultCreatures.length === 0 && _vaultGroups.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center py-20"><div class="text-zinc-600 text-sm italic">Vault is empty. Use 📦 on tracker cards to stash creatures here.</div></div>';
+        return;
+    }
+    grid.innerHTML = '';
+
+    if (_vaultGroups.length === 0) {
+        renderVaultGroupCards(_vaultCreatures, grid);
+        return;
+    }
+
+    const ungrouped = _vaultCreatures.filter(c => !c.vaultGroup || !_vaultGroups.some(g => g.name === c.vaultGroup));
+
+    _vaultGroups.forEach(({ name: group, disposable }) => {
+        const members = _vaultCreatures.filter(c => c.vaultGroup === group);
+        const collapsed = !!_collapsedGroups[group];
+        const section = document.createElement('div');
+        section.className = 'col-span-full';
+        section.innerHTML = `<div class="flex items-center gap-2 mb-3 mt-4 first:mt-0 cursor-pointer select-none rounded-lg px-2 py-1 transition-colors" onclick="window._toggleVaultGroupCollapse('${escHtmlAttr(group)}')"
+            ondragover="event.preventDefault(); event.dataTransfer.dropEffect='move'; this.classList.add('vault-group-drop-over')"
+            ondragleave="this.classList.remove('vault-group-drop-over')"
+            ondrop="window._onGroupDrop(event, '${escHtmlAttr(group)}')">
+            <span class="text-zinc-500 text-xs transition-transform ${collapsed ? '' : 'rotate-90'}" style="display:inline-block">▶</span>
+            <span class="font-[Cinzel] text-xs uppercase tracking-widest font-bold" style="color: var(--accent-1)">${escHtml(group)}</span>
+            <span class="text-[10px] text-zinc-600">(${members.length})</span>
+            ${disposable ? '<span class="text-[10px] text-zinc-700" title="Disposable">🗑</span>' : ''}
+            <button onclick="event.stopPropagation(); window._renameVaultGroup('${escHtmlAttr(group)}')" class="text-zinc-600 hover:text-[#d4a017] text-[10px]" title="Rename">✏️</button>
+            <button onclick="event.stopPropagation(); window._removeVaultGroup('${escHtmlAttr(group)}')" class="text-zinc-700 hover:text-red-500 text-[10px]" title="Remove group">✕</button>
+            <div class="flex-1 border-t border-[#3d362a]"></div>
+            ${members.length ? `<button onclick="event.stopPropagation(); window._deployGroupToTracker('${escHtmlAttr(group)}')" class="btn-action text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase text-white font-[Cinzel] whitespace-nowrap">⚔️ Deploy All</button>` : ''}
+        </div>`;
+        grid.appendChild(section);
+        if (!collapsed) {
+            const subgrid = document.createElement('div');
+            subgrid.className = 'col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-2';
+            if (members.length === 0) {
+                subgrid.innerHTML = '<div class="col-span-full text-center py-4"><div class="text-zinc-700 text-xs italic">No creatures in this group.</div></div>';
+            } else {
+                renderVaultGroupCards(members, subgrid);
+            }
+            grid.appendChild(subgrid);
+        }
+    });
+
+    if (ungrouped.length > 0) {
+        const uCollapsed = !!_collapsedGroups['__ungrouped'];
+        const section = document.createElement('div');
+        section.className = 'col-span-full';
+        section.innerHTML = `<div class="flex items-center gap-2 mb-3 mt-4 cursor-pointer select-none rounded-lg px-2 py-1 transition-colors" onclick="window._toggleVaultGroupCollapse('__ungrouped')"
+            ondragover="event.preventDefault(); event.dataTransfer.dropEffect='move'; this.classList.add('vault-group-drop-over')"
+            ondragleave="this.classList.remove('vault-group-drop-over')"
+            ondrop="window._onGroupDrop(event, '__ungrouped')">
+            <span class="text-zinc-500 text-xs transition-transform ${uCollapsed ? '' : 'rotate-90'}" style="display:inline-block">▶</span>
+            <span class="font-[Cinzel] text-xs uppercase tracking-widest font-bold text-zinc-500">Ungrouped</span>
+            <span class="text-[10px] text-zinc-600">(${ungrouped.length})</span>
+            <div class="flex-1 border-t border-[#3d362a]"></div>
+            <button onclick="event.stopPropagation(); window._deployGroupToTracker('__ungrouped')" class="btn-action text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase text-white font-[Cinzel] whitespace-nowrap">⚔️ Deploy All</button>
+        </div>`;
+        grid.appendChild(section);
+        if (!uCollapsed) {
+            const subgrid = document.createElement('div');
+            subgrid.className = 'col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-2';
+            renderVaultGroupCards(ungrouped, subgrid);
+            grid.appendChild(subgrid);
+        }
+    }
 }
 
 export function clearVault(event) {
@@ -198,3 +362,12 @@ window._editVaultCharacterCard = (id) => editCharacterCard(id, true);
 window._editVaultCustomCard = (id) => editCustomCard(id, true);
 window._editVaultEnemyCard = (id) => editEnemyCard(id, true);
 window.clearVault = clearVault;
+window._addVaultGroup = addVaultGroup;
+window._showVaultGroupForm = showVaultGroupForm;
+window._hideVaultGroupForm = hideVaultGroupForm;
+window._renameVaultGroup = renameVaultGroup;
+window._removeVaultGroup = removeVaultGroup;
+window._assignVaultGroup = assignVaultGroup;
+window._toggleVaultGroupCollapse = toggleVaultGroupCollapse;
+window._deployGroupToTracker = deployGroupToTracker;
+window._onGroupDrop = onGroupDrop;

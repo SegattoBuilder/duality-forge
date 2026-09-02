@@ -61,9 +61,8 @@
                                 <button onclick="setMode('light')" class="flex-1 text-[10px] py-1.5 rounded-lg bg-[#2a2418] border border-[#3d362a] hover:border-[#d4a017] transition-colors" title="Light">☀️</button>
                             </div>
                         </div>
+                        <button onclick="newCampaign(event); closeGear()" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">🆕 New Campaign</button>
                         <button onclick="saveSession(); closeGear()" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">💾 Save to File</button>
-                        <label class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a] block cursor-pointer">📂 Load from File<input type="file" accept=".json" onchange="loadSession(event); closeGear()" class="hidden"></label>
-                        <button onclick="clearAll(event); closeGear()" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">🗑 Clear All</button>
                         <button id="actionBarGearBtn" onclick="toggleActionBar(); closeGear()" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">📐 Collapse Actions</button>
                         <button id="fearGearBtn" onclick="toggleFearPool(); closeGear()" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">🕳️ Collapse Fear Pool</button>
                         <a href="../support/" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors block">🤝 Support</a>
@@ -163,6 +162,18 @@
 
 <!-- VAULT TAB -->
 <div id="panelVault" class="hidden mt-52 sm:mt-36">
+    <div class="flex items-center gap-2 mb-4">
+        <div id="vaultGroupForm" class="hidden flex-1 flex items-center gap-2">
+            <input id="vaultGroupInput" type="text" placeholder="Group name..." maxlength="40" onkeydown="if(event.key==='Enter')window._addVaultGroup(); if(event.key==='Escape')window._hideVaultGroupForm()" class="flex-1 bg-[#1e1b16] border border-[#4a3f30] rounded-lg px-3 py-2 text-xs outline-none focus:border-[#d4a017] placeholder-zinc-600">
+            <label class="flex items-center gap-1.5 cursor-pointer whitespace-nowrap" title="Delete group when deployed">
+                <input type="checkbox" id="vaultGroupDisposable" class="accent-[#d4a017]">
+                <span class="text-[10px] text-zinc-500">🗑 Disposable</span>
+            </label>
+            <button onclick="window._addVaultGroup()" class="bg-[#2a2418] border border-[#4a3f30] text-[10px] px-3 py-2 rounded-lg font-bold uppercase text-[#d4a017] font-[Cinzel] hover:border-[#d4a017]">Add</button>
+            <button onclick="window._hideVaultGroupForm()" class="text-zinc-600 hover:text-zinc-400 text-sm leading-none">✕</button>
+        </div>
+        <button id="vaultGroupToggle" onclick="window._showVaultGroupForm()" class="bg-[#2a2418] border border-[#4a3f30] text-[10px] px-3 py-2 rounded-lg font-bold uppercase text-[#d4a017] font-[Cinzel] hover:border-[#d4a017]">+ Group</button>
+    </div>
     <div id="vaultGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"><div class="col-span-full text-center py-20"><div class="text-zinc-600 text-sm italic">Vault is empty. Use 📦 on tracker cards to stash creatures here.</div></div></div>
 </div>
 

@@ -1,6 +1,6 @@
 import { getUser, getProfile, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as coreSignOut, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
 import { creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled, autoCache, renderGrid, renderFearDots } from './tracker.js';
-import { vaultCreatures, setVaultCreatures, autoCacheVault, renderVaultGrid } from './vault.js';
+import { vaultCreatures, setVaultCreatures, vaultGroups, setVaultGroups, autoCacheVault, renderVaultGrid } from './vault.js';
 import { chronicleEntries, setChronicleEntries, autoCacheChronicle, renderChronicle } from './chronicle.js';
 import { CAMPAIGN_KEY, switchTab } from './app.js';
 
@@ -45,7 +45,7 @@ function stopCloudAutoSave() {
 async function cloudSave() {
     if (!getUser()) { openAuthModal(); return; }
     const campaign = document.getElementById('campaignName').value.trim() || 'My Campaign';
-    const data = { creatures: creatures(), actionCounters: actionCounters(), fearFilled: fearFilled(), campaign, vaultCreatures: vaultCreatures(), chronicleEntries: chronicleEntries() };
+    const data = { creatures: creatures(), actionCounters: actionCounters(), fearFilled: fearFilled(), campaign, vaultCreatures: vaultCreatures(), vaultGroups: vaultGroups(), chronicleEntries: chronicleEntries() };
     const { error } = await cloudSaveRow('sessions', { campaign_name: campaign }, data);
     if (error) showAlert('Cloud save failed: ' + error);
     else showSyncStatus('☁️ Saved');
@@ -70,7 +70,7 @@ async function loadCloudSession(sessionId) {
     if (!session) { showAlert('Failed to load session.'); return; }
     const d = session.data;
     setCreatures(d.creatures || []); setActionCounters(d.actionCounters || []); setFearFilled(d.fearFilled || 0);
-    setVaultCreatures(d.vaultCreatures || []); setChronicleEntries(d.chronicleEntries || []);
+    setVaultCreatures(d.vaultCreatures || []); setVaultGroups(d.vaultGroups || []); setChronicleEntries(d.chronicleEntries || []);
     if (d.campaign) { document.getElementById('campaignName').value = d.campaign; localStorage.setItem(CAMPAIGN_KEY, d.campaign); }
     autoCache(); autoCacheVault(); autoCacheChronicle(); renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
     closeCloudPicker(); showSyncStatus('☁️ Loaded');
@@ -93,7 +93,7 @@ async function importLocalToCloud() {
 async function doSignOut() {
     const finishSignOut = async () => {
         await coreSignOut();
-        setCreatures([]); setActionCounters([]); setFearFilled(0); setVaultCreatures([]); setChronicleEntries([]);
+        setCreatures([]); setActionCounters([]); setFearFilled(0); setVaultCreatures([]); setVaultGroups([]); setChronicleEntries([]);
         document.getElementById('campaignName').value = '';
         localStorage.removeItem(CAMPAIGN_KEY);
         autoCache(); autoCacheVault(); autoCacheChronicle(); renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
