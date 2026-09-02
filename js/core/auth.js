@@ -100,13 +100,11 @@ function showConsentModal(onAccept) {
 
 // ========== AUTH ACTIONS ==========
 export async function signInWithGoogle() {
-    requireConsent(async () => {
-        const { error } = await getSupabase().auth.signInWithOAuth({
-            provider: 'google',
-            options: { redirectTo: window.location.origin + window.location.pathname }
-        });
-        if (error) showAlert('Google sign-in failed: ' + error.message);
+    const { error } = await getSupabase().auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + window.location.pathname }
     });
+    if (error) showAlert('Google sign-in failed: ' + error.message);
 }
 
 export async function signInWithEmail(email, password) {
@@ -119,11 +117,9 @@ export async function signInWithEmail(email, password) {
 export async function signUpWithEmail(email, password) {
     if (!email || !password) { showAlert('Please enter email and password.'); return; }
     if (password.length < 6) { showAlert('Password must be at least 6 characters.'); return; }
-    requireConsent(async () => {
-        const { error } = await getSupabase().auth.signUp({ email, password });
-        if (error) showAlert('Sign-up failed: ' + error.message);
-        else showAlert('Check your email for a confirmation link!');
-    });
+    const { error } = await getSupabase().auth.signUp({ email, password });
+    if (error) showAlert('Sign-up failed: ' + error.message);
+    else showAlert('Check your email for a confirmation link!');
 }
 
 export async function signOut() {
@@ -163,11 +159,11 @@ export async function saveProfile(profile) {
 }
 
 // ========== GENERIC CLOUD SAVE/LOAD ==========
-export async function cloudSaveRow(table, matchFields, data) {
+export async function cloudSaveRow(table, matchFields, data, { isAutosave = false } = {}) {
     if (!currentUser) return { error: 'Not signed in' };
     const sb = getSupabase();
 
-    const query = sb.from(table).select('id');
+    const query = sb.from(table).select('id').eq('user_id', currentUser.id).eq('is_autosave', isAutosave);
     for (const [k, v] of Object.entries(matchFields)) query.eq(k, v);
     const { data: existing } = await query.limit(1);
 
@@ -178,7 +174,7 @@ export async function cloudSaveRow(table, matchFields, data) {
             .eq('id', existing[0].id));
     } else {
         ({ error } = await sb.from(table)
-            .insert({ user_id: currentUser.id, ...matchFields, data }));
+            .insert({ user_id: currentUser.id, ...matchFields, data, is_autosave: isAutosave }));
     }
     return { error: error?.message || null };
 }

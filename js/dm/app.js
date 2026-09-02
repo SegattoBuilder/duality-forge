@@ -190,7 +190,7 @@ window.toggleFearPool = toggleFearPool;
 window.newCampaign = newCampaign;
 
 // ========== INIT ==========
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
     initMode();
 
     // Load from localStorage
@@ -222,7 +222,8 @@ window.addEventListener('DOMContentLoaded', () => {
     loadCompendium();
     initAdversariesTab();
     initDmAuth();
-    initAuth();
+    await initAuth();
+    if (typeof window._ensureCampaignPicker === 'function') window._ensureCampaignPicker();
 
     const savedDmTab = localStorage.getItem('dh_dm_active_tab');
     if (savedDmTab && savedDmTab !== 'tracker') switchTab(savedDmTab);

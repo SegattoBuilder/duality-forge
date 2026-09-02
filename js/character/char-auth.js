@@ -1,18 +1,34 @@
 import { initAuth, getUser, getProfile, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as coreSignOut, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
+import { showCloudPicker } from '../core/cloud-picker.js';
 import { gatherData, applyData, autoCache, resetSheet } from './save.js';
 import { SAVE_KEY } from './state.js';
 
-let cloudDirty = false;
 let cloudAutoSaveInterval = null;
+let lastSavedSnapshot = null;
 let syncStatusTimer = null;
+let characterPickerShown = false;
 
 export function initCharAuth() {
-    initAuth();
     onAuthChange(renderAuthUI);
     onAuthChange(user => { if (user) startCloudAutoSave(); else stopCloudAutoSave(); });
-    window._markCloudDirty = () => { if (getUser()) cloudDirty = true; };
-    document.addEventListener('input', () => { if (getUser()) cloudDirty = true; });
-    document.addEventListener('change', () => { if (getUser()) cloudDirty = true; });
+    onAuthChange(user => {
+        if (user && !characterPickerShown) {
+            characterPickerShown = true;
+            const localRaw = localStorage.getItem(SAVE_KEY);
+            let hasLocal = false;
+            try { const d = JSON.parse(localRaw); hasLocal = d && (d.fields?.charName || (d.cards && d.cards.length)); } catch {}
+            if (!hasLocal) showCharacterPicker();
+        }
+    });
+    window._ensureCharacterPicker = () => {
+        if (getUser() && !characterPickerShown) {
+            characterPickerShown = true;
+            const localRaw = localStorage.getItem(SAVE_KEY);
+            let hasLocal = false;
+            try { const d = JSON.parse(localRaw); hasLocal = d && (d.fields?.charName || (d.cards && d.cards.length)); } catch {}
+            if (!hasLocal) showCharacterPicker();
+        }
+    };
 }
 
 function showSyncStatus(text) {
@@ -34,15 +50,26 @@ function showToast(message) {
 
 function startCloudAutoSave() {
     if (cloudAutoSaveInterval) return;
+    lastSavedSnapshot = JSON.stringify(gatherData());
     cloudAutoSaveInterval = setInterval(async () => {
-        if (!getUser() || !cloudDirty) return;
-        cloudDirty = false; await cloudSave();
-    }, 5 * 60 * 1000);
+        if (!getUser()) return;
+        const current = JSON.stringify(gatherData());
+        if (current === lastSavedSnapshot) return;
+        lastSavedSnapshot = current;
+        await cloudAutoSaveNow();
+    }, 30 * 1000);
 }
 
 function stopCloudAutoSave() {
     if (cloudAutoSaveInterval) { clearInterval(cloudAutoSaveInterval); cloudAutoSaveInterval = null; }
-    cloudDirty = false;
+    lastSavedSnapshot = null;
+}
+
+async function cloudAutoSaveNow() {
+    const data = gatherData();
+    const charName = data.fields?.charName?.trim() || 'My Character';
+    const { error } = await cloudSaveRow('characters', { character_name: charName }, data, { isAutosave: true });
+    if (!error) showSyncStatus('☁️ Auto-saved');
 }
 
 // ========== CLOUD SAVE / LOAD ==========
@@ -52,35 +79,15 @@ async function cloudSave() {
     const charName = data.fields?.charName?.trim() || 'My Character';
     const { error } = await cloudSaveRow('characters', { character_name: charName }, data);
     if (error) showAlert('Cloud save failed: ' + error);
-    else showSyncStatus('☁️ Saved');
+    else { lastSavedSnapshot = JSON.stringify(data); showSyncStatus('☁️ Saved'); }
 }
 
 async function cloudLoad() {
     if (!getUser()) { openAuthModal(); return; }
-    const { rows, error } = await cloudLoadRows('characters');
-    if (error) { showAlert('Cloud load failed: ' + error); return; }
-    if (!rows.length) { showAlert('No cloud saves found.'); return; }
-    const picker = document.getElementById('cloudSessionList');
-    picker.innerHTML = rows.map(s => `<div class="flex items-center gap-2 p-3 bg-[#1a1714] border border-[#4a3f30] rounded-xl hover:border-[#d4a017] cursor-pointer transition-colors" onclick="window._loadCloudChar('${s.id}')">
-        <div class="flex-1"><div class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">${escHtml(s.character_name)}</div><div class="text-[10px] text-zinc-500">${new Date(s.updated_at).toLocaleString()}</div></div>
-        <button onclick="event.stopPropagation(); window._deleteCloudChar('${s.id}')" class="text-zinc-700 hover:text-red-500 text-sm" title="Delete">🗑</button>
-    </div>`).join('');
-    document.getElementById('cloudPickerModal').classList.remove('hidden');
-}
-
-async function loadCloudChar(charId) {
-    const { rows } = await cloudLoadRows('characters');
-    const row = rows.find(r => r.id === charId);
-    if (!row) { showAlert('Failed to load character.'); return; }
-    applyData(row.data);
-    localStorage.setItem(SAVE_KEY, JSON.stringify(row.data));
-    closeCloudPicker(); showSyncStatus('☁️ Loaded');
-}
-
-async function deleteCloudChar(charId) {
-    showConfirm('Delete this cloud save?', async () => {
-        const { error } = await cloudDeleteRow('characters', charId);
-        if (error) showAlert('Delete failed: ' + error); else cloudLoad();
+    showCloudPicker({
+        table: 'characters', nameColumn: 'character_name',
+        modalId: 'characterPickerModal', listId: 'characterPickerList',
+        onPick: applyCharacterRow, emptyText: 'No saved characters found.'
     });
 }
 
@@ -92,13 +99,6 @@ async function importLocalToCloud() {
 }
 
 async function doSignOut() {
-    if (cloudDirty) {
-        showConfirm('You have unsaved changes. Save to cloud before signing out?',
-            async () => { await cloudSave(); await coreSignOut(); resetSheet(); },
-            async () => { await coreSignOut(); resetSheet(); }
-        );
-        return;
-    }
     await coreSignOut();
     resetSheet();
 }
@@ -106,7 +106,6 @@ async function doSignOut() {
 // ========== AUTH UI ==========
 function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); document.getElementById('authEmail').value = ''; document.getElementById('authPassword').value = ''; }
 function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
-function closeCloudPicker() { document.getElementById('cloudPickerModal').classList.add('hidden'); }
 
 let gearMenuHandler = null;
 let authMenuHandler = null;
@@ -197,10 +196,31 @@ window.signOut = doSignOut;
 window.cloudSave = cloudSave;
 window.cloudLoad = cloudLoad;
 window.importLocalToCloud = importLocalToCloud;
-window._loadCloudChar = loadCloudChar;
-window._deleteCloudChar = deleteCloudChar;
-window.closeCloudPicker = closeCloudPicker;
+window.closeCharacterPicker = closeCharacterPicker;
+window.startNewCharacter = startNewCharacter;
 window.openProfileModal = openProfileModal;
 window.closeProfileModal = closeProfileModal;
 window.previewAvatar = previewAvatar;
 window.saveProfile = doSaveProfile;
+
+// ========== CHARACTER PICKER ==========
+function applyCharacterRow(row) {
+    applyData(row.data);
+    localStorage.setItem(SAVE_KEY, JSON.stringify(row.data));
+    showSyncStatus('☁️ Loaded');
+}
+
+async function showCharacterPicker() {
+    showCloudPicker({
+        table: 'characters', nameColumn: 'character_name',
+        modalId: 'characterPickerModal', listId: 'characterPickerList',
+        onPick: applyCharacterRow, emptyText: 'No saved characters found.'
+    });
+}
+
+function closeCharacterPicker() { document.getElementById('characterPickerModal').classList.add('hidden'); }
+
+function startNewCharacter() {
+    closeCharacterPicker();
+    resetSheet();
+}

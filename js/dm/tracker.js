@@ -18,7 +18,6 @@ export function autoCache() {
     localStorage.setItem(SAVE_KEY, JSON.stringify(_creatures));
     localStorage.setItem(COUNTERS_KEY, JSON.stringify(_actionCounters));
     localStorage.setItem(FEAR_KEY, String(_fearFilled));
-    if (typeof window._markCloudDirty === 'function') window._markCloudDirty();
 }
 
 // ========== INIT ==========

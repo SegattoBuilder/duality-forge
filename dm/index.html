@@ -288,11 +288,24 @@
     </div>
 </div>
 
-<!-- Cloud Session Picker Modal -->
-<div id="cloudPickerModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-center justify-center" onclick="if(event.target===this)closeCloudPicker()">
-    <div class="modal-panel p-6 w-full max-w-sm">
-        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5"><h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Cloud Saves</h2><button onclick="closeCloudPicker()" class="text-[#6b5d4d] hover:text-white text-2xl leading-none">✕</button></div>
-        <div id="cloudSessionList" class="space-y-2 max-h-[60vh] overflow-y-auto"></div>
+
+<!-- Campaign Picker Modal (shown on load for logged-in users) -->
+<div id="campaignPickerModal" class="fixed inset-0 modal-overlay hidden z-[60] p-4 overflow-y-auto flex items-center justify-center" style="background:rgba(0,0,0,0.5);backdrop-filter:blur(6px)">
+    <div class="modal-panel p-6 w-full max-w-md">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5">
+            <h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Choose a Campaign</h2>
+            <button onclick="closeCampaignPicker()" class="text-[#6b5d4d] hover:text-white text-2xl leading-none">✕</button>
+        </div>
+        <div class="space-y-4">
+            <button onclick="startNewCampaign()" class="w-full flex items-center justify-center gap-3 p-4 bg-[#1a1714] border border-[#4a3f30] rounded-xl hover:border-[#d4a017] transition-colors cursor-pointer">
+                <span class="text-2xl">🆕</span>
+                <span class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">New Campaign</span>
+            </button>
+            <div class="flex items-center gap-3"><div class="flex-1 border-t border-[#3d362a]"></div><span class="text-[10px] text-zinc-600 uppercase">or load existing</span><div class="flex-1 border-t border-[#3d362a]"></div></div>
+            <div id="campaignPickerList" class="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto">
+                <div class="col-span-2 text-center text-zinc-600 text-xs py-4">Loading campaigns...</div>
+            </div>
+        </div>
     </div>
 </div>
 

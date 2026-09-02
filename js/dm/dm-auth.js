@@ -1,17 +1,41 @@
 import { getUser, getProfile, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as coreSignOut, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
+import { showCloudPicker } from '../core/cloud-picker.js';
 import { creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled, autoCache, renderGrid, renderFearDots } from './tracker.js';
 import { vaultCreatures, setVaultCreatures, vaultGroups, setVaultGroups, autoCacheVault, renderVaultGrid } from './vault.js';
 import { chronicleEntries, setChronicleEntries, autoCacheChronicle, renderChronicle } from './chronicle.js';
 import { CAMPAIGN_KEY, switchTab } from './app.js';
 
-let cloudDirty = false;
 let cloudAutoSaveInterval = null;
+let lastSavedSnapshot = null;
 let syncStatusTimer = null;
+
+let campaignPickerShown = false;
+
+function gatherDmData() {
+    const campaign = document.getElementById('campaignName').value.trim() || 'My Campaign';
+    return { creatures: creatures(), actionCounters: actionCounters(), fearFilled: fearFilled(), campaign, vaultCreatures: vaultCreatures(), vaultGroups: vaultGroups(), chronicleEntries: chronicleEntries() };
+}
 
 export function initDmAuth() {
     onAuthChange(renderAuthUI);
     onAuthChange(user => { if (user) startCloudAutoSave(); else stopCloudAutoSave(); });
-    window._markCloudDirty = () => { if (getUser()) cloudDirty = true; };
+    onAuthChange(user => {
+        if (user && !campaignPickerShown) {
+            campaignPickerShown = true;
+            // Only show picker if no local cache
+            const localRaw = localStorage.getItem('dh_dm_creatures');
+            const hasLocal = localRaw && JSON.parse(localRaw).length > 0;
+            if (!hasLocal) showCampaignPicker();
+        }
+    });
+    window._ensureCampaignPicker = () => {
+        if (getUser() && !campaignPickerShown) {
+            campaignPickerShown = true;
+            const localRaw = localStorage.getItem('dh_dm_creatures');
+            const hasLocal = localRaw && JSON.parse(localRaw).length > 0;
+            if (!hasLocal) showCampaignPicker();
+        }
+    };
 }
 
 function showSyncStatus(text) {
@@ -30,56 +54,45 @@ function showToast(message) {
 
 function startCloudAutoSave() {
     if (cloudAutoSaveInterval) return;
+    // Take initial snapshot
+    lastSavedSnapshot = JSON.stringify(gatherDmData());
     cloudAutoSaveInterval = setInterval(async () => {
-        if (!getUser() || !cloudDirty) return;
-        cloudDirty = false; await cloudSave();
-    }, 5 * 60 * 1000);
+        if (!getUser()) return;
+        const current = JSON.stringify(gatherDmData());
+        if (current === lastSavedSnapshot) return;
+        lastSavedSnapshot = current;
+        await cloudAutoSaveNow();
+    }, 30 * 1000);
 }
 
 function stopCloudAutoSave() {
     if (cloudAutoSaveInterval) { clearInterval(cloudAutoSaveInterval); cloudAutoSaveInterval = null; }
-    cloudDirty = false;
+    lastSavedSnapshot = null;
+}
+
+async function cloudAutoSaveNow() {
+    const campaign = document.getElementById('campaignName').value.trim() || 'My Campaign';
+    const data = gatherDmData();
+    const { error } = await cloudSaveRow('sessions', { campaign_name: campaign }, data, { isAutosave: true });
+    if (!error) showSyncStatus('☁️ Auto-saved');
 }
 
 // ========== CLOUD SAVE / LOAD ==========
 async function cloudSave() {
     if (!getUser()) { openAuthModal(); return; }
     const campaign = document.getElementById('campaignName').value.trim() || 'My Campaign';
-    const data = { creatures: creatures(), actionCounters: actionCounters(), fearFilled: fearFilled(), campaign, vaultCreatures: vaultCreatures(), vaultGroups: vaultGroups(), chronicleEntries: chronicleEntries() };
+    const data = gatherDmData();
     const { error } = await cloudSaveRow('sessions', { campaign_name: campaign }, data);
     if (error) showAlert('Cloud save failed: ' + error);
-    else showSyncStatus('☁️ Saved');
+    else { lastSavedSnapshot = JSON.stringify(data); showSyncStatus('☁️ Saved'); }
 }
 
 async function cloudLoad() {
     if (!getUser()) { openAuthModal(); return; }
-    const { rows, error } = await cloudLoadRows('sessions');
-    if (error) { showAlert('Cloud load failed: ' + error); return; }
-    if (!rows.length) { showAlert('No cloud saves found.'); return; }
-    const picker = document.getElementById('cloudSessionList');
-    picker.innerHTML = rows.map(s => `<div class="flex items-center gap-2 p-3 bg-[#1a1714] border border-[#4a3f30] rounded-xl hover:border-[#d4a017] cursor-pointer transition-colors" onclick="window._loadCloudSession('${s.id}')">
-        <div class="flex-1"><div class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">${escHtml(s.campaign_name)}</div><div class="text-[10px] text-zinc-500">${new Date(s.updated_at).toLocaleString()}</div></div>
-        <button onclick="event.stopPropagation(); window._deleteCloudSession('${s.id}')" class="text-zinc-700 hover:text-red-500 text-sm" title="Delete">🗑</button>
-    </div>`).join('');
-    document.getElementById('cloudPickerModal').classList.remove('hidden');
-}
-
-async function loadCloudSession(sessionId) {
-    const { rows } = await cloudLoadRows('sessions');
-    const session = rows.find(r => r.id === sessionId);
-    if (!session) { showAlert('Failed to load session.'); return; }
-    const d = session.data;
-    setCreatures(d.creatures || []); setActionCounters(d.actionCounters || []); setFearFilled(d.fearFilled || 0);
-    setVaultCreatures(d.vaultCreatures || []); setVaultGroups(d.vaultGroups || []); setChronicleEntries(d.chronicleEntries || []);
-    if (d.campaign) { document.getElementById('campaignName').value = d.campaign; localStorage.setItem(CAMPAIGN_KEY, d.campaign); }
-    autoCache(); autoCacheVault(); autoCacheChronicle(); renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
-    closeCloudPicker(); showSyncStatus('☁️ Loaded');
-}
-
-async function deleteCloudSession(sessionId) {
-    showConfirm('Delete this cloud save?', async () => {
-        const { error } = await cloudDeleteRow('sessions', sessionId);
-        if (error) showAlert('Delete failed: ' + error); else cloudLoad();
+    showCloudPicker({
+        table: 'sessions', nameColumn: 'campaign_name',
+        modalId: 'campaignPickerModal', listId: 'campaignPickerList',
+        onPick: applyCampaignRow, emptyText: 'No saved campaigns found.'
     });
 }
 
@@ -99,20 +112,12 @@ async function doSignOut() {
         autoCache(); autoCacheVault(); autoCacheChronicle(); renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
         switchTab('tracker');
     };
-    if (cloudDirty) {
-        showConfirm('You have unsaved changes. Save to cloud before signing out?',
-            async () => { await cloudSave(); await finishSignOut(); },
-            finishSignOut
-        );
-        return;
-    }
     await finishSignOut();
 }
 
 // ========== AUTH UI ==========
 function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); document.getElementById('authEmail').value = ''; document.getElementById('authPassword').value = ''; }
 function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
-function closeCloudPicker() { document.getElementById('cloudPickerModal').classList.add('hidden'); }
 
 let gearMenuHandler = null;
 let authMenuHandler = null;
@@ -190,6 +195,38 @@ async function doSaveProfile() {
     if (ok) { closeProfileModal(); showToast('👤 Profile saved!'); }
 }
 
+// ========== CAMPAIGN PICKER ==========
+function applyCampaignRow(row) {
+    const d = row.data;
+    setCreatures(d.creatures || []); setActionCounters(d.actionCounters || []); setFearFilled(d.fearFilled || 0);
+    setVaultCreatures(d.vaultCreatures || []); setVaultGroups(d.vaultGroups || []); setChronicleEntries(d.chronicleEntries || []);
+    if (d.campaign) { document.getElementById('campaignName').value = d.campaign; localStorage.setItem(CAMPAIGN_KEY, d.campaign); }
+    autoCache(); autoCacheVault(); autoCacheChronicle(); renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
+    showSyncStatus('☁️ Loaded');
+}
+
+async function showCampaignPicker() {
+    showCloudPicker({
+        table: 'sessions', nameColumn: 'campaign_name',
+        modalId: 'campaignPickerModal', listId: 'campaignPickerList',
+        onPick: applyCampaignRow, emptyText: 'No saved campaigns found.'
+    });
+}
+
+function closeCampaignPicker() { document.getElementById('campaignPickerModal').classList.add('hidden'); }
+
+function startNewCampaign() {
+    closeCampaignPicker();
+    setCreatures([]); setActionCounters([]); setFearFilled(0);
+    setVaultCreatures([]); setVaultGroups([]); setChronicleEntries([]);
+    document.getElementById('campaignName').value = '';
+    document.getElementById('campaignName').style.width = '18ch';
+    localStorage.removeItem(CAMPAIGN_KEY);
+    autoCache(); autoCacheVault(); autoCacheChronicle();
+    renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
+    switchTab('tracker');
+}
+
 // ========== WINDOW BINDINGS ==========
 window.openAuthModal = openAuthModal;
 window.toggleGear = toggleGear;
@@ -203,9 +240,8 @@ window.signOut = doSignOut;
 window.cloudSave = cloudSave;
 window.cloudLoad = cloudLoad;
 window.importLocalToCloud = importLocalToCloud;
-window._loadCloudSession = loadCloudSession;
-window._deleteCloudSession = deleteCloudSession;
-window.closeCloudPicker = closeCloudPicker;
+window.closeCampaignPicker = closeCampaignPicker;
+window.startNewCampaign = startNewCampaign;
 window.openProfileModal = openProfileModal;
 window.closeProfileModal = closeProfileModal;
 window.previewAvatar = previewAvatar;

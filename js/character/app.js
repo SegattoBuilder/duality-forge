@@ -8,6 +8,7 @@ import { addExperience } from './experience.js';
 import { addGearItem, addWeapon, addArmor, addItem, addConsumable } from './gear.js';
 import { autoCache, saveSheet, loadSheet, clearSheet, resetSheet, updateExportIndicator } from './save.js';
 import { initCharAuth } from './char-auth.js';
+import { initAuth } from '../core/auth.js';
 import { loadCompendium } from '../core/compendium.js';
 import { showConfirm } from '../core/auth.js';
 
@@ -56,7 +57,7 @@ window.switchModernTab = function(tabId) {
     localStorage.setItem('dh_active_tab', tabId);
 };
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
     setRestoring(true);
     initMode();
     renderThemePicker();
@@ -90,5 +91,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (savedTab && MODERN_TABS.includes(savedTab)) switchModernTab(savedTab);
 
     initCharAuth();
+    await initAuth();
+    if (typeof window._ensureCharacterPicker === 'function') window._ensureCharacterPicker();
     loadCompendium({ characterMode: true, onAddWeapon: addWeapon, onAddArmor: addArmor, onAddItem: addItem, onAddConsumable: addConsumable, onAddGear: addGearItem, onAddInventory: addInventoryItem, onAddDomainCard: addCardToSheet, onAddGeneral: addCardToSheet });
 });
