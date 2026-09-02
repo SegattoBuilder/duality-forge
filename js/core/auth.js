@@ -43,13 +43,70 @@ function setUser(user) {
     if (user) loadProfile();
 }
 
+// ========== CONSENT ==========
+const CONSENT_KEY = 'dh_terms_accepted';
+
+export function hasConsent() { return localStorage.getItem(CONSENT_KEY) === '1'; }
+
+function requireConsent(onAccept) {
+    if (hasConsent()) { onAccept(); return; }
+    showConsentModal(onAccept);
+}
+
+function showConsentModal(onAccept) {
+    let modal = document.getElementById('consentModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'consentModal';
+        modal.className = 'fixed inset-0 modal-overlay z-[9999] p-4 flex items-center justify-center';
+        modal.innerHTML = `<div class="modal-panel p-6 w-full max-w-sm">
+            <h2 class="font-[Cinzel] text-sm font-bold text-[#d4a017] mb-4 text-center">Before You Continue</h2>
+            <div class="space-y-3 mb-5">
+                <label class="flex items-start gap-2 cursor-pointer text-xs text-[#f5efe6]">
+                    <input type="checkbox" id="consentTerms" class="accent-[#d4a017] mt-0.5">
+                    <span>I agree to the <a href="/terms.html" target="_blank" class="text-[#d4a017] underline">Terms of Use</a></span>
+                </label>
+                <label class="flex items-start gap-2 cursor-pointer text-xs text-[#f5efe6]">
+                    <input type="checkbox" id="consentPrivacy" class="accent-[#d4a017] mt-0.5">
+                    <span>I agree to the <a href="/privacy.html" target="_blank" class="text-[#d4a017] underline">Privacy Policy</a></span>
+                </label>
+            </div>
+            <div class="flex gap-3">
+                <button id="consentAccept" class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white opacity-40 cursor-not-allowed" disabled>Continue</button>
+                <button id="consentCancel" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880]">Cancel</button>
+            </div>
+        </div>`;
+        document.body.appendChild(modal);
+    }
+    modal.classList.remove('hidden');
+    const termsBox = document.getElementById('consentTerms');
+    const privacyBox = document.getElementById('consentPrivacy');
+    const acceptBtn = document.getElementById('consentAccept');
+    termsBox.checked = false;
+    privacyBox.checked = false;
+    acceptBtn.disabled = true;
+    acceptBtn.classList.add('opacity-40', 'cursor-not-allowed');
+    const updateBtn = () => {
+        const ok = termsBox.checked && privacyBox.checked;
+        acceptBtn.disabled = !ok;
+        acceptBtn.classList.toggle('opacity-40', !ok);
+        acceptBtn.classList.toggle('cursor-not-allowed', !ok);
+    };
+    termsBox.onchange = updateBtn;
+    privacyBox.onchange = updateBtn;
+    acceptBtn.onclick = () => { localStorage.setItem(CONSENT_KEY, '1'); modal.classList.add('hidden'); onAccept(); };
+    document.getElementById('consentCancel').onclick = () => modal.classList.add('hidden');
+}
+
 // ========== AUTH ACTIONS ==========
 export async function signInWithGoogle() {
-    const { error } = await getSupabase().auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.origin + window.location.pathname }
+    requireConsent(async () => {
+        const { error } = await getSupabase().auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: window.location.origin + window.location.pathname }
+        });
+        if (error) showAlert('Google sign-in failed: ' + error.message);
     });
-    if (error) showAlert('Google sign-in failed: ' + error.message);
 }
 
 export async function signInWithEmail(email, password) {
@@ -62,10 +119,11 @@ export async function signInWithEmail(email, password) {
 export async function signUpWithEmail(email, password) {
     if (!email || !password) { showAlert('Please enter email and password.'); return; }
     if (password.length < 6) { showAlert('Password must be at least 6 characters.'); return; }
-    const { error } = await getSupabase().auth.signUp({ email, password });
-    if (error) showAlert('Sign-up failed: ' + error.message);
-    else showAlert('Check your email for a confirmation link!');
-    return !error;
+    requireConsent(async () => {
+        const { error } = await getSupabase().auth.signUp({ email, password });
+        if (error) showAlert('Sign-up failed: ' + error.message);
+        else showAlert('Check your email for a confirmation link!');
+    });
 }
 
 export async function signOut() {

@@ -8,9 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;800&display=optional" rel="stylesheet">
-    <link rel="icon" href="../images/favicon.ico" sizes="32x32">
-    <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="../images/apple-touch-icon.png">
+    <link rel="icon" href="../images/logo/favicon.ico" sizes="32x32">
+    <link rel="icon" href="../images/logo/icon-32.png" type="image/png">
+    <link rel="apple-touch-icon" href="../images/logo/apple-touch-icon.png">
     <link rel="stylesheet" href="../css/base.css">
     <link rel="stylesheet" href="../css/textures.css">
     <style>
@@ -27,7 +27,7 @@
 <body class="max-w-lg mx-auto p-4 py-8">
 
     <div class="flex items-center gap-3 mb-8">
-        <a href="../" class="hover:text-[#d4a017] text-[20px]" title="Back to Forge">⚒️</a>
+        <a href="../" title="Back to Forge"><img src="../images/logo/new_logo_duality_forge.png" alt="Duality Forge" class="h-10"></a>
         <h1 class="font-[Cinzel] text-lg font-black tracking-widest uppercase" style="color:#d4a017">Support</h1>
     </div>
 
@@ -59,11 +59,15 @@
                     <span class="arrow text-zinc-500">▶</span>
                 </div>
                 <div class="expand-content mt-2 px-3 text-sm text-zinc-400 space-y-3">
-                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Tabs:</span> Combat for gameplay stats, Cards for abilities, Inventory for items, Story for narrative.</div>
-                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Saving:</span> All changes auto-save to your browser. Use the ⋮ menu to export/import a backup JSON file. Sign in to sync to the cloud.</div>
-                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Cards & Abilities:</span> Tap + Add to browse the SRD library. Click any card on your sheet to read it in full. Star up to 5 domain cards for your active loadout.</div>
-                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Gear:</span> Two weapon slots and one armor slot are fixed. Use + Gear to add shields, rings, cloaks, etc.</div>
-                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Theme:</span> Open the ⋮ menu to pick an accent color or switch between Dark, Light, Sci-Fi, and Fantasy display modes.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Tabs:</span> Combat for stats & gear, Cards for abilities, Inventory for items & gold, Story for backstory & notes, Compendium to browse all game data.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Vitals:</span> Click dots to fill/unfill HP, Stress, Hope, and Armor. Use the +/− buttons next to each tracker to adjust the max. Damage thresholds auto-calculate from your equipped armor + level + extras.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Gear:</span> Add multiple weapons, armors, items, and consumables. Star (★) a weapon or armor to equip it — this feeds into your Attack Bonus and Damage Thresholds automatically. Collapse items with ▼ to keep things tidy.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Cards & Abilities:</span> Tap + Add to browse the card library — ancestries, communities, classes, subclasses, and domain cards. Click any card on your sheet to read it in full. Star (★) up to 5 domain cards as your active loadout — selected cards auto-sort to the top by level. Non-selected cards are grayed out.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Compendium:</span> Browse weapons, armors, items, consumables, classes, subclasses, ancestries, communities, domain cards, and rules. Filter by category and search by name. Click any entry to see full details — then hit the "Add" button to send it straight to your character sheet (weapons go to Weapons, armors to Armor, domain cards to your Cards tab, etc.).</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Inventory:</span> Track gold (handfuls & bags) and add custom inventory items with quantities.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Story:</span> Character description fields (clothes, eyes, body, skin, attitude), backstory, connections, and level-up notes — all free-text.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Saving:</span> All changes auto-save to your browser. Use the ⚙️ menu to export/import a backup JSON file, or start a new character. Sign in to sync to the cloud — auto-saves every 5 minutes.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Theme:</span> Open the ⚙️ menu to pick from 10 accent colors and switch between Dark, Light, Sci-Fi, and Fantasy display modes.</div>
                 </div>
             </div>
 
@@ -77,12 +81,13 @@
                     <span class="arrow text-zinc-500">▶</span>
                 </div>
                 <div class="expand-content mt-2 px-3 text-sm text-zinc-400 space-y-3">
-                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Tracker:</span> Add adversaries, characters, or custom creatures. Track HP, stress, hope, armor with dot trackers. Drag & drop to reorder.</div>
-                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Vault:</span> Stash creatures between encounters using the 📦 button. Pull them back to the tracker when needed.</div>
-                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Chronicle:</span> Session notes organized by chapters. Add NPCs, music cues, and key events.</div>
-                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Adversaries:</span> Search the full SRD adversary database. Filter by tier, difficulty, and type.</div>
-                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Compendium:</span> Browse weapons, armors, items, classes, domain cards, and more from the SRD.</div>
-                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Saving:</span> All changes auto-save to your browser. Use the ⋮ menu to save/load a JSON file. Sign in to sync to the cloud.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Tracker:</span> Add characters, enemies (from the database), or fully custom creatures. Track HP, stress, hope, and armor with dot trackers — click dots to fill/unfill, use +/− to adjust max. Add action counters to track rounds, lair actions, or anything else. Drag & drop cards to reorder. Use 📝 to flip any card and write notes on the back. Use ✏️ to edit a creature's stats at any time.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Fear Pool:</span> 12-dot fear tracker at the top of the Tracker tab. Click dots to fill as fear builds. Use the 🗑 Fear button to reset it between encounters.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Vault:</span> Stash creatures between encounters using the 📦 button on any tracker card. Create groups to organize creatures by encounter or scene — name them, mark as disposable (auto-deletes the group after deploying), and drag & drop creatures between groups. Deploy a single creature or an entire group back to the tracker with one click. Choose "Deploy" to reset HP/stress to full, or "As-Is" to keep current values. Collapse/expand groups to keep things organized.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Chronicle:</span> Session notes organized by chapters. Each chapter has a free-text area for notes, plus dedicated sections for NPCs (name, faction, disposition, notes) and music cues (scene label + link or text — links become clickable 🔗). Drag & drop chapters to reorder. Collapse chapters you're not using.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Adversaries:</span> Search the full adversary database by name. Filter by tier, difficulty range, and creature type. Each result shows full stats, attacks, features, and abilities. Hit "+ Add" on any adversary to instantly add it to your tracker with all stats pre-filled.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Compendium:</span> Browse weapons, armors, items, consumables, classes, subclasses, ancestries, communities, domain cards, and rules. Filter by category and search by name.</div>
+                    <div><span class="text-xs text-zinc-400 uppercase tracking-wide font-bold font-[Cinzel]">Saving:</span> All changes auto-save to your browser. Use the ⚙️ menu to save a backup JSON file or start a new campaign. Sign in to sync to the cloud — auto-saves every 5 minutes. Load any of your cloud saves from the ☁️ menu.</div>
                 </div>
             </div>
         </div>
@@ -123,6 +128,7 @@
 
         <div class="text-center mt-6">
             <p class="text-[10px] text-zinc-500">Fan-made tool — not affiliated with Darrington Press or Critical Role.</p>
+            <p class="text-[10px] text-zinc-600 mt-2"><a href="../terms.html" class="hover:text-[#d4a017] transition-colors">Terms of Use</a> · <a href="../privacy.html" class="hover:text-[#d4a017] transition-colors">Privacy Policy</a></p>
         </div>
     </div>
 

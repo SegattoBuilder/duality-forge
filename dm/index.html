@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Duality Forge — DM Tools</title>
-    <link rel="icon" href="../images/favicon.ico" sizes="32x32">
-    <link rel="icon" href="../images/favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="../images/apple-touch-icon.png">
+    <link rel="icon" href="../images/logo/favicon.ico" sizes="32x32">
+    <link rel="icon" href="../images/logo/icon-32.png" type="image/png">
+    <link rel="apple-touch-icon" href="../images/logo/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -37,11 +37,13 @@
         <div class="flex flex-col gap-3 items-center">
             <div class="w-full flex flex-col sm:grid sm:grid-cols-[auto_1fr_auto] gap-3 sm:gap-4 items-center">
                 <div class="flex flex-col items-center sm:items-start">
-                    <div class="flex items-center gap-2">
-                        <a href="../" class="hover:opacity-80 transition-opacity" title="Back to Forge"><img src="../images/icon-32.png" alt="Forge" class="w-7 h-7"></a>
-                        <span class="font-[Cinzel] text-[14px] tracking-widest uppercase font-black italic leading-tight" data-theme-level="1" style="color: var(--accent-1)">DM Tools</span>
+                    <div class="flex items-center gap-3">
+                        <a href="../" class="hover:opacity-80 transition-opacity" title="Back to Forge"><img src="../images/logo/new_logo_duality_forge.png" alt="Forge" class="h-14"></a>
+                        <div class="flex flex-col">
+                            <span class="font-[Cinzel] text-[14px] tracking-widest uppercase font-black italic leading-tight" data-theme-level="1" style="color: var(--accent-1)">DM Tools</span>
+                            <input id="campaignName" type="text" placeholder="Campaign name..." oninput="localStorage.setItem('dh_campaign_name', this.value); this.style.width = Math.min(this.value.length + 2, 56) + 'ch'" class="bg-transparent font-[Cinzel] text-[10px] font-bold uppercase tracking-widest text-[#d4a017] outline-none border-b border-transparent focus:border-[#d4a017] placeholder-zinc-700 mt-0.5" style="width:18ch;max-width:42ch">
+                        </div>
                     </div>
-                    <input id="campaignName" type="text" placeholder="Campaign name..." oninput="localStorage.setItem('dh_campaign_name', this.value); this.style.width = Math.min(this.value.length + 2, 56) + 'ch'" class="bg-transparent font-[Cinzel] text-xs font-bold uppercase tracking-widest text-[#d4a017] outline-none border-b border-transparent focus:border-[#d4a017] placeholder-zinc-700" style="width:18ch;max-width:42ch">
                 </div>
                 <div class="flex items-center justify-center gap-1 flex-wrap">
                     <button onclick="switchTab('tracker')" id="tabTracker" class="modern-tab-btn active">⚔️ Tracker</button>
