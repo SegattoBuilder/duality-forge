@@ -344,8 +344,9 @@ export function renderVaultGrid() {
 
 export function clearVault(event) {
     if (event) { event.stopPropagation(); event.preventDefault(); }
-    showConfirm('Clear entire vault? This cannot be undone.', () => {
-        _vaultCreatures = []; autoCacheVault(); renderVaultGrid();
+    showConfirm('Clear entire vault (creatures and groups)? This cannot be undone.', () => {
+        _vaultCreatures = []; _vaultGroups = []; _collapsedGroups = {};
+        autoCacheVault(); renderVaultGrid();
     });
 }
 

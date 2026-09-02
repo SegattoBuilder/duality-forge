@@ -168,8 +168,8 @@
         <div id="vaultGroupForm" class="hidden flex-1 flex items-center gap-2">
             <input id="vaultGroupInput" type="text" placeholder="Group name..." maxlength="40" onkeydown="if(event.key==='Enter')window._addVaultGroup(); if(event.key==='Escape')window._hideVaultGroupForm()" class="flex-1 bg-[#1e1b16] border border-[#4a3f30] rounded-lg px-3 py-2 text-xs outline-none focus:border-[#d4a017] placeholder-zinc-600">
             <label class="flex items-center gap-1.5 cursor-pointer whitespace-nowrap" title="Delete group when deployed">
-                <input type="checkbox" id="vaultGroupDisposable" class="accent-[#d4a017]">
-                <span class="text-[10px] text-zinc-500">🗑 Disposable</span>
+                <input type="checkbox" id="vaultGroupDisposable" class="accent-[#d4a017]" checked>
+                <span class="text-[10px] text-zinc-500">Disposable</span>
             </label>
             <button onclick="window._addVaultGroup()" class="bg-[#2a2418] border border-[#4a3f30] text-[10px] px-3 py-2 rounded-lg font-bold uppercase text-[#d4a017] font-[Cinzel] hover:border-[#d4a017]">Add</button>
             <button onclick="window._hideVaultGroupForm()" class="text-zinc-600 hover:text-zinc-400 text-sm leading-none">✕</button>

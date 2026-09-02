@@ -49,7 +49,7 @@ function renderAdvCard(a) {
     const features = a.feature || [];
     const idx = adversariesData.indexOf(a);
     return `<div class="creature-card" style="border-top-color: #e84040;">
-        <div class="flex items-start justify-between mb-2"><span class="font-black text-sm font-[Cinzel] text-[#f5efe6]">${escHtml(a.name)}</span><button onclick="window._addAdvToTracker(${idx})" class="text-[9px] bg-[#2a2418] border border-[#4a3f30] rounded px-2 py-1 text-[#d4a017] hover:border-[#d4a017] font-bold uppercase whitespace-nowrap" title="Add to Tracker">+ Add</button></div>
+        <div class="flex items-start justify-between mb-2"><span class="font-black text-sm font-[Cinzel] text-[#f5efe6]">${escHtml(a.name)}</span><button onclick="window._addAdvToTracker(${idx}, event)" class="text-[9px] bg-[#2a2418] border border-[#4a3f30] rounded px-2 py-1 text-[#d4a017] hover:border-[#d4a017] font-bold uppercase whitespace-nowrap" title="Add to Tracker">+ Add</button></div>
         <div class="flex flex-wrap gap-1.5 mb-2">
             <span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${escHtml(a.type || '')} • T${escHtml(a.tier || '')}</span>
             <span class="text-[9px] bg-[#1a2a3b] border border-[#2a3d5a] rounded px-1.5 py-0.5 text-blue-300">Difficulty ${escHtml(a.difficulty || '')}</span>
@@ -67,7 +67,7 @@ function renderAdvCard(a) {
     </div>`;
 }
 
-function addAdvToTracker(index) {
+function addAdvToTracker(index, event) {
     const a = adversariesData[index]; if (!a) return;
     creatures().push({
         id: 'c-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
@@ -79,6 +79,13 @@ function addAdvToTracker(index) {
         enemyData: a
     });
     autoCache(); renderGrid();
+    const btn = event?.target;
+    if (btn) {
+        btn.textContent = '✓ Added';
+        btn.classList.remove('text-[#d4a017]');
+        btn.classList.add('text-green-400', 'border-green-600');
+        setTimeout(() => { btn.textContent = '+ Add'; btn.classList.remove('text-green-400', 'border-green-600'); btn.classList.add('text-[#d4a017]'); }, 2000);
+    }
 }
 
 function clearAdvSearch() {
