@@ -1,7 +1,8 @@
 import { escHtml, escHtmlAttr } from './app.js';
 import { showConfirm } from '../core/auth.js';
 
-const CHRONICLE_KEY = 'dh_dm_chronicle';
+import { LS_DM_CHRONICLE } from '../core/constants.js';
+const CHRONICLE_KEY = LS_DM_CHRONICLE;
 let _chronicleEntries = [];
 
 export function chronicleEntries() { return _chronicleEntries; }

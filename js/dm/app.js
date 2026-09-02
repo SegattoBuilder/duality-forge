@@ -1,4 +1,5 @@
 import { initAuth, onAuthChange, escHtml, escHtmlAttr, showAlert, showConfirm } from '../core/auth.js';
+import { LS_DM_CREATURES, LS_DM_FEAR, LS_DM_COUNTERS, LS_DM_CAMPAIGN, LS_DM_MODE, LS_DM_ACTIONBAR, LS_DM_FEARPOOL, LS_DM_TITLE, LS_DM_ACTIVE_TAB } from '../core/constants.js';
 import { initTracker, renderGrid, renderFearDots, autoCache, creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled } from './tracker.js';
 import { initVault, renderVaultGrid, autoCacheVault, vaultCreatures, setVaultCreatures, vaultGroups, setVaultGroups } from './vault.js';
 import { initChronicle, renderChronicle, autoCacheChronicle, chronicleEntries, setChronicleEntries } from './chronicle.js';
@@ -7,11 +8,11 @@ import { initAdversariesTab } from './adversaries.js';
 import { initDmAuth } from './dm-auth.js';
 
 // ========== CONSTANTS ==========
-export const SAVE_KEY = 'dh_dm_creatures';
-export const FEAR_KEY = 'dh_dm_fear';
-export const COUNTERS_KEY = 'dh_dm_counters';
-export const CAMPAIGN_KEY = 'dh_campaign_name';
-const MODE_KEY = 'dh_dm_mode';
+export const SAVE_KEY = LS_DM_CREATURES;
+export const FEAR_KEY = LS_DM_FEAR;
+export const COUNTERS_KEY = LS_DM_COUNTERS;
+export const CAMPAIGN_KEY = LS_DM_CAMPAIGN;
+const MODE_KEY = LS_DM_MODE;
 
 // ========== RE-EXPORT UTILITIES ==========
 export { escHtml, escHtmlAttr };
@@ -54,9 +55,9 @@ function initMode() {
 }
 
 // ========== ACTION BAR TOGGLE ==========
-const ACTION_BAR_KEY = 'dh_dm_actionbar';
-const FEAR_POOL_KEY = 'dh_dm_fearpool';
-const TITLE_KEY = 'dh_dm_title';
+const ACTION_BAR_KEY = LS_DM_ACTIONBAR;
+const FEAR_POOL_KEY = LS_DM_FEARPOOL;
+const TITLE_KEY = LS_DM_TITLE;
 
 const PANEL_IDS = ['panelTracker','panelAdversaries','panelCompendium','panelChronicle','panelVault'];
 
@@ -131,7 +132,7 @@ export function switchTab(tab) {
     document.getElementById('chronicleActions').classList.toggle('hidden', tab !== 'chronicle');
     const cloak = document.getElementById('tab-cloak');
     if (cloak) cloak.remove();
-    localStorage.setItem('dh_dm_active_tab', tab);
+    localStorage.setItem(LS_DM_ACTIVE_TAB, tab);
 }
 
 // ========== SAVE / LOAD (LOCAL) ==========
@@ -243,6 +244,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     await initAuth();
     if (typeof window._ensureCampaignPicker === 'function') window._ensureCampaignPicker();
 
-    const savedDmTab = localStorage.getItem('dh_dm_active_tab');
+    const savedDmTab = localStorage.getItem(LS_DM_ACTIVE_TAB);
     if (savedDmTab && savedDmTab !== 'tracker') switchTab(savedDmTab);
 });

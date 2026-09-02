@@ -1,4 +1,5 @@
 import SUPABASE_CONFIG from './config.js';
+import { PASSWORD_MIN_LENGTH, LS_CONSENT, TABLE_PROFILES } from './constants.js';
 
 let supabaseClient = null;
 let currentUser = null;
@@ -44,7 +45,7 @@ function setUser(user) {
 }
 
 // ========== CONSENT ==========
-const CONSENT_KEY = 'dh_terms_accepted';
+const CONSENT_KEY = LS_CONSENT;
 
 export function hasConsent() { return localStorage.getItem(CONSENT_KEY) === '1'; }
 
@@ -116,7 +117,7 @@ export async function signInWithEmail(email, password) {
 
 export function signUpWithEmail(email, password) {
     if (!email || !password) { showAlert('Please enter email and password.'); return; }
-    if (password.length < 6) { showAlert('Password must be at least 6 characters.'); return; }
+    if (password.length < PASSWORD_MIN_LENGTH) { showAlert(`Password must be at least ${PASSWORD_MIN_LENGTH} characters.`); return; }
     requireConsent(async () => {
         const { error } = await getSupabase().auth.signUp({ email, password });
         if (error) showAlert('Sign-up failed: ' + error.message);
@@ -139,7 +140,7 @@ async function loadProfile() {
     if (!currentUser || currentProfile || profileLoading) return;
     profileLoading = true;
     const { data } = await getSupabase()
-        .from('profiles')
+        .from(TABLE_PROFILES)
         .select('*')
         .eq('id', currentUser.id)
         .single();
@@ -153,7 +154,7 @@ async function loadProfile() {
 export async function saveProfile(profile) {
     if (!currentUser) return false;
     const row = { id: currentUser.id, ...profile };
-    const { error } = await getSupabase().from('profiles').upsert(row);
+    const { error } = await getSupabase().from(TABLE_PROFILES).upsert(row);
     if (error) { showAlert('Failed to save profile: ' + error.message); return false; }
     currentProfile = row;
     onAuthChangeCallbacks.forEach(cb => cb(currentUser));

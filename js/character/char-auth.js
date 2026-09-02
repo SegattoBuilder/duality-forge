@@ -1,7 +1,7 @@
 import { initAuth, getUser, getProfile, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as coreSignOut, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
 import { showCloudPicker } from '../core/cloud-picker.js';
+import { TOAST_DURATION, SYNC_STATUS_DURATION, AUTOSAVE_INTERVAL, TABLE_CHARACTERS, LS_CHAR_SAVE } from '../core/constants.js';
 import { gatherData, applyData, autoCache, resetSheet } from './save.js';
-import { SAVE_KEY } from './state.js';
 
 let cloudAutoSaveInterval = null;
 let lastSavedSnapshot = null;
@@ -14,7 +14,7 @@ export function initCharAuth() {
     onAuthChange(user => {
         if (user && !characterPickerShown) {
             characterPickerShown = true;
-            const localRaw = localStorage.getItem(SAVE_KEY);
+            const localRaw = localStorage.getItem(LS_CHAR_SAVE);
             let hasLocal = false;
             try { const d = JSON.parse(localRaw); hasLocal = d && (d.fields?.charName || (d.cards && d.cards.length)); } catch {}
             if (!hasLocal) showCharacterPicker();
@@ -23,7 +23,7 @@ export function initCharAuth() {
     window._ensureCharacterPicker = () => {
         if (getUser() && !characterPickerShown) {
             characterPickerShown = true;
-            const localRaw = localStorage.getItem(SAVE_KEY);
+            const localRaw = localStorage.getItem(LS_CHAR_SAVE);
             let hasLocal = false;
             try { const d = JSON.parse(localRaw); hasLocal = d && (d.fields?.charName || (d.cards && d.cards.length)); } catch {}
             if (!hasLocal) showCharacterPicker();
@@ -36,7 +36,7 @@ function showSyncStatus(text) {
     if (!el) return;
     el.textContent = text; el.classList.remove('hidden');
     if (syncStatusTimer) clearTimeout(syncStatusTimer);
-    syncStatusTimer = setTimeout(() => el.classList.add('hidden'), 10000);
+    syncStatusTimer = setTimeout(() => el.classList.add('hidden'), SYNC_STATUS_DURATION);
 }
 
 function showToast(message) {
@@ -45,7 +45,7 @@ function showToast(message) {
     const bold = toast.querySelector('.font-bold');
     if (bold) bold.textContent = message;
     toast.classList.remove('hidden');
-    setTimeout(() => toast.classList.add('hidden'), 2000);
+    setTimeout(() => toast.classList.add('hidden'), TOAST_DURATION);
 }
 
 function startCloudAutoSave() {
@@ -57,7 +57,7 @@ function startCloudAutoSave() {
         if (current === lastSavedSnapshot) return;
         lastSavedSnapshot = current;
         await cloudAutoSaveNow();
-    }, 30 * 1000);
+    }, AUTOSAVE_INTERVAL);
 }
 
 function stopCloudAutoSave() {
@@ -68,7 +68,7 @@ function stopCloudAutoSave() {
 async function cloudAutoSaveNow() {
     const data = gatherData();
     const charName = data.fields?.charName?.trim() || 'My Character';
-    const { error } = await cloudSaveRow('characters', { character_name: charName }, data, { isAutosave: true });
+    const { error } = await cloudSaveRow(TABLE_CHARACTERS, { character_name: charName }, data, { isAutosave: true });
     if (!error) showSyncStatus('☁️ Auto-saved');
 }
 
@@ -77,7 +77,7 @@ async function cloudSave() {
     if (!getUser()) { openAuthModal(); return; }
     const data = gatherData();
     const charName = data.fields?.charName?.trim() || 'My Character';
-    const { error } = await cloudSaveRow('characters', { character_name: charName }, data);
+    const { error } = await cloudSaveRow(TABLE_CHARACTERS, { character_name: charName }, data);
     if (error) showAlert('Cloud save failed: ' + error);
     else { lastSavedSnapshot = JSON.stringify(data); showSyncStatus('☁️ Saved'); }
 }
@@ -85,7 +85,7 @@ async function cloudSave() {
 async function cloudLoad() {
     if (!getUser()) { openAuthModal(); return; }
     showCloudPicker({
-        table: 'characters', nameColumn: 'character_name',
+        table: TABLE_CHARACTERS, nameColumn: 'character_name',
         modalId: 'characterPickerModal', listId: 'characterPickerList',
         onPick: applyCharacterRow, emptyText: 'No saved characters found.'
     });
@@ -93,7 +93,7 @@ async function cloudLoad() {
 
 async function importLocalToCloud() {
     if (!getUser()) return;
-    const raw = localStorage.getItem(SAVE_KEY);
+    const raw = localStorage.getItem(LS_CHAR_SAVE);
     if (!raw) { showAlert('No local data found to import.'); return; }
     showConfirm('Upload your current local data to the cloud as a new save?', async () => { await cloudSave(); });
 }
@@ -164,6 +164,8 @@ function openProfileModal() {
     document.getElementById('profileCountry').value = profile?.country || '';
     document.getElementById('profileState').value = profile?.state || '';
     document.getElementById('profileExperience').value = profile?.dm_experience || '';
+    document.getElementById('profileAge').value = profile?.age || '';
+    document.getElementById('profilePlayerExp').value = profile?.player_experience || '';
     previewAvatar(profile?.avatar_url || '');
 }
 function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); }
@@ -178,7 +180,9 @@ async function doSaveProfile() {
         avatar_url: document.getElementById('profileAvatar').value.trim() || null,
         country: document.getElementById('profileCountry').value.trim() || null,
         state: document.getElementById('profileState').value.trim() || null,
-        dm_experience: document.getElementById('profileExperience').value || null
+        dm_experience: document.getElementById('profileExperience').value || null,
+        age: document.getElementById('profileAge').value || null,
+        player_experience: document.getElementById('profilePlayerExp').value || null
     });
     if (ok) { closeProfileModal(); showToast('👤 Profile saved!'); }
 }
@@ -206,13 +210,13 @@ window.saveProfile = doSaveProfile;
 // ========== CHARACTER PICKER ==========
 function applyCharacterRow(row) {
     applyData(row.data);
-    localStorage.setItem(SAVE_KEY, JSON.stringify(row.data));
+    localStorage.setItem(LS_CHAR_SAVE, JSON.stringify(row.data));
     showSyncStatus('☁️ Loaded');
 }
 
 async function showCharacterPicker() {
     showCloudPicker({
-        table: 'characters', nameColumn: 'character_name',
+        table: TABLE_CHARACTERS, nameColumn: 'character_name',
         modalId: 'characterPickerModal', listId: 'characterPickerList',
         onPick: applyCharacterRow, emptyText: 'No saved characters found.'
     });

@@ -1,6 +1,7 @@
 import { THEME_KEY } from './state.js';
 
-const MODE_KEY = 'dh_mode';
+import { LS_CHAR_MODE } from '../core/constants.js';
+const MODE_KEY = LS_CHAR_MODE;
 
 export const THEMES = {
     gold:    { base: [212, 160, 23] },

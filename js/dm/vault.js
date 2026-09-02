@@ -2,9 +2,10 @@ import { escHtml, escHtmlAttr, getNextName, switchTab } from './app.js';
 import { creatures, autoCache, renderGrid, editCharacterCard, editCustomCard, editEnemyCard, renderCard } from './tracker.js';
 import { showConfirm } from '../core/auth.js';
 
-const VAULT_KEY = 'dh_dm_vault';
-const VAULT_GROUPS_KEY = 'dh_dm_vault_groups';
-const VAULT_COLLAPSED_KEY = 'dh_dm_vault_collapsed';
+import { LS_DM_VAULT, LS_DM_VAULT_GROUPS, LS_DM_VAULT_COLLAPSED } from '../core/constants.js';
+const VAULT_KEY = LS_DM_VAULT;
+const VAULT_GROUPS_KEY = LS_DM_VAULT_GROUPS;
+const VAULT_COLLAPSED_KEY = LS_DM_VAULT_COLLAPSED;
 let _vaultCreatures = [];
 let _vaultGroups = [];
 let _collapsedGroups = {};

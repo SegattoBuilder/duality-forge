@@ -1,9 +1,10 @@
 import { getUser, getProfile, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as coreSignOut, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
 import { showCloudPicker } from '../core/cloud-picker.js';
+import { TOAST_DURATION, SYNC_STATUS_DURATION, AUTOSAVE_INTERVAL, TABLE_SESSIONS, LS_DM_CREATURES, LS_DM_VAULT, LS_DM_CHRONICLE, LS_DM_COUNTERS, LS_DM_CAMPAIGN } from '../core/constants.js';
 import { creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled, autoCache, renderGrid, renderFearDots } from './tracker.js';
 import { vaultCreatures, setVaultCreatures, vaultGroups, setVaultGroups, autoCacheVault, renderVaultGrid } from './vault.js';
 import { chronicleEntries, setChronicleEntries, autoCacheChronicle, renderChronicle } from './chronicle.js';
-import { CAMPAIGN_KEY, switchTab } from './app.js';
+import { switchTab } from './app.js';
 
 let cloudAutoSaveInterval = null;
 let lastSavedSnapshot = null;
@@ -37,14 +38,14 @@ function showSyncStatus(text) {
     const el = document.getElementById('syncStatus');
     el.textContent = text; el.classList.remove('hidden');
     if (syncStatusTimer) clearTimeout(syncStatusTimer);
-    syncStatusTimer = setTimeout(() => el.classList.add('hidden'), 10000);
+    syncStatusTimer = setTimeout(() => el.classList.add('hidden'), SYNC_STATUS_DURATION);
 }
 
 function showToast(message) {
     const toast = document.getElementById('feedbackToast');
     toast.querySelector('.font-bold').textContent = message;
     toast.classList.remove('hidden');
-    setTimeout(() => toast.classList.add('hidden'), 2000);
+    setTimeout(() => toast.classList.add('hidden'), TOAST_DURATION);
 }
 
 function startCloudAutoSave() {
@@ -57,7 +58,7 @@ function startCloudAutoSave() {
         if (current === lastSavedSnapshot) return;
         lastSavedSnapshot = current;
         await cloudAutoSaveNow();
-    }, 30 * 1000);
+    }, AUTOSAVE_INTERVAL);
 }
 
 function stopCloudAutoSave() {
@@ -68,26 +69,26 @@ function stopCloudAutoSave() {
 async function cloudAutoSaveNow() {
     const campaign = document.getElementById('campaignName').value.trim() || 'My Campaign';
     const data = gatherDmData();
-    const { error } = await cloudSaveRow('sessions', { campaign_name: campaign }, data, { isAutosave: true });
+    const { error } = await cloudSaveRow(TABLE_SESSIONS, { campaign_name: campaign }, data, { isAutosave: true });
     if (!error) showSyncStatus('☁️ Auto-saved');
 }
 
 function hasLocalDmData() {
     try {
-        const c = JSON.parse(localStorage.getItem('dh_dm_creatures') || '[]');
+        const c = JSON.parse(localStorage.getItem(LS_DM_CREATURES) || '[]');
         if (c.length) return true;
     } catch {}
-    if (localStorage.getItem(CAMPAIGN_KEY)) return true;
+    if (localStorage.getItem(LS_DM_CAMPAIGN)) return true;
     try {
-        const v = JSON.parse(localStorage.getItem('dh_dm_vault') || '[]');
+        const v = JSON.parse(localStorage.getItem(LS_DM_VAULT) || '[]');
         if (v.length) return true;
     } catch {}
     try {
-        const ch = JSON.parse(localStorage.getItem('dh_dm_chronicle') || '[]');
+        const ch = JSON.parse(localStorage.getItem(LS_DM_CHRONICLE) || '[]');
         if (ch.length) return true;
     } catch {}
     try {
-        const ac = JSON.parse(localStorage.getItem('dh_dm_counters') || '[]');
+        const ac = JSON.parse(localStorage.getItem(LS_DM_COUNTERS) || '[]');
         if (ac.length) return true;
     } catch {}
     return false;
@@ -98,7 +99,7 @@ async function cloudSave() {
     if (!getUser()) { openAuthModal(); return; }
     const campaign = document.getElementById('campaignName').value.trim() || 'My Campaign';
     const data = gatherDmData();
-    const { error } = await cloudSaveRow('sessions', { campaign_name: campaign }, data);
+    const { error } = await cloudSaveRow(TABLE_SESSIONS, { campaign_name: campaign }, data);
     if (error) showAlert('Cloud save failed: ' + error);
     else { lastSavedSnapshot = JSON.stringify(data); showSyncStatus('☁️ Saved'); }
 }
@@ -106,7 +107,7 @@ async function cloudSave() {
 async function cloudLoad() {
     if (!getUser()) { openAuthModal(); return; }
     showCloudPicker({
-        table: 'sessions', nameColumn: 'campaign_name',
+        table: TABLE_SESSIONS, nameColumn: 'campaign_name',
         modalId: 'campaignPickerModal', listId: 'campaignPickerList',
         onPick: applyCampaignRow, emptyText: 'No saved campaigns found.'
     });
@@ -124,7 +125,7 @@ async function doSignOut() {
         await coreSignOut();
         setCreatures([]); setActionCounters([]); setFearFilled(0); setVaultCreatures([]); setVaultGroups([]); setChronicleEntries([]);
         document.getElementById('campaignName').value = '';
-        localStorage.removeItem(CAMPAIGN_KEY);
+        localStorage.removeItem(LS_DM_CAMPAIGN);
         autoCache(); autoCacheVault(); autoCacheChronicle(); renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
         switchTab('tracker');
     };
@@ -192,6 +193,8 @@ function openProfileModal() {
     document.getElementById('profileCountry').value = profile?.country || '';
     document.getElementById('profileState').value = profile?.state || '';
     document.getElementById('profileExperience').value = profile?.dm_experience || '';
+    document.getElementById('profileAge').value = profile?.age || '';
+    document.getElementById('profilePlayerExp').value = profile?.player_experience || '';
     previewAvatar(profile?.avatar_url || '');
 }
 function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); }
@@ -206,7 +209,9 @@ async function doSaveProfile() {
         avatar_url: document.getElementById('profileAvatar').value.trim() || null,
         country: document.getElementById('profileCountry').value.trim() || null,
         state: document.getElementById('profileState').value.trim() || null,
-        dm_experience: document.getElementById('profileExperience').value || null
+        dm_experience: document.getElementById('profileExperience').value || null,
+        age: document.getElementById('profileAge').value || null,
+        player_experience: document.getElementById('profilePlayerExp').value || null
     });
     if (ok) { closeProfileModal(); showToast('👤 Profile saved!'); }
 }
@@ -216,14 +221,14 @@ function applyCampaignRow(row) {
     const d = row.data;
     setCreatures(d.creatures || []); setActionCounters(d.actionCounters || []); setFearFilled(d.fearFilled || 0);
     setVaultCreatures(d.vaultCreatures || []); setVaultGroups(d.vaultGroups || []); setChronicleEntries(d.chronicleEntries || []);
-    if (d.campaign) { document.getElementById('campaignName').value = d.campaign; localStorage.setItem(CAMPAIGN_KEY, d.campaign); }
+    if (d.campaign) { document.getElementById('campaignName').value = d.campaign; localStorage.setItem(LS_DM_CAMPAIGN, d.campaign); }
     autoCache(); autoCacheVault(); autoCacheChronicle(); renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
     showSyncStatus('☁️ Loaded');
 }
 
 async function showCampaignPicker() {
     showCloudPicker({
-        table: 'sessions', nameColumn: 'campaign_name',
+        table: TABLE_SESSIONS, nameColumn: 'campaign_name',
         modalId: 'campaignPickerModal', listId: 'campaignPickerList',
         onPick: applyCampaignRow, emptyText: 'No saved campaigns found.'
     });
@@ -237,7 +242,7 @@ function startNewCampaign() {
     setVaultCreatures([]); setVaultGroups([]); setChronicleEntries([]);
     document.getElementById('campaignName').value = '';
     document.getElementById('campaignName').style.width = '18ch';
-    localStorage.removeItem(CAMPAIGN_KEY);
+    localStorage.removeItem(LS_DM_CAMPAIGN);
     autoCache(); autoCacheVault(); autoCacheChronicle();
     renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
     switchTab('tracker');

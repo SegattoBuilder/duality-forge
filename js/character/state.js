@@ -1,7 +1,9 @@
 // Shared application state
-export const SAVE_KEY = 'dh_sheet';
-export const THEME_KEY = 'dh_theme';
-export const EXPORT_KEY = 'dh_last_export';
+import { LS_CHAR_SAVE, LS_CHAR_THEME, LS_CHAR_EXPORT } from '../core/constants.js';
+
+export const SAVE_KEY = LS_CHAR_SAVE;
+export const THEME_KEY = LS_CHAR_THEME;
+export const EXPORT_KEY = LS_CHAR_EXPORT;
 
 export const GITHUB_RAW = "https://raw.githubusercontent.com/daggersearch/daggerheart-data/main/core/";
 

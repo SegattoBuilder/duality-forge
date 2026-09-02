@@ -120,7 +120,8 @@ export function resetFear() {
 
 // ========== ADVERSARIES DATA (for enemy search) ==========
 const ADVERSARIES_URL = 'https://raw.githubusercontent.com/seansbox/daggerheart-srd/main/.build/03_json/adversaries.json';
-const ADVERSARIES_CACHE_KEY = 'dh_adversaries_cache';
+import { LS_DM_ADVERSARIES_CACHE } from '../core/constants.js';
+const ADVERSARIES_CACHE_KEY = LS_DM_ADVERSARIES_CACHE;
 export let adversariesData = [];
 let selectedEnemy = null;
 

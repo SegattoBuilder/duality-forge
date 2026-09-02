@@ -1,4 +1,5 @@
 import { SAVE_KEY, THEME_KEY, setRestoring } from './state.js';
+import { LS_CHAR_ACTIVE_TAB, LS_CHAR_SAVE_V1 } from '../core/constants.js';
 import { renderThemePicker, applyTheme, toggleMode, setMode, initMode } from './theme.js';
 import { toggleSection } from './ui.js';
 import { renderDots, updateThresholds, updateAttackBonus } from './trackers.js';
@@ -54,7 +55,7 @@ window.switchModernTab = function(tabId) {
     });
     const cloak = document.getElementById('tab-cloak');
     if (cloak) cloak.remove();
-    localStorage.setItem('dh_active_tab', tabId);
+    localStorage.setItem(LS_CHAR_ACTIVE_TAB, tabId);
 };
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -72,9 +73,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Migrate old key
-    if (!localStorage.getItem(SAVE_KEY) && localStorage.getItem('dh_sheet_v1')) {
-        localStorage.setItem(SAVE_KEY, localStorage.getItem('dh_sheet_v1'));
-        localStorage.removeItem('dh_sheet_v1');
+    if (!localStorage.getItem(SAVE_KEY) && localStorage.getItem(LS_CHAR_SAVE_V1)) {
+        localStorage.setItem(SAVE_KEY, localStorage.getItem(LS_CHAR_SAVE_V1));
+        localStorage.removeItem(LS_CHAR_SAVE_V1);
     }
 
     const raw = localStorage.getItem(SAVE_KEY);
@@ -87,7 +88,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('input', () => { updateThresholds(); updateAttackBonus(); autoCache(); });
     document.addEventListener('change', () => { updateThresholds(); updateAttackBonus(); autoCache(); });
 
-    const savedTab = localStorage.getItem('dh_active_tab');
+    const savedTab = localStorage.getItem(LS_CHAR_ACTIVE_TAB);
     if (savedTab && MODERN_TABS.includes(savedTab)) switchModernTab(savedTab);
 
     initCharAuth();
