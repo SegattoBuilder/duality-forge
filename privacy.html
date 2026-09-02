@@ -23,7 +23,7 @@
 
     <div class="space-y-6 text-sm text-zinc-400 leading-relaxed">
 
-        <p class="text-[10px] text-zinc-600">Last updated: June 2025</p>
+        <p class="text-[10px] text-zinc-600">Last updated: September 1, 2026</p>
 
         <div>
             <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-2" style="color:#d4a017">1. Overview</h2>
@@ -35,8 +35,7 @@
 
             <p class="font-bold text-zinc-300 mt-3 mb-1">Account & Profile (optional — only if you sign in)</p>
             <ul class="list-disc list-inside space-y-1 text-zinc-500">
-                <li>Email address and authentication credentials (managed by Supabase)</li>
-                <li>Google profile info if you use Google sign-in (name, profile picture, email)</li>
+                <li>Account information: If you create an account, we collect your email address and authentication information necessary to provide your account. Authentication is provided by Supabase. If you sign in with Google, we may receive information from Google such as your name, email address, and profile picture, depending on the permissions associated with your Google account.</li>
                 <li>Profile details you provide: nickname, avatar URL, country, state/region, DM experience level</li>
             </ul>
 
@@ -50,8 +49,13 @@
             <p class="font-bold text-zinc-300 mt-3 mb-1">Feedback & Error Reports</p>
             <ul class="list-disc list-inside space-y-1 text-zinc-500">
                 <li>Bug reports and feature requests you submit (message text, page URL, report type)</li>
-                <li>Automatic JavaScript error logs (error message, source file, line/column, page URL, browser user agent)</li>
+                <li>Automatic JavaScript error logs (error message, source file, line/column, page URL)</li>
                 <li>Feedback reports are stored in Cloudflare KV and automatically expire after 30 days</li>
+            </ul>
+
+            <p class="font-bold text-zinc-300 mt-3 mb-1">Technical Information</p>
+            <ul class="list-disc list-inside space-y-1 text-zinc-500">
+                <li>Our hosting, security, and infrastructure providers may automatically process technical information such as IP addresses, browser information, device information, request timestamps, and other information contained in network requests for purposes such as security, reliability, fraud prevention, and service operation</li>
             </ul>
 
             <p class="font-bold text-zinc-300 mt-3 mb-1">Analytics</p>
@@ -61,9 +65,9 @@
 
             <p class="font-bold text-zinc-300 mt-3 mb-1">Local Storage</p>
             <ul class="list-disc list-inside space-y-1 text-zinc-500">
-                <li>Your game data is auto-cached in your browser's localStorage for offline access</li>
-                <li>Theme and display mode preferences are stored locally</li>
-                <li>This data never leaves your device unless you sign in for cloud sync</li>
+                <li>Game data may be cached in your browser's local storage to support offline access</li>
+                <li>Theme and display mode preferences are also stored locally</li>
+                <li>Local game data is not uploaded for cloud synchronization unless you use features that transmit it to our servers or sign in and enable cloud synchronization</li>
             </ul>
         </div>
 
@@ -88,37 +92,51 @@
 
         <div>
             <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-2" style="color:#d4a017">5. Data Sharing</h2>
-            <p>We do not sell, rent, or share your personal data with third parties. Data is only processed by the infrastructure providers listed above (Supabase, Cloudflare) as necessary to operate the service.</p>
+            <p>We do not sell or rent your personal information. We may disclose or make information available to service providers that process data on our behalf to operate Duality Forge. These service providers include:</p>
+            <ul class="list-disc list-inside mt-2 space-y-1 text-zinc-500">
+                <li><span class="text-zinc-300">Supabase</span> — authentication, user profiles, and cloud-synced game data storage</li>
+                <li><span class="text-zinc-300">Cloudflare</span> — site hosting, content delivery, temporary feedback/error report storage, and privacy-friendly analytics</li>
+            </ul>
         </div>
 
         <div>
-            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-2" style="color:#d4a017">6. Data Retention & Deletion</h2>
+            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-2" style="color:#d4a017">6. Third-Party Authentication</h2>
+            <p>If you choose to sign in using Google, Google may process information in accordance with Google's own privacy policies. Duality Forge receives only the information made available through the authentication process.</p>
+        </div>
+
+        <div>
+            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-2" style="color:#d4a017">7. Data Retention & Deletion</h2>
             <ul class="list-disc list-inside space-y-1 text-zinc-500">
                 <li>Game data is kept as long as your account exists</li>
                 <li>Feedback and error reports auto-expire after 30 days</li>
                 <li>You can delete your cloud saves at any time from within the app</li>
-                <li>To request full account and data deletion, contact us via the <a href="support/" class="text-[#d4a017] hover:underline">feedback form</a></li>
+                <li>To request full account and data deletion, email us at <a href="mailto:segatto.builder@gmail.com" class="text-[#d4a017] hover:underline">segatto.builder@gmail.com</a> or use the <a href="support/" class="text-[#d4a017] hover:underline">feedback form</a></li>
                 <li>Local data can be cleared by clearing your browser storage</li>
             </ul>
         </div>
 
         <div>
-            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-2" style="color:#d4a017">7. Cookies</h2>
+            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-2" style="color:#d4a017">8. Security</h2>
+            <p>We take reasonable measures to protect information processed through Duality Forge. However, no method of transmission or electronic storage is completely secure, and we cannot guarantee absolute security.</p>
+        </div>
+
+        <div>
+            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-2" style="color:#d4a017">9. Cookies</h2>
             <p>Duality Forge does not use tracking cookies. Supabase may use essential cookies/tokens for authentication sessions. Cloudflare Web Analytics is cookie-free.</p>
         </div>
 
         <div>
-            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-2" style="color:#d4a017">8. Children</h2>
-            <p>This service is not directed at children under 13. We do not knowingly collect data from children under 13. If you believe a child has provided us data, please contact us to have it removed.</p>
+            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-2" style="color:#d4a017">10. Children</h2>
+            <p>Duality Forge is not directed toward children. We do not knowingly collect personal information from children where doing so would violate applicable privacy laws. If you believe a child has provided personal information to us, please contact us so we can review and, where appropriate, delete it.</p>
         </div>
 
         <div>
-            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-2" style="color:#d4a017">9. Changes</h2>
-            <p>This policy may be updated from time to time. Continued use of the service after changes constitutes acceptance of the updated policy.</p>
+            <h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest mb-2" style="color:#d4a017">11. Changes</h2>
+            <p>We may update this policy from time to time. When we make material changes, we will update the "Last updated" date and, where appropriate, provide additional notice. We encourage you to review this Privacy Policy periodically to stay informed about how we handle information.</p>
         </div>
 
         <div class="pt-4 border-t border-[#3d362a]">
-            <p class="text-[10px] text-zinc-600">Questions? Use the <a href="support/" class="text-[#d4a017] hover:underline">feedback form</a> to get in touch.</p>
+            <p class="text-[10px] text-zinc-600">Questions? Email us at <a href="mailto:segatto.builder@gmail.com" class="text-[#d4a017] hover:underline">segatto.builder@gmail.com</a> or use the <a href="support/" class="text-[#d4a017] hover:underline">feedback form</a>.</p>
         </div>
     </div>
 
