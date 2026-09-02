@@ -56,6 +56,7 @@ function initMode() {
 // ========== ACTION BAR TOGGLE ==========
 const ACTION_BAR_KEY = 'dh_dm_actionbar';
 const FEAR_POOL_KEY = 'dh_dm_fearpool';
+const TITLE_KEY = 'dh_dm_title';
 
 const PANEL_IDS = ['panelTracker','panelAdversaries','panelCompendium','panelChronicle','panelVault'];
 
@@ -101,6 +102,21 @@ function initFearPool() {
     if (localStorage.getItem(FEAR_POOL_KEY) === '0') {
         document.getElementById('fearPoolRow').classList.add('hidden');
         document.getElementById('fearGearBtn').textContent = '🕳️ Expand Fear Pool';
+    }
+}
+
+export function toggleTitle() {
+    const el = document.getElementById('campaignTitleRow');
+    const collapsed = !el.classList.contains('hidden');
+    el.classList.toggle('hidden', collapsed);
+    document.getElementById('titleGearBtn').textContent = collapsed ? '📝 Expand Title' : '📝 Collapse Title';
+    localStorage.setItem(TITLE_KEY, collapsed ? '0' : '1');
+}
+
+function initTitle() {
+    if (localStorage.getItem(TITLE_KEY) === '0') {
+        document.getElementById('campaignTitleRow').classList.add('hidden');
+        document.getElementById('titleGearBtn').textContent = '📝 Expand Title';
     }
 }
 
@@ -187,6 +203,7 @@ window.saveSession = saveSession;
 window.loadSession = loadSession;
 window.toggleActionBar = toggleActionBar;
 window.toggleFearPool = toggleFearPool;
+window.toggleTitle = toggleTitle;
 window.newCampaign = newCampaign;
 
 // ========== INIT ==========
@@ -205,6 +222,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     initActionBar();
     initFearPool();
+    initTitle();
     initTracker();
     initVault();
     initChronicle();

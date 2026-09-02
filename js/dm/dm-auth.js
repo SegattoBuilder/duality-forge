@@ -22,18 +22,13 @@ export function initDmAuth() {
     onAuthChange(user => {
         if (user && !campaignPickerShown) {
             campaignPickerShown = true;
-            // Only show picker if no local cache
-            const localRaw = localStorage.getItem('dh_dm_creatures');
-            const hasLocal = localRaw && JSON.parse(localRaw).length > 0;
-            if (!hasLocal) showCampaignPicker();
+            if (!hasLocalDmData()) showCampaignPicker();
         }
     });
     window._ensureCampaignPicker = () => {
         if (getUser() && !campaignPickerShown) {
             campaignPickerShown = true;
-            const localRaw = localStorage.getItem('dh_dm_creatures');
-            const hasLocal = localRaw && JSON.parse(localRaw).length > 0;
-            if (!hasLocal) showCampaignPicker();
+            if (!hasLocalDmData()) showCampaignPicker();
         }
     };
 }
@@ -75,6 +70,27 @@ async function cloudAutoSaveNow() {
     const data = gatherDmData();
     const { error } = await cloudSaveRow('sessions', { campaign_name: campaign }, data, { isAutosave: true });
     if (!error) showSyncStatus('☁️ Auto-saved');
+}
+
+function hasLocalDmData() {
+    try {
+        const c = JSON.parse(localStorage.getItem('dh_dm_creatures') || '[]');
+        if (c.length) return true;
+    } catch {}
+    if (localStorage.getItem(CAMPAIGN_KEY)) return true;
+    try {
+        const v = JSON.parse(localStorage.getItem('dh_dm_vault') || '[]');
+        if (v.length) return true;
+    } catch {}
+    try {
+        const ch = JSON.parse(localStorage.getItem('dh_dm_chronicle') || '[]');
+        if (ch.length) return true;
+    } catch {}
+    try {
+        const ac = JSON.parse(localStorage.getItem('dh_dm_counters') || '[]');
+        if (ac.length) return true;
+    } catch {}
+    return false;
 }
 
 // ========== CLOUD SAVE / LOAD ==========

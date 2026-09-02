@@ -114,12 +114,14 @@ export async function signInWithEmail(email, password) {
     return !error;
 }
 
-export async function signUpWithEmail(email, password) {
+export function signUpWithEmail(email, password) {
     if (!email || !password) { showAlert('Please enter email and password.'); return; }
     if (password.length < 6) { showAlert('Password must be at least 6 characters.'); return; }
-    const { error } = await getSupabase().auth.signUp({ email, password });
-    if (error) showAlert('Sign-up failed: ' + error.message);
-    else showAlert('Check your email for a confirmation link!');
+    requireConsent(async () => {
+        const { error } = await getSupabase().auth.signUp({ email, password });
+        if (error) showAlert('Sign-up failed: ' + error.message);
+        else showAlert('Check your email for a confirmation link!');
+    });
 }
 
 export async function signOut() {

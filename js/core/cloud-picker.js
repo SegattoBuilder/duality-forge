@@ -53,14 +53,13 @@ export async function showCloudPicker(opts) {
             <div class="text-[10px] text-zinc-500">${autoDate}</div>
         </button>` : '';
 
-        // Delete buttons
-        const manualDel = g.manual ? `<button data-del-id="${g.manual.id}" class="cp-del text-zinc-700 hover:text-red-500 text-sm" title="Delete save">🗑</button>` : '';
-        const autoDel = g.autosave ? `<button data-del-id="${g.autosave.id}" class="cp-del text-zinc-700 hover:text-red-500 text-sm" title="Delete autosave">🗑</button>` : '';
+        // Single delete button — stores both IDs
+        const delIds = [g.manual?.id, g.autosave?.id].filter(Boolean).join(',');
 
         return `<div class="col-span-2 p-4 rounded-xl" style="background:linear-gradient(145deg,#221f1a,#1e1b16);border:1px solid #3d362a">
             <div class="flex items-center justify-between mb-3">
                 <div class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">${safeName}</div>
-                <div class="flex gap-1">${manualDel}${autoDel}</div>
+                <button data-del-ids="${delIds}" class="cp-del text-red-400/60 hover:text-red-400 text-base" title="Delete">🗑</button>
             </div>
             <div class="flex gap-2">${manualBtn}${autoBtn}</div>
         </div>`;
@@ -77,15 +76,17 @@ export async function showCloudPicker(opts) {
         });
     });
 
-    // Wire up delete buttons
+    // Wire up delete buttons — deletes both manual + autosave
     list.querySelectorAll('.cp-del').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const id = btn.dataset.delId;
-            showConfirm('Delete this cloud save?', async () => {
-                const { error: delErr } = await cloudDeleteRow(table, id);
-                if (delErr) showAlert('Delete failed: ' + delErr);
-                else showCloudPicker(opts); // re-render
+            const ids = btn.dataset.delIds.split(',');
+            showConfirm('Delete this save and its autosave?', async () => {
+                for (const id of ids) {
+                    const { error: delErr } = await cloudDeleteRow(table, id);
+                    if (delErr) { showAlert('Delete failed: ' + delErr); return; }
+                }
+                showCloudPicker(opts); // re-render
             });
         });
     });
