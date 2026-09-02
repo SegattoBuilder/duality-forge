@@ -250,7 +250,7 @@ export function addCardToSheet(opts) {
     <div class="sheet-card relative mb-2" style="border-left-color:${dc ? '#3d362a' : 'var(--accent-1)'}; ${dc ? `border-top: 2px solid ${dc.border};` : ''}" id="${id}" data-card-name="${cardKey}" data-level="${level || 0}" data-domain-border="${dc ? dc.border : ''}" data-collapsed="${collapsed}">
         <div class="flex justify-between items-center">
             <div class="flex items-center gap-1.5 cursor-pointer card-toggle" data-id="${id}">
-                <span class="collapse-btn text-zinc-500 text-xs" data-id="${id}">${collapsed ? '▸' : '▾'}</span>
+                <span class="collapse-btn text-zinc-500 text-xs" data-id="${id}">${collapsed ? '▶' : '▼'}</span>
                 ${isDomain ? `<button class="text-zinc-600 hover:text-yellow-400 text-base leading-none domain-sel-btn" data-id="${id}" id="${id}-sel" title="Select for loadout">☆</button>` : ''}
                 ${dc ? `<img src="${dc.icon}" class="domain-icon-badge" alt="${domain}">` : ''}
                 <span class="text-xs font-black uppercase" ${dc ? `style="color:${dc.text}"` : ''}>${name}</span>
@@ -294,7 +294,7 @@ function toggleCardCollapse(id) {
     const collapsed = el.getAttribute('data-collapsed') === 'true';
     el.setAttribute('data-collapsed', !collapsed);
     body.style.display = collapsed ? '' : 'none';
-    btn.textContent = collapsed ? '▾' : '▸';
+    btn.textContent = collapsed ? '▼' : '▶';
     const cardName = el.getAttribute('data-card-name');
     const saved = savedCardsData.find(c => c.name.toLowerCase() === cardName);
     if (saved) saved.collapsed = !collapsed;

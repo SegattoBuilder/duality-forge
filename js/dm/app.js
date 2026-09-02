@@ -113,6 +113,9 @@ export function switchTab(tab) {
     document.getElementById('trackerActions').classList.toggle('hidden', tab !== 'tracker');
     document.getElementById('vaultActions').classList.toggle('hidden', tab !== 'vault');
     document.getElementById('chronicleActions').classList.toggle('hidden', tab !== 'chronicle');
+    const cloak = document.getElementById('tab-cloak');
+    if (cloak) cloak.remove();
+    localStorage.setItem('dh_dm_active_tab', tab);
 }
 
 // ========== SAVE / LOAD (LOCAL) ==========
@@ -202,4 +205,7 @@ window.addEventListener('DOMContentLoaded', () => {
     initAdversariesTab();
     initDmAuth();
     initAuth();
+
+    const savedDmTab = localStorage.getItem('dh_dm_active_tab');
+    if (savedDmTab && savedDmTab !== 'tracker') switchTab(savedDmTab);
 });

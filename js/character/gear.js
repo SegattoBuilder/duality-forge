@@ -22,7 +22,7 @@ function toggleCollapse(id) {
     const btn = el.querySelector('.collapse-btn');
     const collapsed = details.style.display !== 'none';
     details.style.display = collapsed ? 'none' : '';
-    btn.textContent = collapsed ? '▸' : '▾';
+    btn.textContent = collapsed ? '▶' : '▼';
     el.dataset.collapsed = collapsed;
     autoCache();
 }
@@ -32,7 +32,7 @@ function applyCollapsed(el, collapsed) {
     const details = el.querySelector('.gear-details');
     const btn = el.querySelector('.collapse-btn');
     if (details) details.style.display = 'none';
-    if (btn) btn.textContent = '▸';
+    if (btn) btn.textContent = '▶';
     el.dataset.collapsed = 'true';
 }
 
@@ -47,7 +47,7 @@ export function addWeapon(data) {
     const html = `
     <div class="bg-black/40 border border-zinc-800 rounded-lg p-3" id="${id}" data-equipped="${equipped}" data-collapsed="false">
         <div class="flex items-center gap-2">
-            <button class="collapse-btn text-zinc-600 hover:text-zinc-400 text-xs leading-none w-4" title="Collapse">▾</button>
+            <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <button class="equip-star text-lg leading-none cursor-pointer" title="Equip">${equipped ? '★' : '☆'}</button>
             <input type="text" value="${d.name || ''}" placeholder="Weapon Name" class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
             <button class="text-zinc-700 hover:text-red-500 text-sm wep-remove" title="Remove">✕</button>
@@ -129,7 +129,7 @@ export function addArmor(data) {
     const html = `
     <div class="bg-black/40 border border-zinc-800 rounded-lg p-3" id="${id}" data-equipped="${equipped}" data-collapsed="false">
         <div class="flex items-center gap-2">
-            <button class="collapse-btn text-zinc-600 hover:text-zinc-400 text-xs leading-none w-4" title="Collapse">▾</button>
+            <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <button class="equip-star text-lg leading-none cursor-pointer" title="Equip">${equipped ? '★' : '☆'}</button>
             <input type="text" value="${d.name || ''}" placeholder="Armor Name" class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
             <button class="text-zinc-700 hover:text-red-500 text-sm arm-remove" title="Remove">✕</button>
@@ -212,7 +212,7 @@ export function addItem(data) {
     const html = `
     <div class="bg-black/40 border border-zinc-800 rounded-lg p-3" id="${id}" data-collapsed="false">
         <div class="flex items-center gap-2">
-            <button class="collapse-btn text-zinc-600 hover:text-zinc-400 text-xs leading-none w-4" title="Collapse">▾</button>
+            <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <input type="text" value="${d.name || ''}" placeholder="Item name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
             <button class="text-zinc-700 hover:text-red-500 text-sm item-remove" title="Remove">✕</button>
         </div>
@@ -253,7 +253,7 @@ export function addConsumable(data) {
     const html = `
     <div class="bg-black/40 border border-zinc-800 rounded-lg p-3" id="${id}" data-collapsed="false">
         <div class="flex items-center gap-2">
-            <button class="collapse-btn text-zinc-600 hover:text-zinc-400 text-xs leading-none w-4" title="Collapse">▾</button>
+            <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <input type="text" value="${d.name || ''}" placeholder="Consumable name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
             <input type="text" value="${d.qty || '1'}" placeholder="x1" class="w-10 bg-transparent text-center text-sm outline-none border-b border-zinc-800" data-autocache>
             <button class="text-zinc-700 hover:text-red-500 text-sm cons-remove" title="Remove">✕</button>
@@ -294,7 +294,7 @@ export function addGearItem(name, bonus, desc, collapsed) {
     const html = `
     <div class="bg-black/40 border border-zinc-800 rounded-lg p-3" id="${id}" data-collapsed="false">
         <div class="flex items-center gap-2">
-            <button class="collapse-btn text-zinc-600 hover:text-zinc-400 text-xs leading-none w-4" title="Collapse">▾</button>
+            <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <input type="text" value="${name || ''}" placeholder="Item name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
             <input type="text" value="${bonus || ''}" placeholder="Bonus" class="w-20 bg-transparent border-b border-zinc-700 text-sm text-center outline-none" data-autocache>
             <button class="text-zinc-700 hover:text-red-500 text-sm gear-remove">✕</button>

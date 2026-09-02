@@ -17,6 +17,18 @@
     <link rel="stylesheet" href="../css/themes.css">
     <link rel="stylesheet" href="../css/modern.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+    (function(){
+        var t = localStorage.getItem('dh_dm_active_tab');
+        if (t && t !== 'tracker') {
+            var cap = t.charAt(0).toUpperCase() + t.slice(1);
+            var s = document.createElement('style');
+            s.id = 'tab-cloak';
+            s.textContent = '#panelTracker{display:none!important}#panel'+cap+'{display:block!important}#tabTracker.active{background:#2a2418;color:#6b5d4d;border-color:#3d362a}#tab'+cap+'{background:linear-gradient(135deg,var(--accent-4),var(--accent-3))!important;color:#fff!important;border-color:transparent!important}';
+            document.head.appendChild(s);
+        }
+    })();
+</script>
 </head>
 <body class="max-w-[1200px] mx-auto p-4 pb-24">
 

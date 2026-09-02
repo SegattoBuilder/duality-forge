@@ -41,6 +41,9 @@ window.switchModernTab = function(tabId) {
         document.getElementById(id).style.display = id === tabId ? '' : 'none';
         document.getElementById('btn-' + id).classList.toggle('active', id === tabId);
     });
+    const cloak = document.getElementById('tab-cloak');
+    if (cloak) cloak.remove();
+    localStorage.setItem('dh_active_tab', tabId);
 };
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -72,6 +75,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('input', () => { updateThresholds(); updateAttackBonus(); autoCache(); });
     document.addEventListener('change', () => { updateThresholds(); updateAttackBonus(); autoCache(); });
+
+    const savedTab = localStorage.getItem('dh_active_tab');
+    if (savedTab && MODERN_TABS.includes(savedTab)) switchModernTab(savedTab);
 
     initCharAuth();
     loadCompendium({ characterMode: true, onAddWeapon: addWeapon, onAddArmor: addArmor, onAddItem: addItem, onAddConsumable: addConsumable, onAddGear: addGearItem, onAddInventory: addInventoryItem, onAddDomainCard: addCardToSheet, onAddGeneral: addCardToSheet });
