@@ -362,6 +362,7 @@
             <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Email</label><input id="authEmail" type="email" placeholder="your@email.com" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
             <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Password</label><input id="authPassword" type="password" placeholder="••••••••" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
             <div class="flex gap-3"><button onclick="signInWithEmail()" class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">Sign In</button><button onclick="signUpWithEmail()" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880]">Sign Up</button></div>
+            <div class="text-[10px] text-zinc-600 text-center"><button onclick="resetPassword()" class="text-[#d4a017] hover:underline font-bold">Forgot password?</button></div>
             <div class="text-[10px] text-zinc-600 text-center">Sign in to save your characters to the cloud.</div>
         </div>
     </div>
@@ -384,6 +385,7 @@
             <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Player Experience</label><select id="profilePlayerExp" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] cursor-pointer"><option value="">Select...</option><option value="none">Never</option><option value="<1">Less than 1 year</option><option value="1-2">1–2 years</option><option value="3-5">3–5 years</option><option value="5-10">5–10 years</option><option value="10+">10+ years</option></select></div>
         </div>
         <div class="flex gap-3 mt-6"><button onclick="saveProfile()" class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">Save</button><button onclick="closeProfileModal()" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880]">Cancel</button></div>
+        <div class="mt-4 text-center"><button id="profileResetPwBtn" onclick="resetPasswordFromProfile(); closeProfileModal()" class="text-[10px] text-zinc-500 hover:text-[#d4a017] font-bold uppercase transition-colors">🔑 Reset Password</button></div>
     </div>
 </div>
 

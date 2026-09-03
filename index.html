@@ -63,6 +63,7 @@
                     <button onclick="doSignIn()" class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">Sign In</button>
                     <button onclick="doSignUp()" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880]">Sign Up</button>
                 </div>
+                <div class="text-[10px] text-zinc-600 text-center"><button onclick="doResetPassword()" class="text-[#d4a017] hover:underline font-bold">Forgot password?</button></div>
                 <div class="text-[10px] text-zinc-600 text-center">Sign in to save your data to the cloud across devices.</div>
             </div>
         </div>
@@ -159,6 +160,39 @@
         if (session) { showTools(); backRow.classList.add('hidden'); }
         else showAuthChoice();
 
+        // Listen for password recovery redirect
+        sb.auth.onAuthStateChange((event, session) => {
+            if (event === 'PASSWORD_RECOVERY') showPasswordUpdatePrompt();
+        });
+
+        function showPasswordUpdatePrompt() {
+            let modal = document.getElementById('passwordUpdateModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'passwordUpdateModal';
+                modal.className = 'fixed inset-0 modal-overlay z-[9999] p-4 flex items-center justify-center';
+                modal.innerHTML = `<div class="modal-panel p-6 w-full max-w-sm">
+                    <div class="border-b border-[#363026] pb-3 mb-5"><h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1, #d4a017)">Set New Password</h2></div>
+                    <div class="space-y-4">
+                        <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">New Password</label><input id="newPasswordInput" type="password" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
+                        <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Confirm Password</label><input id="confirmPasswordInput" type="password" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
+                        <button id="updatePasswordBtn" class="w-full btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">Update Password</button>
+                    </div>
+                </div>`;
+                document.body.appendChild(modal);
+            }
+            modal.classList.remove('hidden');
+            document.getElementById('updatePasswordBtn').onclick = async () => {
+                const pw = document.getElementById('newPasswordInput').value;
+                const confirm = document.getElementById('confirmPasswordInput').value;
+                if (!pw || pw.length < 6) { showAlert('Password must be at least 6 characters.'); return; }
+                if (pw !== confirm) { showAlert('Passwords do not match.'); return; }
+                const { error } = await sb.auth.updateUser({ password: pw });
+                if (error) showAlert('Update failed: ' + error.message);
+                else { modal.classList.add('hidden'); showAlert('Password updated successfully!'); }
+            };
+        }
+
         // Expose to onclick handlers
         window.go = (tool) => { window.location.href = tool + '/'; };
         window.chooseMode = (mode) => { if (mode === 'online') openAuthModal(); else showTools(); };
@@ -167,6 +201,13 @@
         window.doSignUp = doSignUp;
         window.signInWithGoogle = signInWithGoogle;
         window.closeAuthModal = closeAuthModal;
+        window.doResetPassword = async () => {
+            const email = document.getElementById('authEmail').value.trim();
+            if (!email) { showAlert('Enter your email address.'); return; }
+            const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/' });
+            if (error) showAlert('Reset failed: ' + error.message);
+            else showAlert('Check your email for a password reset link!');
+        };
     </script>
     <script type="module" src="js/core/analytics.js"></script>
 </body>

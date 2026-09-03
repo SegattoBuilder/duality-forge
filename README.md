@@ -1,4 +1,4 @@
-# Duality Forge ⚒️
+# Duality Forge <img src="images/logo/icon-192.png" alt="logo" width="48">
 
 A unified web toolkit for tabletop RPGs — combining DM tools and a digital character sheet into one monorepo.
 

@@ -1,4 +1,4 @@
-import { initAuth, getUser, getProfile, getSupabase, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as coreSignOut, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
+import { initAuth, getUser, getProfile, getSupabase, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, isEmailUser, signOut as coreSignOut, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
 import { showCloudPicker } from '../core/cloud-picker.js';
 import { TOAST_DURATION, SYNC_STATUS_DURATION, AUTOSAVE_INTERVAL, TABLE_CHARACTERS, TABLE_DM_TABLES, LS_CHAR_SAVE } from '../core/constants.js';
 import { gatherData, applyData, autoCache, resetSheet } from './save.js';
@@ -199,6 +199,8 @@ function openProfileModal() {
     document.getElementById('profileAge').value = profile?.age || '';
     document.getElementById('profilePlayerExp').value = profile?.player_experience || '';
     previewAvatar(profile?.avatar_url || '');
+    const resetBtn = document.getElementById('profileResetPwBtn');
+    if (resetBtn) resetBtn.classList.toggle('hidden', !isEmailUser());
 }
 function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); }
 function previewAvatar(url) {
@@ -228,6 +230,8 @@ window.closeAuthModal = closeAuthModal;
 window.signInWithGoogle = signInWithGoogle;
 window.signInWithEmail = () => signInWithEmail(document.getElementById('authEmail').value.trim(), document.getElementById('authPassword').value);
 window.signUpWithEmail = () => signUpWithEmail(document.getElementById('authEmail').value.trim(), document.getElementById('authPassword').value);
+window.resetPassword = () => resetPassword(document.getElementById('authEmail').value.trim());
+window.resetPasswordFromProfile = () => { const u = getUser(); if (u?.email) resetPassword(u.email); };
 window.signOut = doSignOut;
 window.cloudSave = cloudSave;
 window.cloudLoad = cloudLoad;

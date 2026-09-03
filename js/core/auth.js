@@ -21,6 +21,7 @@ export function getSupabase() {
 
 export function getUser() { return currentUser; }
 export function getProfile() { return currentProfile; }
+export function isEmailUser() { return currentUser?.app_metadata?.provider === 'email'; }
 
 // ========== AUTH STATE ==========
 let onAuthChangeCallbacks = [];
@@ -32,7 +33,10 @@ export async function initAuth() {
     if (!sb) return;
     const { data: { session } } = await sb.auth.getSession();
     if (session) setUser(session.user);
-    sb.auth.onAuthStateChange((_event, session) => {
+    sb.auth.onAuthStateChange((event, session) => {
+        if (event === 'PASSWORD_RECOVERY') {
+            showPasswordUpdatePrompt();
+        }
         setUser(session?.user || null);
     });
 }
@@ -123,6 +127,36 @@ export function signUpWithEmail(email, password) {
         if (error) showAlert('Sign-up failed: ' + error.message);
         else showAlert('Check your email for a confirmation link!');
     });
+}
+
+export async function resetPassword(email) {
+    if (!email) { showAlert('Enter your email address.'); return; }
+    const { error } = await getSupabase().auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/'
+    });
+    if (error) showAlert('Reset failed: ' + error.message);
+    else showAlert('Check your email for a password reset link!');
+}
+
+function showPasswordUpdatePrompt() {
+    const modal = ensureModal('passwordUpdateModal', `<div class="modal-panel p-6 w-full max-w-sm">
+        <div class="border-b border-[#363026] pb-3 mb-5"><h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1, #d4a017)">Set New Password</h2></div>
+        <div class="space-y-4">
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">New Password</label><input id="newPasswordInput" type="password" placeholder="••••••••" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Confirm Password</label><input id="confirmPasswordInput" type="password" placeholder="••••••••" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
+            <button id="updatePasswordBtn" class="w-full btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">Update Password</button>
+        </div>
+    </div>`);
+    modal.classList.remove('hidden');
+    document.getElementById('updatePasswordBtn').onclick = async () => {
+        const pw = document.getElementById('newPasswordInput').value;
+        const confirm = document.getElementById('confirmPasswordInput').value;
+        if (!pw || pw.length < PASSWORD_MIN_LENGTH) { showAlert(`Password must be at least ${PASSWORD_MIN_LENGTH} characters.`); return; }
+        if (pw !== confirm) { showAlert('Passwords do not match.'); return; }
+        const { error } = await getSupabase().auth.updateUser({ password: pw });
+        if (error) showAlert('Update failed: ' + error.message);
+        else { modal.classList.add('hidden'); showAlert('Password updated successfully!'); }
+    };
 }
 
 export async function signOut() {
