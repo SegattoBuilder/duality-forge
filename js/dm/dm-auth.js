@@ -1,4 +1,4 @@
-import { getUser, getProfile, getSupabase, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, isEmailUser, signOut as coreSignOut, saveProfile as coreSaveProfile, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
+import { getUser, getProfile, getSupabase, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, changeEmail, isEmailUser, signOut as coreSignOut, signOutAll as coreSignOutAll, saveProfile as coreSaveProfile, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
 import { showCloudPicker } from '../core/cloud-picker.js';
 import { TOAST_DURATION, SYNC_STATUS_DURATION, AUTOSAVE_INTERVAL, TABLE_DM_TABLES, TABLE_CHARACTERS, LS_DM_CREATURES, LS_DM_VAULT, LS_DM_CHRONICLE, LS_DM_COUNTERS, LS_DM_CAMPAIGN } from '../core/constants.js';
 import { creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled, autoCache, renderGrid, renderFearDots } from './tracker.js';
@@ -143,12 +143,14 @@ async function importLocalToCloud() {
 
 async function doSignOut() {
     await coreSignOut();
-    setCurrentTable(null);
-    setCreatures([]); setActionCounters([]); setFearFilled(0); setVaultCreatures([]); setVaultGroups([]); setChronicleEntries([]);
-    document.getElementById('campaignName').value = '';
-    localStorage.removeItem(LS_DM_CAMPAIGN);
-    autoCache(); autoCacheVault(); autoCacheChronicle(); renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
-    switchTab('tracker');
+    window.location.href = '/';
+}
+
+async function doSignOutAll() {
+    showConfirm('Sign out from all devices?', async () => {
+        await coreSignOutAll();
+        window.location.href = '/';
+    });
 }
 
 // ========== AUTH UI ==========
@@ -217,6 +219,10 @@ function openProfileModal() {
     previewAvatar(profile?.avatar_url || '');
     const resetBtn = document.getElementById('profileResetPwBtn');
     if (resetBtn) resetBtn.classList.toggle('hidden', !isEmailUser());
+    const changeEmailBtn = document.getElementById('profileChangeEmailBtn');
+    if (changeEmailBtn) changeEmailBtn.classList.toggle('hidden', !isEmailUser());
+    const changeEmailRow = document.getElementById('changeEmailRow');
+    if (changeEmailRow) { changeEmailRow.classList.add('hidden'); }
 }
 function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); }
 function previewAvatar(url) {
@@ -298,7 +304,16 @@ window.signInWithEmail = () => signInWithEmail(document.getElementById('authEmai
 window.signUpWithEmail = () => signUpWithEmail(document.getElementById('authEmail').value.trim(), document.getElementById('authPassword').value);
 window.resetPassword = () => resetPassword(document.getElementById('authEmail').value.trim());
 window.resetPasswordFromProfile = () => { const u = getUser(); if (u?.email) resetPassword(u.email); };
+window.changeEmailFromProfile = () => {
+    const input = document.getElementById('changeEmailInput');
+    if (input) changeEmail(input.value.trim());
+};
+window.toggleChangeEmail = () => {
+    const row = document.getElementById('changeEmailRow');
+    if (row) row.classList.toggle('hidden');
+};
 window.signOut = doSignOut;
+window.signOutAll = doSignOutAll;
 window.cloudSave = cloudSave;
 window.cloudLoad = cloudLoad;
 window.importLocalToCloud = importLocalToCloud;

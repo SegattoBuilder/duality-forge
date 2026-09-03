@@ -138,6 +138,13 @@ export async function resetPassword(email) {
     else showAlert('Check your email for a password reset link!');
 }
 
+export async function changeEmail(newEmail) {
+    if (!newEmail) { showAlert('Enter a new email address.'); return; }
+    const { error } = await getSupabase().auth.updateUser({ email: newEmail });
+    if (error) showAlert('Change email failed: ' + error.message);
+    else showAlert('Check your new email for a confirmation link!');
+}
+
 function showPasswordUpdatePrompt() {
     const modal = ensureModal('passwordUpdateModal', `<div class="modal-panel p-6 w-full max-w-sm">
         <div class="border-b border-[#363026] pb-3 mb-5"><h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1, #d4a017)">Set New Password</h2></div>
@@ -160,10 +167,18 @@ function showPasswordUpdatePrompt() {
 }
 
 export async function signOut() {
-    await getSupabase().auth.signOut();
+    await getSupabase().auth.signOut({ scope: 'local' });
     currentUser = null;
     currentProfile = null;
-    // Clear all tool data from localStorage (keep caches/mode prefs)
+    const clearKeys = Object.keys(localStorage).filter(k => k.startsWith('dh_') && !k.includes('cache') && !k.includes('mode'));
+    clearKeys.forEach(k => localStorage.removeItem(k));
+    onAuthChangeCallbacks.forEach(cb => cb(null));
+}
+
+export async function signOutAll() {
+    await getSupabase().auth.signOut({ scope: 'global' });
+    currentUser = null;
+    currentProfile = null;
     const clearKeys = Object.keys(localStorage).filter(k => k.startsWith('dh_') && !k.includes('cache') && !k.includes('mode'));
     clearKeys.forEach(k => localStorage.removeItem(k));
     onAuthChangeCallbacks.forEach(cb => cb(null));

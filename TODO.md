@@ -50,7 +50,14 @@
 
 ## 🔜 Planned
 
-_Nothing yet — add ideas below!_
+### v0.8 — Authentication & Account Management
+- [x] Password reset from Profile (email users only)
+- [x] Forgot password on Sign In modal
+- [x] Hide password reset for Google OAuth users
+- [ ] Delete account (with confirmation + cascade cleanup of characters, tables, profile)
+- [x] Change email address
+- [x] Session management (sign out from all devices)
+- [ ] Link Google account to existing email account (or vice versa)
 
 ---
 
