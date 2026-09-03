@@ -197,6 +197,44 @@
 
 [data-mode="scifi"] { background-color: #0a0e1a; color: #c8dce8; }
 
+/* Squared corners — override all rounded elements */
+[data-mode="scifi"] .creature-card,
+[data-mode="scifi"] .compendium-card,
+[data-mode="scifi"] .card,
+[data-mode="scifi"] .sheet-card,
+[data-mode="scifi"] .modal-panel,
+[data-mode="scifi"] .fear-pool,
+[data-mode="scifi"] .dot,
+[data-mode="scifi"] .btn-primary,
+[data-mode="scifi"] .btn-secondary,
+[data-mode="scifi"] .btn-danger,
+[data-mode="scifi"] .btn-primary-pill,
+[data-mode="scifi"] .btn-accent-pill,
+[data-mode="scifi"] .btn-danger-pill,
+[data-mode="scifi"] .btn-outline,
+[data-mode="scifi"] .btn-nav,
+[data-mode="scifi"] .btn-approve,
+[data-mode="scifi"] .btn-deny,
+[data-mode="scifi"] .mode-btn,
+[data-mode="scifi"] .picker-card,
+[data-mode="scifi"] .filter-pill,
+[data-mode="scifi"] .modern-tab-btn,
+[data-mode="scifi"] .classic-tab-btn,
+[data-mode="scifi"] .hero-header,
+[data-mode="scifi"] .theme-swatch,
+[data-mode="scifi"] #gearMenu,
+[data-mode="scifi"] #authMenu { border-radius: 0 !important; }
+
+[data-mode="scifi"] input,
+[data-mode="scifi"] select,
+[data-mode="scifi"] textarea { border-radius: 0 !important; }
+
+[data-mode="scifi"] .trait-box,
+[data-mode="scifi"] .rounded-xl,
+[data-mode="scifi"] .rounded-lg,
+[data-mode="scifi"] .rounded,
+[data-mode="scifi"] .rounded-full { border-radius: 0 !important; }
+
 /* Remove parchment textures */
 [data-mode="scifi"]::before { opacity: 0; }
 [data-mode="scifi"]::after { background: radial-gradient(ellipse at center, transparent 50%, rgba(0,20,40,0.5) 100%); }
