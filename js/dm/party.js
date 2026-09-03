@@ -54,33 +54,28 @@ async function refreshMembers() {
     renderMemberList(members);
 }
 
-function renderMemberCard(m, actions) {
+function renderMemberCard(m, isPending) {
     const d = m.data || {};
     const f = d.fields || {};
     const name = escHtml(f.charName || m.character_name || 'Unnamed');
     const cls = escHtml(f.charClass || '—');
     const lvl = f.charLevel || '?';
-    const hp = d.dots?.hp || [];
-    const stress = d.dots?.stress || [];
-    const hpFilled = hp.filter(Boolean).length;
-    const hpMax = hp.length;
-    const stressFilled = stress.filter(Boolean).length;
-    const stressMax = stress.length;
-    const updated = m.updated_at ? new Date(m.updated_at).toLocaleDateString() : '';
-    return `<div class="p-4 rounded-xl border border-[#3d362a] bg-[#1e1b16] hover:border-[#d4a017] transition-colors">
-        <div class="flex items-start justify-between mb-2">
-            <div class="cursor-pointer flex-1" onclick="viewCharacterDetail('${m.id}')">
+    const safeName = escHtmlAttr(f.charName || m.character_name || 'this character');
+
+    const actionBtn = isPending
+        ? `<div class="flex gap-1">
+            <button onclick="event.stopPropagation(); approvePartyMember('${m.id}')" class="text-[10px] px-2 py-1 rounded-lg bg-green-900/30 border border-green-700/40 text-green-400 font-bold uppercase hover:border-green-500" title="Approve">✓</button>
+            <button onclick="event.stopPropagation(); denyPartyMember('${m.id}','${safeName}')" class="text-[10px] px-2 py-1 rounded-lg bg-red-900/30 border border-red-700/40 text-red-400 font-bold uppercase hover:border-red-500" title="Deny">✕</button>
+        </div>`
+        : `<button onclick="event.stopPropagation(); kickPartyMember('${m.id}','${safeName}')" class="text-[10px] px-2 py-1 rounded-lg bg-red-900/30 border border-red-700/40 text-red-400/60 hover:text-red-400 font-bold uppercase hover:border-red-500" title="Kick">✕</button>`;
+
+    return `<div class="p-4 rounded-xl border border-[#3d362a] bg-[#1e1b16] hover:border-[#d4a017] transition-colors cursor-pointer" onclick="viewCharacterDetail('${m.id}')">
+        <div class="flex items-start justify-between">
+            <div>
                 <div class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">${name}</div>
                 <div class="text-[10px] text-zinc-500">${cls} · Lv ${escHtml(String(lvl))}</div>
             </div>
-        </div>
-        <div class="flex gap-3 text-[10px] mb-2">
-            <span class="text-red-400">HP ${hpFilled}/${hpMax}</span>
-            <span class="text-purple-400">Stress ${stressFilled}/${stressMax}</span>
-        </div>
-        <div class="flex justify-between items-center">
-            <div class="flex gap-2">${actions}</div>
-            <span class="text-[9px] text-zinc-600">${updated}</span>
+            ${actionBtn}
         </div>
     </div>`;
 }
@@ -94,29 +89,18 @@ function renderMemberList(members) {
 
     let html = '';
 
-    // Pending section
-    if (pending.length) {
-        html += `<div class="col-span-full"><div class="flex items-center gap-2 mb-3"><span class="text-[10px] text-yellow-500 uppercase tracking-wide font-bold font-[Cinzel]">⏳ Pending Approval</span><span class="text-[10px] text-zinc-600">(${pending.length})</span></div></div>`;
-        html += pending.map(m => {
-            const safeName = escHtmlAttr(m.data?.fields?.charName || m.character_name || 'this character');
-            const actions = `<button onclick="approvePartyMember('${m.id}')" class="text-[10px] text-green-400 font-bold uppercase hover:underline">✓ Approve</button>
-                <button onclick="denyPartyMember('${m.id}','${safeName}')" class="text-[10px] text-red-400 font-bold uppercase hover:underline">✕ Deny</button>
-                <button onclick="viewCharacterDetail('${m.id}')" class="text-[10px] text-[#d4a017] font-bold uppercase hover:underline">View</button>`;
-            return renderMemberCard(m, actions);
-        }).join('');
-    }
-
     // Approved section
-    html += `<div class="col-span-full ${pending.length ? 'mt-4' : ''}"><div class="flex items-center gap-2 mb-3"><span class="text-[10px] text-green-400 uppercase tracking-wide font-bold font-[Cinzel]">✅ Party Members</span><span class="text-[10px] text-zinc-600">(${approved.length})</span></div></div>`;
+    html += `<div class="col-span-full"><div class="flex items-center gap-2 mb-3"><span class="text-[10px] text-green-400 uppercase tracking-wide font-bold font-[Cinzel]">✅ Party Members</span><span class="text-[10px] text-zinc-600">(${approved.length})</span></div></div>`;
     if (approved.length) {
-        html += approved.map(m => {
-            const safeName = escHtmlAttr(m.data?.fields?.charName || m.character_name || 'this character');
-            const actions = `<button onclick="viewCharacterDetail('${m.id}')" class="text-[10px] text-[#d4a017] font-bold uppercase hover:underline">View Sheet</button>
-                <button onclick="kickPartyMember('${m.id}','${safeName}')" class="text-red-400/50 hover:text-red-400 text-[10px] font-bold uppercase">Kick</button>`;
-            return renderMemberCard(m, actions);
-        }).join('');
+        html += approved.map(m => renderMemberCard(m, false)).join('');
     } else {
         html += '<div class="col-span-full text-center py-6 text-zinc-600 text-sm italic">No approved members yet.</div>';
+    }
+
+    // Pending section
+    if (pending.length) {
+        html += `<div class="col-span-full mt-4"><div class="flex items-center gap-2 mb-3"><span class="text-[10px] text-yellow-500 uppercase tracking-wide font-bold font-[Cinzel]">⏳ Pending Approval</span><span class="text-[10px] text-zinc-600">(${pending.length})</span></div></div>`;
+        html += pending.map(m => renderMemberCard(m, true)).join('');
     }
 
     list.innerHTML = html;
@@ -128,7 +112,14 @@ export async function renderParty() {
     const user = getUser();
 
     if (!user) {
-        panel.innerHTML = `<div class="text-center py-20"><div class="text-zinc-600 text-sm italic mb-3">Sign in to use the Party system.</div><button onclick="openAuthModal()" class="btn-action text-xs px-6 py-2 rounded-full font-bold uppercase text-white">Sign In</button></div>`;
+        panel.innerHTML = `<div class="text-center py-20 max-w-sm mx-auto">
+            <img src="../images/logo/party_64.png" alt="" class="w-20 h-20 mx-auto mb-4">
+            <div class="text-sm text-[#f5efe6] font-[Cinzel] font-bold mb-2">Party Requires an Account</div>
+            <div class="text-xs text-zinc-500 mb-6 leading-relaxed">Sign in or create an account to manage your party. Share a table code with your players so they can join, and view their character sheets in real time.</div>
+            <div class="flex gap-3 justify-center">
+                <button onclick="openAuthModal()" class="btn-action text-xs px-6 py-2.5 rounded-full font-bold uppercase text-white">Sign In / Sign Up</button>
+            </div>
+        </div>`;
         return;
     }
 
@@ -138,7 +129,7 @@ export async function renderParty() {
 
     if (!currentTable) {
         panel.innerHTML = `<div class="text-center py-20">
-            <div class="text-4xl mb-4">👥</div>
+            <img src="../images/logo/party_64.png" alt="" class="w-20 h-20 mx-auto mb-4">
             <div class="text-sm text-[#f5efe6] font-[Cinzel] font-bold mb-2">Party Not Set Up Yet</div>
             <div class="text-xs text-zinc-500 max-w-xs mx-auto">Save your campaign to the cloud and your unique table code will be generated for players to join.</div>
         </div>`;
@@ -147,20 +138,13 @@ export async function renderParty() {
 
     const tableId = currentTable.id;
     panel.innerHTML = `
-        <div class="mb-6 p-4 rounded-xl border border-[#3d362a] bg-[#1e1b16]">
-            <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-                <div>
-                    <div class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">${escHtml(currentTable.campaign_name)}</div>
-                    <div class="text-[10px] text-zinc-500 mt-1">Share this code with your players:</div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="font-mono text-xs font-black text-[#d4a017] tracking-wide select-all">${escHtml(tableId)}</span>
-                    <button onclick="copyInviteCode()" class="text-xs text-zinc-400 hover:text-[#d4a017]" title="Copy code">📋</button>
-                </div>
+        <div class="mb-6 max-w-sm mx-auto p-3 rounded-xl border border-[#3d362a] bg-[#1e1b16] text-center">
+            <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Table Code</div>
+            <div class="flex items-center justify-center gap-2 mb-2">
+                <span class="font-mono text-[10px] font-bold text-[#d4a017] tracking-wide select-all">${escHtml(tableId)}</span>
+                <button onclick="copyInviteCode()" class="text-xs text-zinc-400 hover:text-[#d4a017]" title="Copy code">📋</button>
             </div>
-            <div class="flex flex-wrap gap-2">
-                <button onclick="refreshPartyMembers()" class="bg-[#2a2418] border border-[#4a3f30] text-[10px] px-3 py-1.5 rounded-full font-bold uppercase text-[#d4a017] font-[Cinzel] hover:border-[#d4a017]">🔄 Refresh</button>
-            </div>
+            <div class="text-[10px] text-zinc-600 italic">Share with your players to join</div>
         </div>
         <div id="partyMemberList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div class="col-span-full text-center py-10 text-zinc-600 text-sm italic">Loading party...</div>

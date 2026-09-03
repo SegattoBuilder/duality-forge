@@ -245,7 +245,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(m => m.classList.add('hidden'));
+            document.querySelectorAll('.modal-overlay:not(.hidden):not(#campaignPickerModal)').forEach(m => m.classList.add('hidden'));
         }
     });
 

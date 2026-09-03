@@ -1,7 +1,7 @@
 // ========== TIMERS (ms) ==========
 export const TOAST_DURATION = 5000;
 export const SYNC_STATUS_DURATION = 10000;
-export const AUTOSAVE_INTERVAL = 30 * 1000; // 30s for testing — revert to 15 * 60 * 1000
+export const AUTOSAVE_INTERVAL = 15 * 60 * 1000;
 
 // ========== VALIDATION ==========
 export const PASSWORD_MIN_LENGTH = 6;
