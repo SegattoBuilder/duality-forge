@@ -46,18 +46,13 @@ const TITLE_KEY = LS_DM_TITLE;
 
 const PANEL_IDS = ['panelTracker','panelAdversaries','panelCompendium','panelChronicle','panelVault','panelParty'];
 
-function applyActionBarMargins(collapsed) {
-    PANEL_IDS.forEach(id => {
-        const el = document.getElementById(id);
-        if (collapsed) {
-            el.classList.remove('mt-52','sm:mt-36');
-            el.classList.add('mt-40','sm:mt-24');
-        } else {
-            el.classList.remove('mt-40','sm:mt-24');
-            el.classList.add('mt-52','sm:mt-36');
-        }
-    });
+function updateNavSpacer() {
+    const nav = document.querySelector('nav');
+    const spacer = document.getElementById('navSpacer');
+    if (nav && spacer) spacer.style.height = (nav.offsetHeight + 16) + 'px';
 }
+
+function applyActionBarMargins() { updateNavSpacer(); }
 
 export function toggleActionBar() {
     const bar = document.getElementById('actionBarRow');
@@ -65,14 +60,13 @@ export function toggleActionBar() {
     bar.classList.toggle('hidden', collapsed);
     document.getElementById('actionBarGearBtn').textContent = collapsed ? '📐 Expand Actions' : '📐 Collapse Actions';
     localStorage.setItem(ACTION_BAR_KEY, collapsed ? '0' : '1');
-    applyActionBarMargins(collapsed);
+    updateNavSpacer();
 }
 
 function initActionBar() {
     if (localStorage.getItem(ACTION_BAR_KEY) === '0') {
         document.getElementById('actionBarRow').classList.add('hidden');
         document.getElementById('actionBarGearBtn').textContent = '📐 Expand Actions';
-        applyActionBarMargins(true);
     }
 }
 
@@ -82,6 +76,7 @@ export function toggleFearPool() {
     el.classList.toggle('hidden', collapsed);
     document.getElementById('fearGearBtn').textContent = collapsed ? '🕳️ Expand Fear Pool' : '🕳️ Collapse Fear Pool';
     localStorage.setItem(FEAR_POOL_KEY, collapsed ? '0' : '1');
+    updateNavSpacer();
 }
 
 function initFearPool() {
@@ -97,6 +92,7 @@ export function toggleTitle() {
     el.classList.toggle('hidden', collapsed);
     document.getElementById('titleGearBtn').textContent = collapsed ? '📝 Expand Title' : '📝 Collapse Title';
     localStorage.setItem(TITLE_KEY, collapsed ? '0' : '1');
+    updateNavSpacer();
 }
 
 function initTitle() {
@@ -115,6 +111,13 @@ export function switchTab(tab) {
     document.getElementById('trackerActions').classList.toggle('hidden', tab !== 'tracker');
     document.getElementById('vaultActions').classList.toggle('hidden', tab !== 'vault');
     document.getElementById('chronicleActions').classList.toggle('hidden', tab !== 'chronicle');
+    const fearRow = document.getElementById('fearPoolRow');
+    if (tab === 'tracker') {
+        if (localStorage.getItem(FEAR_POOL_KEY) !== '0') fearRow.classList.remove('hidden');
+    } else {
+        fearRow.classList.add('hidden');
+    }
+    updateNavSpacer();
     if (tab === 'party') renderParty();  // async, renders on resolve
     const cloak = document.getElementById('tab-cloak');
     if (cloak) cloak.remove();
@@ -251,4 +254,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     const savedDmTab = localStorage.getItem(LS_DM_ACTIVE_TAB);
     if (savedDmTab && savedDmTab !== 'tracker') switchTab(savedDmTab);
+    updateNavSpacer();
+    window.addEventListener('resize', updateNavSpacer);
 });

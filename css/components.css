@@ -278,25 +278,25 @@
 .btn-primary-pill {
     background: transparent;
     border: 1px solid #4a3f30;
-    color: var(--accent-1);
+    color: #a89880;
     font-family: 'Cinzel', serif;
     font-size: 10px;
     padding: 6px 12px;
     border-radius: 9999px;
 }
-.btn-primary-pill:hover { border-color: var(--accent-1); }
+.btn-primary-pill:hover { border-color: var(--accent-1); color: var(--accent-1); }
 
 /* Accent pill — secondary action bar buttons */
 .btn-accent-pill {
     background: transparent;
     border: 1px solid #4a3f30;
-    color: var(--accent-1);
+    color: #a89880;
     font-family: 'Cinzel', serif;
     font-size: 10px;
     padding: 6px 8px;
     border-radius: 9999px;
 }
-.btn-accent-pill:hover { border-color: var(--accent-1); }
+.btn-accent-pill:hover { border-color: var(--accent-1); color: var(--accent-1); }
 
 /* Danger pill — action bar destructive */
 .btn-danger-pill {

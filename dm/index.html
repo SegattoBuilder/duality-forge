@@ -53,7 +53,7 @@
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                 <div class="relative">
-                    <button id="gearBtn" onclick="toggleGear()" class="btn-nav">⚙️</button>
+                    <button id="gearBtn" onclick="toggleGear()" class="btn-nav border-none text-2xl">⚙️</button>
                     <div id="gearMenu" class="hidden absolute right-0 top-12 w-52 dropdown-menu z-50">
                         <div class="px-4 py-3 border-b border-[#3d362a]">
                             <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Display Mode</div>
@@ -109,22 +109,22 @@
                 </div>
             </div>
         </div>
+        <div id="fearPoolRow" class="w-full border-t border-[#3d362a] pt-2 pb-1 text-center">
+            <div class="flex flex-wrap justify-center gap-2" id="fearDots"></div>
+        </div>
     </div>
 </nav>
+<div id="navSpacer"></div>
 
 <!-- TRACKER TAB -->
-<div id="panelTracker" class="mt-52 sm:mt-36">
-    <div id="fearPoolRow" class="fear-pool mb-6 p-4 rounded-xl border border-[#3d362a] bg-[#1e1b16] text-center" style="min-height:72px">
-        <div class="section-divider flex items-center justify-center gap-3 mb-3 pb-2 border-b border-[#3d362a]"><span class="section-header font-[Cinzel] text-xs uppercase tracking-widest text-zinc-500">Fear Pool</span></div>
-        <div class="flex flex-wrap justify-center gap-2" id="fearDots"></div>
-    </div>
+<div id="panelTracker" class="">
     <div id="creatureGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div id="emptyState" class="col-span-full text-center py-20"><div class="text-zinc-600 text-sm italic">No creatures yet. Click "+ Adversary" to get started.</div></div>
     </div>
 </div>
 
 <!-- ADVERSARIES TAB -->
-<div id="panelAdversaries" class="hidden mt-52 sm:mt-36">
+<div id="panelAdversaries" class="hidden">
     <div class="space-y-3 mb-4">
         <div class="flex flex-wrap gap-3 items-end">
             <div class="flex-1 min-w-[200px]"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Search by Name</label><input id="advSearch" type="text" placeholder="Type to search adversaries..." class="w-full input-search"></div>
@@ -141,7 +141,7 @@
 </div>
 
 <!-- COMPENDIUM TAB -->
-<div id="panelCompendium" class="hidden mt-52 sm:mt-36">
+<div id="panelCompendium" class="hidden">
     <div class="mb-4 flex gap-3 items-end">
         <div class="flex-1"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Search Compendium</label><input id="compendiumSearch" type="text" placeholder="Search weapons, armors, classes, items..." class="w-full input-search"></div>
         <button onclick="clearCompendiumSearch()" class="btn-outline py-3">Clear</button>
@@ -165,12 +165,12 @@
 </div>
 
 <!-- CHRONICLE TAB -->
-<div id="panelChronicle" class="hidden mt-52 sm:mt-36">
+<div id="panelChronicle" class="hidden">
     <div id="chronicleList" class="space-y-4"><div class="text-center py-20"><div class="text-zinc-600 text-sm italic">No chapters yet. Click "+ Chapter" to start your chronicle.</div></div></div>
 </div>
 
 <!-- VAULT TAB -->
-<div id="panelVault" class="hidden mt-52 sm:mt-36">
+<div id="panelVault" class="hidden">
     <div class="flex items-center gap-2 mb-4">
         <div id="vaultGroupForm" class="hidden flex-1 flex items-center gap-2">
             <input id="vaultGroupInput" type="text" placeholder="Group name..." maxlength="40" onkeydown="if(event.key==='Enter')window._addVaultGroup(); if(event.key==='Escape')window._hideVaultGroupForm()" class="flex-1 input-compact text-left px-3">
@@ -187,7 +187,7 @@
 </div>
 
 <!-- PARTY TAB -->
-<div id="panelParty" class="hidden mt-52 sm:mt-36">
+<div id="panelParty" class="hidden">
     <div id="partyContent"><div class="text-center py-20"><div class="text-zinc-600 text-sm italic">Loading party...</div></div></div>
 </div>
 
