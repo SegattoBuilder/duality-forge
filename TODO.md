@@ -59,6 +59,18 @@
 - [x] Session management (sign out from all devices)
 - [ ] Link Google account to existing email account (or vice versa)
 
+### v0.8.1 — Theme & Component Refactor
+- [x] Extracted shared theme module (`js/core/theme.js`) — both DM and Character use same `dh_theme` / `dh_mode` keys
+- [x] Sign-out redirects to `/` instead of resetting UI in place
+- [x] Removed per-character theme override from cloud save (shared global preference)
+- [x] Sci-Fi mode CSS — navy-black palette, scan-line texture, squared corners, steel blue borders
+- [x] Fantasy mode CSS — warm browns, amber/copper tones, heavier vignette, cracked stone texture
+- [x] Button component class system — 17+ semantic classes (`btn-primary`, `btn-secondary`, `btn-danger`, `btn-nav`, `btn-icon`, `mode-btn`, `menu-item`, `picker-card`, etc.) replacing inline Tailwind
+- [x] Structural component classes — `input-field`, `input-search`, `select-field`, `dropdown-menu`, `stat-box`, `vitals-row`, `panel-box`, `gear-slot`, `gear-input`, etc.
+- [x] Replaced ~175 inline Tailwind instances across HTML and JS with semantic classes
+- [x] All 4 mode overrides (dark/light/scifi/fantasy) for every component class in `themes.css`
+- [x] Fixed vitals/stat box dark backgrounds bleeding into light mode with per-type sub-class overrides
+
 ### v0.9 — DM Theme Support
 - [ ] Bring accent color themes to DM Tools
 - [ ] Bring display modes (Dark, Light, Sci-Fi, Fantasy) to DM Tools
@@ -69,7 +81,7 @@
 
 _Brainstorm space — no commitment, just possibilities._
 
-- **DM Theme Support** — bring the character sheet's accent color themes and display modes (Dark, Light, Sci-Fi, Fantasy) to DM Tools
+- **DM Theme Support** — wire up the shared theme picker in DM Tools (core module already shared, CSS modes already defined)
 - **Chronicle Sharing** — add a status field to chapters (draft, completed); completed chapters can be shared to a community library for other DMs, with recommended level, party size, and star ratings
 - **Custom Adversary Sharing** — allow DMs to publish custom adversaries to a shared community library for others to browse and import
 - **Party Message Board** — a simple board for DMs and players to post updates within the app _(low priority — most groups already use Discord, etc.)_
