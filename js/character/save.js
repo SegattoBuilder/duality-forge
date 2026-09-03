@@ -87,7 +87,7 @@ export function applyData(data) {
             if (aName) addArmor({ name: aName, major: data.fields['armor_thresh_major'] || '0', severe: data.fields['armor_thresh_severe'] || '0', score: data.fields['armor_score'] || '', feature: data.fields['armor_feature'] || '', equipped: true });
         }
         updateThresholds();
-        if (data.theme) applyTheme(data.theme);
+
         selectedDomainCards.clear();
         if (data.selectedDomain && data.selectedDomain.length) {
             data.selectedDomain.forEach(name => selectedDomainCards.add(name));

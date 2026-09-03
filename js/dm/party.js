@@ -64,10 +64,10 @@ function renderMemberCard(m, isPending) {
 
     const actionBtn = isPending
         ? `<div class="flex gap-1">
-            <button onclick="event.stopPropagation(); approvePartyMember('${m.id}')" class="text-[10px] px-2 py-1 rounded-lg bg-green-900/30 border border-green-700/40 text-green-400 font-bold uppercase hover:border-green-500" title="Approve">✓</button>
-            <button onclick="event.stopPropagation(); denyPartyMember('${m.id}','${safeName}')" class="text-[10px] px-2 py-1 rounded-lg bg-red-900/30 border border-red-700/40 text-red-400 font-bold uppercase hover:border-red-500" title="Deny">✕</button>
+            <button onclick="event.stopPropagation(); approvePartyMember('${m.id}')" class="btn-approve" title="Approve">✓</button>
+            <button onclick="event.stopPropagation(); denyPartyMember('${m.id}','${safeName}')" class="btn-deny" title="Deny">✕</button>
         </div>`
-        : `<button onclick="event.stopPropagation(); kickPartyMember('${m.id}','${safeName}')" class="text-[10px] px-2 py-1 rounded-lg bg-red-900/30 border border-red-700/40 text-red-400/60 hover:text-red-400 font-bold uppercase hover:border-red-500" title="Kick">✕</button>`;
+        : `<button onclick="event.stopPropagation(); kickPartyMember('${m.id}','${safeName}')" class="btn-deny btn-deny-dim" title="Kick">✕</button>`;
 
     return `<div class="p-4 rounded-xl border border-[#3d362a] bg-[#1e1b16] hover:border-[#d4a017] transition-colors cursor-pointer" onclick="viewCharacterDetail('${m.id}')">
         <div class="flex items-start justify-between">
@@ -117,7 +117,7 @@ export async function renderParty() {
             <div class="text-sm text-[#f5efe6] font-[Cinzel] font-bold mb-2">Party Requires an Account</div>
             <div class="text-xs text-zinc-500 mb-6 leading-relaxed">Sign in or create an account to manage your party. Share a table code with your players so they can join, and view their character sheets in real time.</div>
             <div class="flex gap-3 justify-center">
-                <button onclick="openAuthModal()" class="btn-action text-xs px-6 py-2.5 rounded-full font-bold uppercase text-white">Sign In / Sign Up</button>
+                <button onclick="openAuthModal()" class="btn-primary-pill text-xs px-6 py-2.5">Sign In / Sign Up</button>
             </div>
         </div>`;
         return;
@@ -142,7 +142,7 @@ export async function renderParty() {
             <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Table Code</div>
             <div class="flex items-center justify-center gap-2 mb-2">
                 <span class="font-mono text-[10px] font-bold text-[#d4a017] tracking-wide select-all">${escHtml(tableId)}</span>
-                <button onclick="copyInviteCode()" class="text-xs text-zinc-400 hover:text-[#d4a017]" title="Copy code">📋</button>
+                <button onclick="copyInviteCode()" class="btn-icon text-xs" title="Copy code">📋</button>
             </div>
             <div class="text-[10px] text-zinc-600 italic">Share with your players to join</div>
         </div>

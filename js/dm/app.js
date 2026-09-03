@@ -1,5 +1,6 @@
 import { initAuth, onAuthChange, getUser, getSupabase, escHtml, escHtmlAttr, showAlert, showConfirm } from '../core/auth.js';
-import { LS_DM_CREATURES, LS_DM_FEAR, LS_DM_COUNTERS, LS_DM_CAMPAIGN, LS_DM_MODE, LS_DM_ACTIONBAR, LS_DM_FEARPOOL, LS_DM_TITLE, LS_DM_ACTIVE_TAB, TABLE_DM_TABLES } from '../core/constants.js';
+import { LS_DM_CREATURES, LS_DM_FEAR, LS_DM_COUNTERS, LS_DM_CAMPAIGN, LS_DM_ACTIONBAR, LS_DM_FEARPOOL, LS_DM_TITLE, LS_DM_ACTIVE_TAB, LS_THEME, TABLE_DM_TABLES } from '../core/constants.js';
+import { initMode, setMode, toggleMode, applyTheme, renderThemePicker } from '../core/theme.js';
 import { initTracker, renderGrid, renderFearDots, autoCache, creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled } from './tracker.js';
 import { initVault, renderVaultGrid, autoCacheVault, vaultCreatures, setVaultCreatures, vaultGroups, setVaultGroups } from './vault.js';
 import { initChronicle, renderChronicle, autoCacheChronicle, chronicleEntries, setChronicleEntries } from './chronicle.js';
@@ -13,7 +14,6 @@ export const SAVE_KEY = LS_DM_CREATURES;
 export const FEAR_KEY = LS_DM_FEAR;
 export const COUNTERS_KEY = LS_DM_COUNTERS;
 export const CAMPAIGN_KEY = LS_DM_CAMPAIGN;
-const MODE_KEY = LS_DM_MODE;
 
 // ========== RE-EXPORT UTILITIES ==========
 export { escHtml, escHtmlAttr };
@@ -39,23 +39,7 @@ export function isVaultActive() {
     return !document.getElementById('panelVault').classList.contains('hidden');
 }
 
-// ========== MODE TOGGLE ==========
-export function setMode(mode) {
-    document.body.setAttribute('data-mode', mode);
-    localStorage.setItem(MODE_KEY, mode);
-}
 
-export function toggleMode() {
-    const isLight = document.body.getAttribute('data-mode') === 'light';
-    setMode(isLight ? 'dark' : 'light');
-}
-
-function initMode() {
-    const saved = localStorage.getItem(MODE_KEY) || 'dark';
-    document.body.setAttribute('data-mode', saved);
-}
-
-// ========== ACTION BAR TOGGLE ==========
 const ACTION_BAR_KEY = LS_DM_ACTIONBAR;
 const FEAR_POOL_KEY = LS_DM_FEARPOOL;
 const TITLE_KEY = LS_DM_TITLE;
@@ -210,6 +194,7 @@ export async function newCampaign(event) {
 window.switchTab = switchTab;
 window.toggleMode = toggleMode;
 window.setMode = setMode;
+window.applyTheme = applyTheme;
 window.saveSession = saveSession;
 window.loadSession = loadSession;
 window.toggleActionBar = toggleActionBar;
@@ -219,7 +204,16 @@ window.newCampaign = newCampaign;
 
 // ========== INIT ==========
 window.addEventListener('DOMContentLoaded', async () => {
+    // Migrate old DM-specific mode key to shared key
+    const oldMode = localStorage.getItem('dh_dm_mode');
+    if (oldMode && !localStorage.getItem('dh_mode')) {
+        localStorage.setItem('dh_mode', oldMode);
+    }
+    localStorage.removeItem('dh_dm_mode');
+
     initMode();
+    renderThemePicker();
+    applyTheme(localStorage.getItem(LS_THEME) || 'gold');
 
     // Load from localStorage
     try { setCreatures(JSON.parse(localStorage.getItem(SAVE_KEY)) || []); } catch { setCreatures([]); }

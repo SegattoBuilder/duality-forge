@@ -127,7 +127,7 @@ function flipVaultCard(creatureId) {
     if (!creature) return;
     const el = document.getElementById('v-' + creature.id);
     if (!el) return;
-    el.innerHTML = `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2"><span class="text-zinc-600 text-sm">📝</span><span class="font-black text-sm uppercase font-[Cinzel] text-[#f5efe6]">${creature.name}</span></div><button onclick="window._flipVaultBack('${creature.id}')" class="text-zinc-500 hover:text-[#d4a017] text-[10px] uppercase tracking-wide font-bold">← Back</button></div>
+    el.innerHTML = `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2"><span class="text-zinc-600 text-sm">📝</span><span class="font-black text-sm uppercase font-[Cinzel] text-[#f5efe6]">${creature.name}</span></div><button onclick="window._flipVaultBack('${creature.id}')" class="btn-icon text-[10px] uppercase tracking-wide font-bold">← Back</button></div>
         <textarea oninput="window._updateVaultNotes('${creature.id}', this.value)" placeholder="Add notes..." class="w-full h-40 bg-[#1a1714] border border-[#3d362a] rounded-lg px-3 py-2 text-xs text-[#e8e0d4] outline-none focus:border-[#d4a017] resize-none placeholder-zinc-700">${escHtml(creature.notes || '')}</textarea>`;
 }
 function flipVaultBack(creatureId) { const c = _vaultCreatures.find(c => c.id === creatureId); if (c) renderVaultCard(c); }
@@ -158,16 +158,16 @@ function buildVaultCardInner(creature) {
             ${features.length ? `<div class="space-y-1.5 mt-2">${features.map(f => `<div><div class="text-xs font-bold text-amber-200">${escHtml(f.name || '')}</div><div class="text-xs text-[#e8e0d4]">${escHtml(f.text || '')}</div></div>`).join('')}</div>` : ''}</div>`;
     }
     let editBtn = '';
-    if (ed && (ed.type === 'Custom' || ed.type === 'Enemy (Edited)')) editBtn = `<button onclick="window._editVaultCustomCard('${creature.id}')" class="text-zinc-500 hover:text-[#d4a017] text-sm leading-none" title="Edit">✏️</button>`;
-    else if (ed && ed.type === 'Character') editBtn = `<button onclick="window._editVaultCharacterCard('${creature.id}')" class="text-zinc-500 hover:text-[#d4a017] text-sm leading-none" title="Edit">✏️</button>`;
-    else if (!ed) editBtn = `<button onclick="window._editVaultCharacterCard('${creature.id}')" class="text-zinc-500 hover:text-[#d4a017] text-sm leading-none" title="Edit">✏️</button>`;
-    else editBtn = `<button onclick="window._editVaultEnemyCard('${creature.id}')" class="text-zinc-500 hover:text-[#d4a017] text-sm leading-none" title="Edit">✏️</button>`;
+    if (ed && (ed.type === 'Custom' || ed.type === 'Enemy (Edited)')) editBtn = `<button onclick="window._editVaultCustomCard('${creature.id}')" class="btn-icon" title="Edit">✏️</button>`;
+    else if (ed && ed.type === 'Character') editBtn = `<button onclick="window._editVaultCharacterCard('${creature.id}')" class="btn-icon" title="Edit">✏️</button>`;
+    else if (!ed) editBtn = `<button onclick="window._editVaultCharacterCard('${creature.id}')" class="btn-icon" title="Edit">✏️</button>`;
+    else editBtn = `<button onclick="window._editVaultEnemyCard('${creature.id}')" class="btn-icon" title="Edit">✏️</button>`;
 
     return `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2">${dead ? '<span class="text-red-500 text-sm">💀</span>' : '<span class="text-zinc-600 text-sm">📦</span>'}<span class="font-black text-sm uppercase font-[Cinzel] ${dead ? 'text-zinc-600 line-through' : 'text-[#f5efe6]'}">${creature.name}</span></div>
-        <div class="flex items-center gap-2"><button onclick="window._copyVaultCreature('${creature.id}')" class="text-zinc-500 hover:text-[#d4a017] text-sm leading-none" title="Duplicate">➕</button>${editBtn}<button onclick="window._flipVaultCard('${creature.id}')" class="text-zinc-500 hover:text-[#d4a017] text-sm leading-none" title="Notes">📝</button><button onclick="window._removeVaultCreature('${creature.id}', event)" class="text-zinc-700 hover:text-red-500 text-sm leading-none" title="Remove">✕</button></div></div>
+        <div class="flex items-center gap-2"><button onclick="window._copyVaultCreature('${creature.id}')" class="btn-icon" title="Duplicate">➕</button>${editBtn}<button onclick="window._flipVaultCard('${creature.id}')" class="btn-icon" title="Notes">📝</button><button onclick="window._removeVaultCreature('${creature.id}', event)" class="btn-remove" title="Remove">✕</button></div></div>
         ${evasion > 0 ? `<div class="flex items-center gap-2 mb-3 pb-2.5 border-b border-[#2a2418]"><span class="text-[10px] font-bold text-blue-300 uppercase tracking-wide">${ed ? 'Difficulty' : 'Evasion'}</span>${adjBtn('evasion', -1)}<span class="text-sm font-bold text-blue-200">${evasion}</span>${adjBtn('evasion', 1)}</div>` : ''}
         ${dotRow('hp', 'HP', 'text-red-400')}${dotRow('stress', 'Stress', 'text-purple-400')}${dotRow('hope', 'Hope', 'text-amber-400')}${dotRow('armor', 'Armor', 'text-blue-400')}${enemyInfo}
-        <div class="mt-3 pt-3 border-t border-[#2a2418] flex gap-2"><button onclick="window._deployToTracker('${creature.id}', false)" class="flex-1 btn-action text-[10px] py-2 rounded-lg font-bold uppercase text-white font-[Cinzel]">⚔️ Deploy</button><button onclick="window._deployToTracker('${creature.id}', true)" class="flex-1 bg-[#2a2418] border border-[#4a3f30] text-[10px] py-2 rounded-lg font-bold uppercase text-zinc-400 font-[Cinzel] hover:border-[#d4a017] hover:text-[#d4a017]">⚔️ As-Is</button></div>`;
+        <div class="mt-3 pt-3 border-t border-[#2a2418] flex gap-2"><button onclick="window._deployToTracker('${creature.id}', false)" class="flex-1 btn-primary-pill py-2">⚔️ Deploy</button><button onclick="window._deployToTracker('${creature.id}', true)" class="flex-1 btn-outline py-2">⚔️ As-Is</button></div>`;
 }
 
 function renderVaultCard(creature) {
@@ -301,10 +301,10 @@ export function renderVaultGrid() {
             <span class="font-[Cinzel] text-xs uppercase tracking-widest font-bold" style="color: var(--accent-1)">${escHtml(group)}</span>
             <span class="text-[10px] text-zinc-600">(${members.length})</span>
             ${disposable ? '<span class="text-[10px] text-zinc-700" title="Disposable">🗑</span>' : ''}
-            <button onclick="event.stopPropagation(); window._renameVaultGroup('${escHtmlAttr(group)}')" class="text-zinc-600 hover:text-[#d4a017] text-[10px]" title="Rename">✏️</button>
-            <button onclick="event.stopPropagation(); window._removeVaultGroup('${escHtmlAttr(group)}')" class="text-zinc-700 hover:text-red-500 text-[10px]" title="Remove group">✕</button>
+            <button onclick="event.stopPropagation(); window._renameVaultGroup('${escHtmlAttr(group)}')" class="btn-icon text-[10px]" title="Rename">✏️</button>
+            <button onclick="event.stopPropagation(); window._removeVaultGroup('${escHtmlAttr(group)}')" class="btn-remove text-[10px]" title="Remove group">✕</button>
             <div class="flex-1 border-t border-[#3d362a]"></div>
-            ${members.length ? `<button onclick="event.stopPropagation(); window._deployGroupToTracker('${escHtmlAttr(group)}')" class="btn-action text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase text-white font-[Cinzel] whitespace-nowrap">⚔️ Deploy All</button>` : ''}
+            ${members.length ? `<button onclick="event.stopPropagation(); window._deployGroupToTracker('${escHtmlAttr(group)}')" class="btn-primary-pill whitespace-nowrap">⚔️ Deploy All</button>` : ''}
         </div>`;
         grid.appendChild(section);
         if (!collapsed) {
@@ -331,7 +331,7 @@ export function renderVaultGrid() {
             <span class="font-[Cinzel] text-xs uppercase tracking-widest font-bold text-zinc-500">Ungrouped</span>
             <span class="text-[10px] text-zinc-600">(${ungrouped.length})</span>
             <div class="flex-1 border-t border-[#3d362a]"></div>
-            <button onclick="event.stopPropagation(); window._deployGroupToTracker('__ungrouped')" class="btn-action text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase text-white font-[Cinzel] whitespace-nowrap">⚔️ Deploy All</button>
+            <button onclick="event.stopPropagation(); window._deployGroupToTracker('__ungrouped')" class="btn-primary-pill whitespace-nowrap">⚔️ Deploy All</button>
         </div>`;
         grid.appendChild(section);
         if (!uCollapsed) {

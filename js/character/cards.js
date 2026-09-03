@@ -259,7 +259,7 @@ export function addCardToSheet(opts) {
                 ${isDomain ? `<span class="text-[10px] font-bold uppercase" style="color:${dc.text}">${domain}</span>` : ''}
                 ${isDomain ? `<span class="text-[10px] text-zinc-500 whitespace-nowrap">Lvl ${level} | Recall ${recallCost}</span>` : ''}
                 ${!isDomain ? `<span class="text-[10px] text-zinc-500 uppercase">${CATEGORY_LABELS[category] || category}</span>` : ''}
-                <button class="text-zinc-700 hover:text-red-500 text-sm card-remove" data-id="${id}">✕</button>
+                <button class="btn-remove card-remove" data-id="${id}">✕</button>
             </div>
         </div>
         <div id="${id}-body" class="mt-2" ${collapsed ? 'style="display:none"' : ''}>

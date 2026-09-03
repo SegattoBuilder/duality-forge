@@ -13,7 +13,7 @@ export function addExperience(name, value, desc) {
             <span class="text-zinc-600 text-[10px] exp-chevron cursor-pointer exp-toggle" data-id="${id}">▶</span>
             <input type="text" value="${n}" placeholder="Name..." class="flex-1 bg-black/40 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-300 outline-none" data-autocache>
             <input type="text" value="${v}" placeholder="+0" class="w-14 bg-black/40 border border-zinc-800 rounded px-2 py-2 text-sm text-zinc-300 text-center outline-none" data-autocache>
-            <button class="text-zinc-700 hover:text-red-500 text-sm exp-remove" data-id="${id}">✕</button>
+            <button class="btn-remove exp-remove" data-id="${id}">✕</button>
         </div>
         <textarea placeholder="Details..." class="exp-details hidden w-full bg-black/40 border border-zinc-800 rounded px-3 py-1.5 text-xs text-zinc-400 outline-none resize-none h-20" data-autocache>${d}</textarea>
     </div>`;

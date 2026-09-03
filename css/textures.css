@@ -36,3 +36,26 @@ body[data-mode="fantasy"]::before {
 [data-mode="light"] body::after {
     background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.08) 100%);
 }
+
+
+/* Sci-Fi mode: clean digital, no parchment */
+[data-mode="scifi"]::before {
+    opacity: 0.02;
+    background-image: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(100,180,255,0.03) 2px,
+        rgba(100,180,255,0.03) 4px
+    );
+    background-size: 100% 4px;
+}
+[data-mode="scifi"]::after {
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,10,30,0.5) 100%);
+}
+
+
+/* Fantasy mode: warmer, heavier vignette */
+[data-mode="fantasy"]::after {
+    background: radial-gradient(ellipse at center, transparent 30%, rgba(10,5,0,0.5) 100%);
+}

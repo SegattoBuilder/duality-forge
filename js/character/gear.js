@@ -50,7 +50,7 @@ export function addWeapon(data) {
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <button class="equip-star text-lg leading-none cursor-pointer" title="Equip">${equipped ? '★' : '☆'}</button>
             <input type="text" value="${d.name || ''}" placeholder="Weapon Name" class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
-            <button class="text-zinc-700 hover:text-red-500 text-sm wep-remove" title="Remove">✕</button>
+            <button class="btn-remove wep-remove" title="Remove">✕</button>
         </div>
         <div class="gear-details mt-2">
             <div class="grid grid-cols-4 gap-2 text-zinc-500">
@@ -132,7 +132,7 @@ export function addArmor(data) {
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <button class="equip-star text-lg leading-none cursor-pointer" title="Equip">${equipped ? '★' : '☆'}</button>
             <input type="text" value="${d.name || ''}" placeholder="Armor Name" class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
-            <button class="text-zinc-700 hover:text-red-500 text-sm arm-remove" title="Remove">✕</button>
+            <button class="btn-remove arm-remove" title="Remove">✕</button>
         </div>
         <div class="gear-details mt-2">
             <div class="grid grid-cols-3 gap-2 text-zinc-500">
@@ -214,7 +214,7 @@ export function addItem(data) {
         <div class="flex items-center gap-2">
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <input type="text" value="${d.name || ''}" placeholder="Item name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
-            <button class="text-zinc-700 hover:text-red-500 text-sm item-remove" title="Remove">✕</button>
+            <button class="btn-remove item-remove" title="Remove">✕</button>
         </div>
         <div class="gear-details mt-1"><input type="text" value="${d.desc || ''}" placeholder="Description..." class="w-full bg-transparent border-b border-zinc-800 px-1 py-1 text-xs outline-none text-zinc-400" data-autocache></div>
     </div>`;
@@ -256,7 +256,7 @@ export function addConsumable(data) {
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <input type="text" value="${d.name || ''}" placeholder="Consumable name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
             <input type="text" value="${d.qty || '1'}" placeholder="x1" class="w-10 bg-transparent text-center text-sm outline-none border-b border-zinc-800" data-autocache>
-            <button class="text-zinc-700 hover:text-red-500 text-sm cons-remove" title="Remove">✕</button>
+            <button class="btn-remove cons-remove" title="Remove">✕</button>
         </div>
         <div class="gear-details mt-1"><input type="text" value="${d.desc || ''}" placeholder="Effect..." class="w-full bg-transparent border-b border-zinc-800 px-1 py-1 text-xs outline-none text-zinc-400" data-autocache></div>
     </div>`;
@@ -297,7 +297,7 @@ export function addGearItem(name, bonus, desc, collapsed) {
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <input type="text" value="${name || ''}" placeholder="Item name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
             <input type="text" value="${bonus || ''}" placeholder="Bonus" class="w-20 bg-transparent border-b border-zinc-700 text-sm text-center outline-none" data-autocache>
-            <button class="text-zinc-700 hover:text-red-500 text-sm gear-remove">✕</button>
+            <button class="btn-remove gear-remove">✕</button>
         </div>
         <div class="gear-details mt-1"><textarea placeholder="Description..." class="w-full bg-transparent border border-zinc-800 rounded px-2 py-1.5 text-xs outline-none resize-none h-12" data-autocache>${desc || ''}</textarea></div>
     </div>`;

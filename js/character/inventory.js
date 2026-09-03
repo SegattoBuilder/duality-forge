@@ -10,7 +10,7 @@ export function addInventoryItem(text, qty) {
     <div class="flex items-center gap-2" id="${id}">
         <input type="text" value="${val}" placeholder="Item..." class="flex-1 bg-black/40 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-300 outline-none" data-autocache>
         <input type="text" value="${q}" placeholder="x1" class="w-14 bg-black/40 border border-zinc-800 rounded px-2 py-2 text-sm text-zinc-300 text-center outline-none" data-autocache>
-        <button class="text-zinc-700 hover:text-red-500 text-sm inv-remove" data-id="${id}">✕</button>
+        <button class="btn-remove inv-remove" data-id="${id}">✕</button>
     </div>`;
     container.insertAdjacentHTML('beforeend', html);
     container.querySelector(`#${id} .inv-remove`).addEventListener('click', () => removeInventoryItem(id));

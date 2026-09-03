@@ -64,7 +64,7 @@ function renderNpcRows(ch) {
             <option value="Hostile" ${npc.disposition === 'Hostile' ? 'selected' : ''}>Hostile</option>
         </select>
         <input value="${escHtmlAttr(npc.notes)}" oninput="window._updateChapterNpc('${ch.id}', ${i}, 'notes', this.value)" placeholder="Notes" class="bg-[#1a1714] border border-[#3d362a] rounded-lg px-2 py-1.5 text-xs text-[#e8e0d4] outline-none focus:border-[#d4a017] placeholder-zinc-700">
-        <button onclick="window._removeChapterNpc('${ch.id}', ${i})" class="text-zinc-700 hover:text-red-500 text-xs leading-none">✕</button>
+        <button onclick="window._removeChapterNpc('${ch.id}', ${i})" class="btn-remove text-xs">✕</button>
     </div>`).join('');
 }
 
@@ -75,7 +75,7 @@ function renderMusicRows(ch) {
         ${m.cue && m.cue.match(/^https?:\/\//) ? `<a href="${escHtmlAttr(m.cue)}" target="_blank" rel="noopener" class="text-[#d4a017] hover:text-amber-300 text-sm leading-none" title="Open link">🔗</a>` : '<span class="w-4"></span>'}
         <input value="${escHtmlAttr(m.scene)}" oninput="window._updateChapterMusic('${ch.id}', ${i}, 'scene', this.value)" placeholder="Scene" class="bg-[#1a1714] border border-[#3d362a] rounded-lg px-2 py-1.5 text-xs text-[#e8e0d4] outline-none focus:border-[#d4a017] placeholder-zinc-700">
         <input value="${escHtmlAttr(m.cue)}" oninput="window._updateChapterMusic('${ch.id}', ${i}, 'cue', this.value)" placeholder="Link or text" class="bg-[#1a1714] border border-[#3d362a] rounded-lg px-2 py-1.5 text-xs text-[#e8e0d4] outline-none focus:border-[#d4a017] placeholder-zinc-700">
-        <button onclick="window._removeChapterMusic('${ch.id}', ${i})" class="text-zinc-700 hover:text-red-500 text-xs leading-none">✕</button>
+        <button onclick="window._removeChapterMusic('${ch.id}', ${i})" class="btn-remove text-xs">✕</button>
     </div>`).join('') + '</div>';
 }
 
@@ -92,15 +92,15 @@ export function renderChronicle() {
             <div class="section-divider flex items-center gap-2 mb-3 pb-2 border-b border-[#3d362a] cursor-pointer select-none" onclick="window._toggleEntry('${ch.id}')">
                 <span class="text-[10px] text-zinc-600 transition-transform ${ch.open ? 'rotate-90' : ''}">▶</span>
                 <input value="${escHtmlAttr(ch.title)}" onclick="event.stopPropagation()" oninput="window._updateEntryTitle('${ch.id}', this.value)" class="flex-1 bg-transparent section-header font-[Cinzel] text-xs uppercase tracking-widest text-zinc-500 outline-none border-b border-transparent focus:border-[#d4a017] placeholder-zinc-700" placeholder="Chapter title...">
-                <button onclick="event.stopPropagation(); window._removeEntry('${ch.id}')" class="text-zinc-700 hover:text-red-500 text-sm leading-none" title="Remove">✕</button>
+                <button onclick="event.stopPropagation(); window._removeEntry('${ch.id}')" class="btn-remove" title="Remove">✕</button>
             </div>
             <div class="${ch.open ? '' : 'hidden'} space-y-4">
                 <textarea oninput="window._updateEntryText('${ch.id}', this.value)" placeholder="Write your notes here..." class="w-full min-h-[200px] bg-[#1a1714] border border-[#3d362a] rounded-lg px-4 py-3 text-sm text-[#e8e0d4] outline-none focus:border-[#d4a017] resize-y placeholder-zinc-700">${escHtml(ch.text)}</textarea>
                 ${npcs.length ? `<div><div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1.5">🧑 NPCs & Factions</div><div class="space-y-1">${renderNpcRows(ch)}</div></div>` : ''}
                 ${music.length ? `<div><div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1.5">🎵 Music Cues</div><div class="space-y-1">${renderMusicRows(ch)}</div></div>` : ''}
                 <div class="flex gap-2 pt-1">
-                    <button onclick="window._addChapterNpc('${ch.id}')" class="text-[10px] px-2 py-1.5 rounded-lg bg-[#2a2418] border border-[#4a3f30] text-[#d4a017] font-bold uppercase hover:border-[#d4a017]">+ NPC</button>
-                    <button onclick="window._addChapterMusic('${ch.id}')" class="text-[10px] px-2 py-1.5 rounded-lg bg-[#2a2418] border border-[#4a3f30] text-[#d4a017] font-bold uppercase hover:border-[#d4a017]">+ Music Cue</button>
+                    <button onclick="window._addChapterNpc('${ch.id}')" class="btn-outline">+ NPC</button>
+                    <button onclick="window._addChapterMusic('${ch.id}')" class="btn-outline">+ Music Cue</button>
                 </div>
             </div>
         </div>`;

@@ -159,24 +159,24 @@ function addToSheetButton(item) {
     const cat = item._category;
     const idx = compendiumData.indexOf(item);
     if (cat === 'weapons') {
-        return `<button onclick="event.stopPropagation(); window._compAddWeapon(${idx})" class="mt-3 w-full btn-action text-xs py-2 rounded-lg font-bold uppercase text-white">🗡️ Add to Weapons</button>`;
+        return `<button onclick="event.stopPropagation(); window._compAddWeapon(${idx})" class="mt-3 w-full btn-primary">🗡️ Add to Weapons</button>`;
     }
     if (cat === 'armors') {
-        return `<button onclick="event.stopPropagation(); window._compAddArmor(${idx})" class="mt-3 w-full btn-action text-xs py-2 rounded-lg font-bold uppercase text-white">🛡️ Add to Armor</button>`;
+        return `<button onclick="event.stopPropagation(); window._compAddArmor(${idx})" class="mt-3 w-full btn-primary">🛡️ Add to Armor</button>`;
     }
     if (cat === 'items') {
-        return `<button onclick="event.stopPropagation(); window._compAddItem(${idx})" class="mt-3 w-full btn-action text-xs py-2 rounded-lg font-bold uppercase text-white">🔧 Add to Items</button>`;
+        return `<button onclick="event.stopPropagation(); window._compAddItem(${idx})" class="mt-3 w-full btn-primary">🔧 Add to Items</button>`;
     }
     if (cat === 'consumables') {
-        return `<button onclick="event.stopPropagation(); window._compAddConsumable(${idx})" class="mt-3 w-full btn-action text-xs py-2 rounded-lg font-bold uppercase text-white">🧪 Add to Consumables</button>`;
+        return `<button onclick="event.stopPropagation(); window._compAddConsumable(${idx})" class="mt-3 w-full btn-primary">🧪 Add to Consumables</button>`;
     }
     if (cat === 'domain-cards') {
-        return `<button onclick="event.stopPropagation(); window._compAddDomainCard(${idx})" class="mt-3 w-full btn-action text-xs py-2 rounded-lg font-bold uppercase text-white">🃏 Add to Domain Cards</button>`;
+        return `<button onclick="event.stopPropagation(); window._compAddDomainCard(${idx})" class="mt-3 w-full btn-primary">🃏 Add to Domain Cards</button>`;
     }
     const generalCats = ['classes','subclasses','ancestries','communities'];
     if (generalCats.includes(cat)) {
         const labels = { classes: '📜 Add to Cards', subclasses: '📜 Add to Cards', ancestries: '🧬 Add to Cards', communities: '🏘️ Add to Cards' };
-        return `<button onclick="event.stopPropagation(); window._compAddGeneral(${idx})" class="mt-3 w-full btn-action text-xs py-2 rounded-lg font-bold uppercase text-white">${labels[cat]}</button>`;
+        return `<button onclick="event.stopPropagation(); window._compAddGeneral(${idx})" class="mt-3 w-full btn-primary">${labels[cat]}</button>`;
     }
     return '';
 }

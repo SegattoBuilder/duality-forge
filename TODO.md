@@ -59,6 +59,10 @@
 - [x] Session management (sign out from all devices)
 - [ ] Link Google account to existing email account (or vice versa)
 
+### v0.9 — DM Theme Support
+- [ ] Bring accent color themes to DM Tools
+- [ ] Bring display modes (Dark, Light, Sci-Fi, Fantasy) to DM Tools
+
 ---
 
 ## 💡 Ideas / Someday

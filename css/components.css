@@ -229,11 +229,228 @@
     border-color: transparent;
 }
 
-/* Buttons */
-.btn-action { background: linear-gradient(135deg, var(--accent-3), var(--accent-2)); border: none; }
-.btn-action:hover { background: linear-gradient(135deg, var(--accent-2), var(--accent-1)); }
-.btn-danger { background: linear-gradient(135deg, #6b1a1a, #8b2020); }
+/* ========== BUTTON SYSTEM ========== */
+
+/* Shared button base */
+.btn-primary, .btn-secondary, .btn-danger,
+.btn-primary-pill, .btn-accent-pill, .btn-danger-pill,
+.btn-outline, .btn-nav, .mode-btn {
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    cursor: pointer;
+}
+
+/* Primary — modal submit, main actions */
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-3), var(--accent-2));
+    border: none;
+    color: #fff;
+    font-size: 12px;
+    padding: 12px;
+    border-radius: 12px;
+}
+.btn-primary:hover { background: linear-gradient(135deg, var(--accent-2), var(--accent-1)); }
+
+/* Secondary — modal cancel, sign up */
+.btn-secondary {
+    background: transparent;
+    border: 1px solid #3d362a;
+    color: #a89880;
+    font-size: 12px;
+    padding: 12px;
+    border-radius: 12px;
+}
+.btn-secondary:hover { border-color: #5a4d3a; color: #c8b8a0; }
+
+/* Danger — destructive modal actions */
+.btn-danger {
+    background: linear-gradient(135deg, #6b1a1a, #8b2020);
+    border: none;
+    color: #fca5a5;
+    font-size: 12px;
+    padding: 12px;
+    border-radius: 12px;
+}
 .btn-danger:hover { background: linear-gradient(135deg, #8b2020, #a52a2a); }
+
+/* Primary pill — action bar add buttons */
+.btn-primary-pill {
+    background: transparent;
+    border: 1px solid #4a3f30;
+    color: var(--accent-1);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    padding: 6px 12px;
+    border-radius: 9999px;
+}
+.btn-primary-pill:hover { border-color: var(--accent-1); }
+
+/* Accent pill — secondary action bar buttons */
+.btn-accent-pill {
+    background: transparent;
+    border: 1px solid #4a3f30;
+    color: var(--accent-1);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    padding: 6px 8px;
+    border-radius: 9999px;
+}
+.btn-accent-pill:hover { border-color: var(--accent-1); }
+
+/* Danger pill — action bar destructive */
+.btn-danger-pill {
+    background: transparent;
+    border: 1px solid #4a2a2a;
+    color: #f87171;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    padding: 6px 8px;
+    border-radius: 9999px;
+}
+.btn-danger-pill:hover { border-color: #ef4444; }
+
+/* Outline — search clear, + NPC, + Attack, deploy as-is */
+.btn-outline {
+    background: transparent;
+    border: 1px solid #4a3f30;
+    color: #9ca3af;
+    font-size: 10px;
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+.btn-outline:hover { border-color: var(--accent-1); color: var(--accent-1); }
+
+/* Nav — gear button, auth button */
+.btn-nav {
+    height: 40px;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid #4a3f30;
+    color: #9ca3af;
+    font-size: 16px;
+}
+.btn-nav:hover { border-color: var(--accent-1); }
+
+/* Icon — card action icons (edit, copy, stash, notes) */
+.btn-icon {
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1;
+    transition: color 0.15s;
+    cursor: pointer;
+}
+.btn-icon:hover { color: var(--accent-1); }
+
+/* Close — modal close ✕ */
+.btn-close {
+    color: #6b5d4d;
+    font-size: 24px;
+    line-height: 1;
+    transition: color 0.15s;
+    cursor: pointer;
+}
+.btn-close:hover { color: #f5efe6; }
+
+/* Remove — inline remove ✕ on cards/items */
+.btn-remove {
+    color: #4b5563;
+    font-size: 14px;
+    line-height: 1;
+    transition: color 0.15s;
+    cursor: pointer;
+}
+.btn-remove:hover { color: #ef4444; }
+
+/* Mode — display mode toggle buttons */
+.mode-btn {
+    flex: 1;
+    font-size: 10px;
+    padding: 6px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid #3d362a;
+}
+.mode-btn:hover { border-color: var(--accent-1); }
+
+/* Menu item — gear/auth dropdown items */
+.menu-item {
+    width: 100%;
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: #f5efe6;
+    transition: background 0.15s;
+    border-bottom: 1px solid #3d362a;
+}
+.menu-item:hover { background: rgba(255,255,255,0.05); }
+.menu-item-danger { color: #f87171; }
+.menu-item-danger-dim { color: rgba(248,113,113,0.6); }
+.menu-item-danger-dim:hover { color: #f87171; }
+
+/* Approve/Deny — party actions */
+.btn-approve {
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: rgba(20,83,45,0.3);
+    border: 1px solid rgba(21,128,61,0.4);
+    color: #4ade80;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: all 0.15s;
+}
+.btn-approve:hover { border-color: #22c55e; }
+
+.btn-deny {
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: rgba(127,29,29,0.3);
+    border: 1px solid rgba(185,28,28,0.4);
+    color: #f87171;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: all 0.15s;
+}
+.btn-deny:hover { border-color: #ef4444; }
+.btn-deny-dim { color: rgba(248,113,113,0.6); }
+.btn-deny-dim:hover { color: #f87171; }
+
+/* Picker card — cloud picker buttons */
+.picker-card {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: left;
+    transition: all 0.15s;
+    background: transparent;
+    border: 1px solid #3d362a;
+}
+.picker-card:hover { border-color: var(--accent-1); }
+.picker-card-auto {
+    border-color: #3d5a2a;
+}
+
+/* Link text — forgot password, profile actions */
+.btn-link {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #6b7280;
+    transition: color 0.15s;
+}
+.btn-link:hover { color: var(--accent-1); }
+.btn-link-accent { color: var(--accent-1); }
+.btn-link-accent:hover { text-decoration: underline; }
+
+/* Legacy aliases */
+.btn-action { background: linear-gradient(135deg, var(--accent-3), var(--accent-2)); border: none; color: #fff; }
+.btn-action:hover { background: linear-gradient(135deg, var(--accent-2), var(--accent-1)); }
 
 /* Compendium cards — TCG feel */
 .compendium-card {

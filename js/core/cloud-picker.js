@@ -43,12 +43,12 @@ export async function showCloudPicker(opts) {
         const manualDate = g.manual ? new Date(g.manual.updated_at).toLocaleString() : null;
         const autoDate = g.autosave ? new Date(g.autosave.updated_at).toLocaleString() : null;
 
-        const manualBtn = g.manual ? `<button data-pick-id="${g.manual.id}" class="cp-pick flex-1 p-3 rounded-lg text-left transition-all hover:border-[#d4a017]" style="background:#1a1714;border:1px solid #3d362a">
+        const manualBtn = g.manual ? `<button data-pick-id="${g.manual.id}" class="cp-pick picker-card">
             <div class="text-[10px] font-bold text-[#d4a017] uppercase mb-1">Save</div>
             <div class="text-[10px] text-zinc-500">${manualDate}</div>
         </button>` : '';
 
-        const autoBtn = g.autosave ? `<button data-pick-id="${g.autosave.id}" class="cp-pick flex-1 p-3 rounded-lg text-left transition-all hover:border-[#d4a017]" style="background:#1a2418;border:1px solid #3d5a2a">
+        const autoBtn = g.autosave ? `<button data-pick-id="${g.autosave.id}" class="cp-pick picker-card picker-card-auto">
             <div class="text-[10px] font-bold text-green-400 uppercase mb-1">Autosave</div>
             <div class="text-[10px] text-zinc-500">${autoDate}</div>
         </button>` : '';
