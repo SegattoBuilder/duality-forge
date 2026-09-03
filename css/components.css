@@ -308,7 +308,7 @@
     padding: 6px 8px;
     border-radius: 9999px;
 }
-.btn-danger-pill:hover { border-color: #ef4444; }
+.btn-danger-pill:hover { border-color: #ef4444; color: #ef4444; }
 
 /* Outline — search clear, + NPC, + Attack, deploy as-is */
 .btn-outline {

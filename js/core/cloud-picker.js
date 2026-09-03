@@ -44,7 +44,7 @@ export async function showCloudPicker(opts) {
         const autoDate = g.autosave ? new Date(g.autosave.updated_at).toLocaleString() : null;
 
         const manualBtn = g.manual ? `<button data-pick-id="${g.manual.id}" class="cp-pick picker-card">
-            <div class="text-[10px] font-bold text-[#d4a017] uppercase mb-1">Save</div>
+            <div class="text-[10px] font-bold uppercase mb-1" style="color:var(--accent-1)">Save</div>
             <div class="text-[10px] text-zinc-500">${manualDate}</div>
         </button>` : '';
 
@@ -56,7 +56,7 @@ export async function showCloudPicker(opts) {
         // Single delete button — stores both IDs
         const delIds = [g.manual?.id, g.autosave?.id].filter(Boolean).join(',');
 
-        return `<div class="col-span-2 p-4 rounded-xl" style="background:linear-gradient(145deg,#221f1a,#1e1b16);border:1px solid #3d362a">
+        return `<div class="col-span-2 p-4 rounded-xl panel-box">
             <div class="flex items-center justify-between mb-3">
                 <div class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">${safeName}</div>
                 <button data-del-ids="${delIds}" class="cp-del text-red-400/60 hover:text-red-400 text-base" title="Delete">🗑</button>

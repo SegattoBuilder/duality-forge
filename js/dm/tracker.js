@@ -72,14 +72,14 @@ export function renameCounter(id, val) {
 
 function buildCounterCard(c) {
     const atZero = c.value === 0;
-    return `<div id="${c.id}" class="creature-card flex flex-col w-48 ${atZero ? 'ring-1 ring-[#d4a01760]' : ''}" style="border-top-color: #d4a017; padding: 12px;">
+    return `<div id="${c.id}" class="creature-card flex flex-col w-48" style="border-top-color: var(--accent-1); padding: 12px;${atZero ? ' box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-1) 40%, transparent);' : ''}">
         <div class="flex justify-between items-center mb-2">
-            <input value="${escHtmlAttr(c.label)}" onchange="window._renameCounter('${c.id}', this.value)" class="bg-transparent font-bold text-[11px] uppercase font-[Cinzel] text-[#f5efe6] outline-none border-b border-transparent focus:border-[#d4a017] w-full mr-2">
+            <input value="${escHtmlAttr(c.label)}" onchange="window._renameCounter('${c.id}', this.value)" class="bg-transparent font-bold text-[11px] uppercase font-[Cinzel] text-[#f5efe6] outline-none border-b border-transparent w-full mr-2" style="focus:border-color:var(--accent-1)">
             <button onclick="window._removeCounter('${c.id}')" class="btn-remove text-xs flex-shrink-0">✕</button>
         </div>
         <div class="flex items-center justify-center gap-3">
             <button onclick="window._stepCounter('${c.id}', -1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#3d362a] text-zinc-300 hover:text-white text-sm font-bold">−</button>
-            <span class="text-2xl font-black font-[Cinzel] ${atZero ? 'text-[#d4a017]' : 'text-[#f5efe6]'} min-w-[2rem] text-center">${c.value}</span>
+            <span class="text-2xl font-black font-[Cinzel] min-w-[2rem] text-center" style="color: ${atZero ? 'var(--accent-1)' : '#f5efe6'}">${c.value}</span>
             <button onclick="window._stepCounter('${c.id}', 1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#3d362a] text-zinc-300 hover:text-white text-sm font-bold">+</button>
         </div>
     </div>`;
@@ -95,7 +95,7 @@ function renderCounterCard(c) {
 function buildFearDots() {
     let html = '';
     for (let i = 0; i < 12; i++) {
-        html += `<div id="fear-${i}" class="dot ${i < _fearFilled ? 'filled-fear' : ''}" onclick="window._toggleFear(${i})"></div>`;
+        html += `<div id="fear-${i}" class="dot fear-dot ${i < _fearFilled ? 'filled-fear' : ''}" onclick="window._toggleFear(${i})"></div>`;
     }
     return html;
 }

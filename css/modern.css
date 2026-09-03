@@ -97,6 +97,7 @@ body.modern-layout {
     border: 1px solid #3d362a;
     white-space: nowrap;
 }
+.modern-tab-btn:not(.active):hover { border-color: var(--accent-1); color: var(--accent-1); }
 .modern-tab-btn.active {
     background: linear-gradient(135deg, var(--accent-4), var(--accent-3));
     color: #fff;

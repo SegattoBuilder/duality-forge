@@ -4,10 +4,17 @@ export function renderDots(type, count) {
     const container = document.getElementById(`${type}_dots`);
     if (!container) return;
     container.innerHTML = '';
-    for (let i = 1; i <= count; i++) {
+    for (let i = 0; i < count; i++) {
         const dot = document.createElement('div');
         dot.className = `dot ${type}-dot`;
-        dot.onclick = () => { dot.classList.toggle(`filled-${type}`); autoCache(); };
+        dot.onclick = () => {
+            const filled = Array.from(container.children).filter(d => d.classList.contains(`filled-${type}`)).length;
+            const target = i < filled ? i : i + 1;
+            Array.from(container.children).forEach((d, j) => {
+                d.classList.toggle(`filled-${type}`, j < target);
+            });
+            autoCache();
+        };
         container.appendChild(dot);
     }
 }
