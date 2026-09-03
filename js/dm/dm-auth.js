@@ -195,13 +195,13 @@ function renderAuthUI() {
     if (user) {
         const avatarUrl = profile?.avatar_url || user.user_metadata?.picture || '';
         const name = profile?.nickname || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-        btn.innerHTML = avatarUrl ? `<img src="${escHtmlAttr(avatarUrl)}" alt="" class="w-10 h-10 rounded-full border-2 border-[#d4a017] object-cover">` : `<span class="w-10 h-10 rounded-full border-2 border-[#d4a017] bg-[#2a2418] flex items-center justify-center text-sm font-bold text-[#d4a017]">${escHtml(name.charAt(0).toUpperCase())}</span>`;
+        btn.innerHTML = avatarUrl ? `<img src="${escHtmlAttr(avatarUrl)}" alt="" class="w-10 h-10 rounded-full border-2 object-cover" style="border-color:var(--accent-1)">` : `<span class="w-10 h-10 rounded-full border-2 bg-[#2a2418] flex items-center justify-center text-sm font-bold" style="border-color:var(--accent-1);color:var(--accent-1)">${escHtml(name.charAt(0).toUpperCase())}</span>`;
         btn.onclick = toggleAuthMenu;
         btn.className = 'h-10 w-10 flex items-center justify-center rounded-full hover:opacity-80 transition-opacity cursor-pointer';
     } else {
         btn.innerHTML = '<span class="text-[10px] text-zinc-400">Sign In</span>';
         btn.onclick = openAuthModal;
-        btn.className = 'h-10 px-2 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] hover:border-[#d4a017] transition-colors';
+        btn.className = 'h-10 px-2 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] transition-colors btn-nav';
     }
 }
 

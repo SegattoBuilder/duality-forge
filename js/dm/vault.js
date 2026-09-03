@@ -117,7 +117,7 @@ function adjustVaultMax(creatureId, type, delta) {
 function renderVaultDots(creature, type) {
     const max = creature[type + 'Max'], filled = creature[type + 'Filled'];
     let html = '';
-    for (let i = 0; i < max; i++) html += `<div class="dot ${i < filled ? 'filled-' + type : ''}" onclick="window._toggleVaultDot('${creature.id}', '${type}', ${i})"></div>`;
+    for (let i = 0; i < max; i++) html += `<div class="dot ${type}-dot ${i < filled ? 'filled-' + type : ''}" onclick="window._toggleVaultDot('${creature.id}', '${type}', ${i})"></div>`;
     return html;
 }
 
