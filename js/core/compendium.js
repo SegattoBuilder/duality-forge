@@ -68,7 +68,7 @@ function renderContextFilters() {
     container.classList.remove('hidden');
     container.innerHTML = filterDefs.map(f => {
         const selected = activeFilters[f.field] || '';
-        return `<div class="flex flex-col"><label class="text-[9px] text-zinc-500 uppercase tracking-wide font-bold mb-0.5">${escHtml(f.label)}</label><select onchange="window._setFilter('${f.field}', this.value)" class="bg-[#1e1b16] border border-[#4a3f30] rounded-lg px-2 py-1.5 text-[11px] outline-none focus:border-[#d4a017] cursor-pointer"><option value="">All</option>${f.values.map(v => `<option value="${escHtml(v)}" ${selected === v ? 'selected' : ''}>${v.replace(/_/g, ' ')}</option>`).join('')}</select></div>`;
+        return `<div class="flex flex-col"><label class="text-[9px] text-zinc-500 uppercase tracking-wide font-bold mb-0.5">${escHtml(f.label)}</label><select onchange="window._setFilter('${f.field}', this.value)" class="input-compact cursor-pointer"><option value="">All</option>${f.values.map(v => `<option value="${escHtml(v)}" ${selected === v ? 'selected' : ''}>${v.replace(/_/g, ' ')}</option>`).join('')}</select></div>`;
     }).join('');
 }
 

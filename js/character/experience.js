@@ -11,11 +11,11 @@ export function addExperience(name, value, desc) {
     <div class="space-y-1" id="${id}">
         <div class="flex items-center gap-2">
             <span class="text-zinc-600 text-[10px] exp-chevron cursor-pointer exp-toggle" data-id="${id}">▶</span>
-            <input type="text" value="${n}" placeholder="Name..." class="flex-1 bg-black/40 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-300 outline-none" data-autocache>
-            <input type="text" value="${v}" placeholder="+0" class="w-14 bg-black/40 border border-zinc-800 rounded px-2 py-2 text-sm text-zinc-300 text-center outline-none" data-autocache>
+            <input type="text" value="${n}" placeholder="Name..." class="flex-1 gear-input text-left px-3 text-sm" data-autocache>
+            <input type="text" value="${v}" placeholder="+0" class="w-14 gear-input text-sm" data-autocache>
             <button class="btn-remove exp-remove" data-id="${id}">✕</button>
         </div>
-        <textarea placeholder="Details..." class="exp-details hidden w-full bg-black/40 border border-zinc-800 rounded px-3 py-1.5 text-xs text-zinc-400 outline-none resize-none h-20" data-autocache>${d}</textarea>
+        <textarea placeholder="Details..." class="exp-details hidden w-full gear-input text-left px-3 text-xs text-zinc-400 resize-none h-20" data-autocache>${d}</textarea>
     </div>`;
     container.insertAdjacentHTML('beforeend', html);
     container.querySelector(`#${id} .exp-remove`).addEventListener('click', () => removeExperience(id));

@@ -55,15 +55,15 @@ function onChDrop(e, targetId) {
 // ========== RENDER HELPERS ==========
 function renderNpcRows(ch) {
     return (ch.npcs || []).map((npc, i) => `<div class="grid grid-cols-[auto_auto_auto_1fr_auto] gap-2 items-center">
-        <input value="${escHtmlAttr(npc.name)}" oninput="window._updateChapterNpc('${ch.id}', ${i}, 'name', this.value)" placeholder="Name" class="bg-[#1a1714] border border-[#3d362a] rounded-lg px-2 py-1.5 text-xs text-[#e8e0d4] outline-none focus:border-[#d4a017] placeholder-zinc-700">
-        <input value="${escHtmlAttr(npc.faction)}" oninput="window._updateChapterNpc('${ch.id}', ${i}, 'faction', this.value)" placeholder="Faction" class="bg-[#1a1714] border border-[#3d362a] rounded-lg px-2 py-1.5 text-xs text-[#e8e0d4] outline-none focus:border-[#d4a017] placeholder-zinc-700">
-        <select onchange="window._updateChapterNpc('${ch.id}', ${i}, 'disposition', this.value)" class="bg-[#1a1714] border border-[#3d362a] rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#d4a017] cursor-pointer ${npc.disposition === 'Friendly' ? 'text-green-400' : npc.disposition === 'Hostile' ? 'text-red-400' : npc.disposition === 'Neutral' ? 'text-amber-400' : 'text-zinc-600'}">
+        <input value="${escHtmlAttr(npc.name)}" oninput="window._updateChapterNpc('${ch.id}', ${i}, 'name', this.value)" placeholder="Name" class="input-compact text-left px-2">
+        <input value="${escHtmlAttr(npc.faction)}" oninput="window._updateChapterNpc('${ch.id}', ${i}, 'faction', this.value)" placeholder="Faction" class="input-compact text-left px-2">
+        <select onchange="window._updateChapterNpc('${ch.id}', ${i}, 'disposition', this.value)" class="input-compact cursor-pointer ${npc.disposition === 'Friendly' ? 'text-green-400' : npc.disposition === 'Hostile' ? 'text-red-400' : npc.disposition === 'Neutral' ? 'text-amber-400' : 'text-zinc-600'}">
             <option value="" ${!npc.disposition ? 'selected' : ''}>Disposition</option>
             <option value="Friendly" ${npc.disposition === 'Friendly' ? 'selected' : ''}>Friendly</option>
             <option value="Neutral" ${npc.disposition === 'Neutral' ? 'selected' : ''}>Neutral</option>
             <option value="Hostile" ${npc.disposition === 'Hostile' ? 'selected' : ''}>Hostile</option>
         </select>
-        <input value="${escHtmlAttr(npc.notes)}" oninput="window._updateChapterNpc('${ch.id}', ${i}, 'notes', this.value)" placeholder="Notes" class="bg-[#1a1714] border border-[#3d362a] rounded-lg px-2 py-1.5 text-xs text-[#e8e0d4] outline-none focus:border-[#d4a017] placeholder-zinc-700">
+        <input value="${escHtmlAttr(npc.notes)}" oninput="window._updateChapterNpc('${ch.id}', ${i}, 'notes', this.value)" placeholder="Notes" class="input-compact text-left px-2">
         <button onclick="window._removeChapterNpc('${ch.id}', ${i})" class="btn-remove text-xs">✕</button>
     </div>`).join('');
 }
@@ -73,8 +73,8 @@ function renderMusicRows(ch) {
     if (music.length === 0) return '';
     return '<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">' + music.map((m, i) => `<div class="grid grid-cols-[auto_1fr_1fr_auto] gap-1.5 items-center">
         ${m.cue && m.cue.match(/^https?:\/\//) ? `<a href="${escHtmlAttr(m.cue)}" target="_blank" rel="noopener" class="text-[#d4a017] hover:text-amber-300 text-sm leading-none" title="Open link">🔗</a>` : '<span class="w-4"></span>'}
-        <input value="${escHtmlAttr(m.scene)}" oninput="window._updateChapterMusic('${ch.id}', ${i}, 'scene', this.value)" placeholder="Scene" class="bg-[#1a1714] border border-[#3d362a] rounded-lg px-2 py-1.5 text-xs text-[#e8e0d4] outline-none focus:border-[#d4a017] placeholder-zinc-700">
-        <input value="${escHtmlAttr(m.cue)}" oninput="window._updateChapterMusic('${ch.id}', ${i}, 'cue', this.value)" placeholder="Link or text" class="bg-[#1a1714] border border-[#3d362a] rounded-lg px-2 py-1.5 text-xs text-[#e8e0d4] outline-none focus:border-[#d4a017] placeholder-zinc-700">
+        <input value="${escHtmlAttr(m.scene)}" oninput="window._updateChapterMusic('${ch.id}', ${i}, 'scene', this.value)" placeholder="Scene" class="input-compact text-left px-2">
+        <input value="${escHtmlAttr(m.cue)}" oninput="window._updateChapterMusic('${ch.id}', ${i}, 'cue', this.value)" placeholder="Link or text" class="input-compact text-left px-2">
         <button onclick="window._removeChapterMusic('${ch.id}', ${i})" class="btn-remove text-xs">✕</button>
     </div>`).join('') + '</div>';
 }
@@ -95,7 +95,7 @@ export function renderChronicle() {
                 <button onclick="event.stopPropagation(); window._removeEntry('${ch.id}')" class="btn-remove" title="Remove">✕</button>
             </div>
             <div class="${ch.open ? '' : 'hidden'} space-y-4">
-                <textarea oninput="window._updateEntryText('${ch.id}', this.value)" placeholder="Write your notes here..." class="w-full min-h-[200px] bg-[#1a1714] border border-[#3d362a] rounded-lg px-4 py-3 text-sm text-[#e8e0d4] outline-none focus:border-[#d4a017] resize-y placeholder-zinc-700">${escHtml(ch.text)}</textarea>
+                <textarea oninput="window._updateEntryText('${ch.id}', this.value)" placeholder="Write your notes here..." class="w-full min-h-[200px] input-field resize-y placeholder-zinc-700 text-sm text-[#e8e0d4]">${escHtml(ch.text)}</textarea>
                 ${npcs.length ? `<div><div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1.5">🧑 NPCs & Factions</div><div class="space-y-1">${renderNpcRows(ch)}</div></div>` : ''}
                 ${music.length ? `<div><div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1.5">🎵 Music Cues</div><div class="space-y-1">${renderMusicRows(ch)}</div></div>` : ''}
                 <div class="flex gap-2 pt-1">

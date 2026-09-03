@@ -69,7 +69,7 @@ function renderMemberCard(m, isPending) {
         </div>`
         : `<button onclick="event.stopPropagation(); kickPartyMember('${m.id}','${safeName}')" class="btn-deny btn-deny-dim" title="Kick">✕</button>`;
 
-    return `<div class="p-4 rounded-xl border border-[#3d362a] bg-[#1e1b16] hover:border-[#d4a017] transition-colors cursor-pointer" onclick="viewCharacterDetail('${m.id}')">
+    return `<div class="option-card cursor-pointer" onclick="viewCharacterDetail('${m.id}')">
         <div class="flex items-start justify-between">
             <div>
                 <div class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">${name}</div>
@@ -138,7 +138,7 @@ export async function renderParty() {
 
     const tableId = currentTable.id;
     panel.innerHTML = `
-        <div class="mb-6 max-w-sm mx-auto p-3 rounded-xl border border-[#3d362a] bg-[#1e1b16] text-center">
+        <div class="mb-6 max-w-sm mx-auto p-3 rounded-xl panel-box text-center">
             <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Table Code</div>
             <div class="flex items-center justify-center gap-2 mb-2">
                 <span class="font-mono text-[10px] font-bold text-[#d4a017] tracking-wide select-all">${escHtml(tableId)}</span>

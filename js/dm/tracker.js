@@ -307,10 +307,10 @@ export function addCustomAttackRow(name = '', atk = '', damage = '', range = '')
     const row = document.createElement('div');
     row.className = 'border border-[#3d362a] rounded-lg p-2 relative';
     row.innerHTML = `<div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
-        <input type="text" placeholder="Name" value="${escHtmlAttr(name)}" class="bg-[#1a1714] border border-[#4a3f30] rounded-lg px-3 py-2 text-xs outline-none focus:border-[#d4a017] text-center">
-        <input type="text" placeholder="ATK" value="${escHtmlAttr(atk)}" class="bg-[#1a1714] border border-[#4a3f30] rounded-lg px-2 py-2 text-xs outline-none focus:border-[#d4a017] text-center">
-        <input type="text" placeholder="Damage" value="${escHtmlAttr(damage)}" class="bg-[#1a1714] border border-[#4a3f30] rounded-lg px-3 py-2 text-xs outline-none focus:border-[#d4a017] text-center">
-        <input type="text" placeholder="Range" value="${escHtmlAttr(range)}" class="bg-[#1a1714] border border-[#4a3f30] rounded-lg px-3 py-2 text-xs outline-none focus:border-[#d4a017] text-center">
+        <input type="text" placeholder="Name" value="${escHtmlAttr(name)}" class="input-compact text-center">
+        <input type="text" placeholder="ATK" value="${escHtmlAttr(atk)}" class="input-compact text-center">
+        <input type="text" placeholder="Damage" value="${escHtmlAttr(damage)}" class="input-compact text-center">
+        <input type="text" placeholder="Range" value="${escHtmlAttr(range)}" class="input-compact text-center">
     </div>
     <button type="button" onclick="window._removeAttackRow(this)" class="btn-remove absolute top-1 right-1 text-xs">✕</button>`;
     list.appendChild(row);
@@ -534,7 +534,7 @@ function flipCard(creatureId) {
     const el = document.getElementById(creature.id);
     if (!el) return;
     el.innerHTML = `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2"><span class="text-zinc-600 text-sm">📝</span><span class="font-black text-sm uppercase font-[Cinzel] text-[#f5efe6]">${creature.name}</span></div><button onclick="window._flipBack('${creature.id}')" class="btn-icon text-[10px] uppercase tracking-wide font-bold">← Back</button></div>
-        <textarea oninput="window._updateNotes('${creature.id}', this.value)" placeholder="Add notes..." class="w-full h-40 bg-[#1a1714] border border-[#3d362a] rounded-lg px-3 py-2 text-xs text-[#e8e0d4] outline-none focus:border-[#d4a017] resize-none placeholder-zinc-700">${escHtml(creature.notes || '')}</textarea>`;
+        <textarea oninput="window._updateNotes('${creature.id}', this.value)" placeholder="Add notes..." class="w-full h-40 input-field resize-none placeholder-zinc-700 text-xs text-[#e8e0d4]">${escHtml(creature.notes || '')}</textarea>`;
 }
 function flipBack(creatureId) { const c = _creatures.find(c => c.id === creatureId); if (c) renderCard(c); }
 function updateNotes(creatureId, value) { const c = _creatures.find(c => c.id === creatureId); if (c) { c.notes = value; autoCache(); } }

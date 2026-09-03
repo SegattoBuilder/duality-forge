@@ -45,7 +45,7 @@ export function addWeapon(data) {
     const id = 'wep-' + Math.random().toString(36).substr(2, 9);
     const equipped = d.equipped !== undefined ? d.equipped : (container.children.length === 0);
     const html = `
-    <div class="bg-black/40 border border-zinc-800 rounded-lg p-3" id="${id}" data-equipped="${equipped}" data-collapsed="false">
+    <div class="gear-slot" id="${id}" data-equipped="${equipped}" data-collapsed="false">
         <div class="flex items-center gap-2">
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <button class="equip-star text-lg leading-none cursor-pointer" title="Equip">${equipped ? '★' : '☆'}</button>
@@ -54,12 +54,12 @@ export function addWeapon(data) {
         </div>
         <div class="gear-details mt-2">
             <div class="grid grid-cols-4 gap-2 text-zinc-500">
-                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">TRAIT</div><select class="wep-trait w-full bg-black/40 border border-zinc-800 rounded px-1 py-1.5 text-center outline-none text-xs" data-autocache>${TRAIT_OPTIONS}</select></div>
-                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">RANGE</div><input type="text" value="${d.range || ''}" placeholder="—" class="w-full bg-black/40 border border-zinc-800 rounded px-1 py-1.5 text-center outline-none text-xs" data-autocache></div>
-                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">DAMAGE</div><input type="text" value="${d.dmg || ''}" placeholder="—" class="w-full bg-black/40 border border-zinc-800 rounded px-1 py-1.5 text-center outline-none text-xs" data-autocache></div>
+                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">TRAIT</div><select class="wep-trait w-full gear-input" data-autocache>${TRAIT_OPTIONS}</select></div>
+                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">RANGE</div><input type="text" value="${d.range || ''}" placeholder="—" class="gear-input" data-autocache></div>
+                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">DAMAGE</div><input type="text" value="${d.dmg || ''}" placeholder="—" class="gear-input" data-autocache></div>
                 <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">ATK BONUS</div><div class="wep-atk w-full bg-gray-800 border border-gray-700 rounded py-1.5 text-center font-bold text-indigo-400 text-sm">—</div></div>
             </div>
-            <div class="mt-2"><div class="text-[10px] text-zinc-600 mb-1">FEATURE</div><input type="text" value="${d.feature || ''}" placeholder="Weapon feature..." class="w-full bg-black/40 border border-zinc-800 rounded px-3 py-1.5 text-xs outline-none" data-autocache></div>
+            <div class="mt-2"><div class="text-[10px] text-zinc-600 mb-1">FEATURE</div><input type="text" value="${d.feature || ''}" placeholder="Weapon feature..." class="w-full gear-input text-left px-3" data-autocache></div>
         </div>
     </div>`;
     container.insertAdjacentHTML('beforeend', html);
@@ -127,7 +127,7 @@ export function addArmor(data) {
     const id = 'arm-' + Math.random().toString(36).substr(2, 9);
     const equipped = d.equipped !== undefined ? d.equipped : (container.children.length === 0);
     const html = `
-    <div class="bg-black/40 border border-zinc-800 rounded-lg p-3" id="${id}" data-equipped="${equipped}" data-collapsed="false">
+    <div class="gear-slot" id="${id}" data-equipped="${equipped}" data-collapsed="false">
         <div class="flex items-center gap-2">
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <button class="equip-star text-lg leading-none cursor-pointer" title="Equip">${equipped ? '★' : '☆'}</button>
@@ -136,11 +136,11 @@ export function addArmor(data) {
         </div>
         <div class="gear-details mt-2">
             <div class="grid grid-cols-3 gap-2 text-zinc-500">
-                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">MAJOR</div><input type="number" value="${d.major || '0'}" placeholder="0" class="arm-major w-full bg-black/40 border border-zinc-800 rounded px-1 py-1.5 text-center outline-none text-sm" data-autocache></div>
-                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">SEVERE</div><input type="number" value="${d.severe || '0'}" placeholder="0" class="arm-severe w-full bg-black/40 border border-zinc-800 rounded px-1 py-1.5 text-center outline-none text-sm" data-autocache></div>
-                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">SCORE</div><input type="text" value="${d.score || ''}" placeholder="0" class="w-full bg-black/40 border border-zinc-800 rounded px-1 py-1.5 text-center outline-none text-sm" data-autocache></div>
+                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">MAJOR</div><input type="number" value="${d.major || '0'}" placeholder="0" class="arm-major w-full gear-input text-sm" data-autocache></div>
+                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">SEVERE</div><input type="number" value="${d.severe || '0'}" placeholder="0" class="arm-severe w-full gear-input text-sm" data-autocache></div>
+                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">SCORE</div><input type="text" value="${d.score || ''}" placeholder="0" class="w-full gear-input text-sm" data-autocache></div>
             </div>
-            <div class="mt-2"><div class="text-[10px] text-zinc-600 mb-1">FEATURE</div><input type="text" value="${d.feature || ''}" placeholder="Armor feature..." class="w-full bg-black/40 border border-zinc-800 rounded px-3 py-1.5 text-xs outline-none" data-autocache></div>
+            <div class="mt-2"><div class="text-[10px] text-zinc-600 mb-1">FEATURE</div><input type="text" value="${d.feature || ''}" placeholder="Armor feature..." class="w-full gear-input text-left px-3" data-autocache></div>
         </div>
     </div>`;
     container.insertAdjacentHTML('beforeend', html);
@@ -210,7 +210,7 @@ export function addItem(data) {
     clearEmpty(container);
     const id = 'item-' + Math.random().toString(36).substr(2, 9);
     const html = `
-    <div class="bg-black/40 border border-zinc-800 rounded-lg p-3" id="${id}" data-collapsed="false">
+    <div class="gear-slot" id="${id}" data-collapsed="false">
         <div class="flex items-center gap-2">
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <input type="text" value="${d.name || ''}" placeholder="Item name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
@@ -251,7 +251,7 @@ export function addConsumable(data) {
     clearEmpty(container);
     const id = 'cons-' + Math.random().toString(36).substr(2, 9);
     const html = `
-    <div class="bg-black/40 border border-zinc-800 rounded-lg p-3" id="${id}" data-collapsed="false">
+    <div class="gear-slot" id="${id}" data-collapsed="false">
         <div class="flex items-center gap-2">
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <input type="text" value="${d.name || ''}" placeholder="Consumable name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
@@ -292,7 +292,7 @@ export function addGearItem(name, bonus, desc, collapsed) {
     clearEmpty(container);
     const id = 'gear-' + Math.random().toString(36).substr(2, 9);
     const html = `
-    <div class="bg-black/40 border border-zinc-800 rounded-lg p-3" id="${id}" data-collapsed="false">
+    <div class="gear-slot" id="${id}" data-collapsed="false">
         <div class="flex items-center gap-2">
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <input type="text" value="${name || ''}" placeholder="Item name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>

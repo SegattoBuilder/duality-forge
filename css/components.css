@@ -448,6 +448,161 @@
 .btn-link-accent { color: var(--accent-1); }
 .btn-link-accent:hover { text-decoration: underline; }
 
+/* ========== STRUCTURAL COMPONENTS ========== */
+
+/* Input — standard modal form inputs */
+.input-field {
+    width: 100%;
+    background: transparent;
+    border: 1px solid #4a3f30;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+}
+.input-field:focus { border-color: #d4a017; }
+.input-field::placeholder { color: #52524e; }
+
+/* Input search — larger search bars */
+.input-search {
+    width: 100%;
+    background: transparent;
+    border: 1px solid #4a3f30;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+}
+.input-search:focus { border-color: #d4a017; }
+.input-search::placeholder { color: #52524e; }
+
+/* Input compact — small filter inputs */
+.input-compact {
+    background: transparent;
+    border: 1px solid #4a3f30;
+    border-radius: 8px;
+    padding: 10px 8px;
+    font-size: 12px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.15s;
+}
+.input-compact:focus { border-color: #d4a017; }
+.input-compact::placeholder { color: #52524e; }
+
+/* Input story — story tab description inputs */
+.input-story {
+    width: 100%;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid #3f3f46;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+}
+.input-story:focus { border-color: #d4a017; }
+
+/* Select field — all select dropdowns */
+.select-field {
+    background: transparent;
+    border: 1px solid #4a3f30;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+.select-field:focus { border-color: #d4a017; }
+
+/* Dropdown menu — gear/auth menus */
+.dropdown-menu {
+    background: #1e1b16;
+    border: 1px solid #4a3f30;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    overflow: hidden;
+}
+
+/* Option card — add type options, new campaign/character, Google sign-in */
+.option-card {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: transparent;
+    border: 1px solid #4a3f30;
+    border-radius: 12px;
+    transition: border-color 0.15s;
+    text-align: left;
+}
+.option-card:hover { border-color: #d4a017; }
+
+/* Stat box — evasion/proficiency */
+.stat-box {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.stat-evasion { background: #14141c; border-color: rgba(99,102,241,0.4); }
+.stat-proficiency { background: #14141c; border-color: rgba(16,185,129,0.4); }
+
+/* Vitals row — HP/Stress/Hope/Armor rows */
+.vitals-row {
+    border-radius: 12px;
+    padding: 16px;
+}
+.vitals-hp { background: #1c1414; border: 1px solid rgba(74,32,32,0.4); }
+.vitals-stress { background: #19141c; border: 1px solid rgba(61,32,80,0.4); }
+.vitals-hope { background: #1c1a14; border: 1px solid rgba(74,63,16,0.4); }
+.vitals-armor { background: #14181c; border: 1px solid rgba(26,48,80,0.4); }
+
+/* Panel box — damage thresholds container, gold */
+.panel-box {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid #363026;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+/* Panel inner — major/severe boxes, gold handfuls/bags */
+.panel-inner {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #3f3f46;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+/* Gear slot — weapon/armor/item/consumable/gear rows */
+.gear-slot {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #3f3f46;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+/* Gear slot inline inputs */
+.gear-input {
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #3f3f46;
+    border-radius: 4px;
+    padding: 6px 4px;
+    text-align: center;
+    outline: none;
+    font-size: 12px;
+}
+.gear-input:focus { border-color: #d4a017; }
+
 /* Legacy aliases */
 .btn-action { background: linear-gradient(135deg, var(--accent-3), var(--accent-2)); border: none; color: #fff; }
 .btn-action:hover { background: linear-gradient(135deg, var(--accent-2), var(--accent-1)); }

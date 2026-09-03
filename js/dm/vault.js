@@ -128,7 +128,7 @@ function flipVaultCard(creatureId) {
     const el = document.getElementById('v-' + creature.id);
     if (!el) return;
     el.innerHTML = `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2"><span class="text-zinc-600 text-sm">📝</span><span class="font-black text-sm uppercase font-[Cinzel] text-[#f5efe6]">${creature.name}</span></div><button onclick="window._flipVaultBack('${creature.id}')" class="btn-icon text-[10px] uppercase tracking-wide font-bold">← Back</button></div>
-        <textarea oninput="window._updateVaultNotes('${creature.id}', this.value)" placeholder="Add notes..." class="w-full h-40 bg-[#1a1714] border border-[#3d362a] rounded-lg px-3 py-2 text-xs text-[#e8e0d4] outline-none focus:border-[#d4a017] resize-none placeholder-zinc-700">${escHtml(creature.notes || '')}</textarea>`;
+        <textarea oninput="window._updateVaultNotes('${creature.id}', this.value)" placeholder="Add notes..." class="w-full h-40 input-field resize-none placeholder-zinc-700 text-xs text-[#e8e0d4]">${escHtml(creature.notes || '')}</textarea>`;
 }
 function flipVaultBack(creatureId) { const c = _vaultCreatures.find(c => c.id === creatureId); if (c) renderVaultCard(c); }
 function updateVaultNotes(creatureId, value) { const c = _vaultCreatures.find(c => c.id === creatureId); if (c) { c.notes = value; autoCacheVault(); } }
