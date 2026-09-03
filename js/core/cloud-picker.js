@@ -82,11 +82,12 @@ export async function showCloudPicker(opts) {
             e.stopPropagation();
             const ids = btn.dataset.delIds.split(',');
             showConfirm('Delete this save and its autosave?', async () => {
+                if (opts.onBeforeDelete) await opts.onBeforeDelete(ids);
                 for (const id of ids) {
                     const { error: delErr } = await cloudDeleteRow(table, id);
                     if (delErr) { showAlert('Delete failed: ' + delErr); return; }
                 }
-                showCloudPicker(opts); // re-render
+                showCloudPicker(opts);
             });
         });
     });

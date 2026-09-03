@@ -1,6 +1,6 @@
 import { getUser, getProfile, getSupabase, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as coreSignOut, saveProfile as coreSaveProfile, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
 import { showCloudPicker } from '../core/cloud-picker.js';
-import { TOAST_DURATION, SYNC_STATUS_DURATION, AUTOSAVE_INTERVAL, TABLE_DM_TABLES, LS_DM_CREATURES, LS_DM_VAULT, LS_DM_CHRONICLE, LS_DM_COUNTERS, LS_DM_CAMPAIGN } from '../core/constants.js';
+import { TOAST_DURATION, SYNC_STATUS_DURATION, AUTOSAVE_INTERVAL, TABLE_DM_TABLES, TABLE_CHARACTERS, LS_DM_CREATURES, LS_DM_VAULT, LS_DM_CHRONICLE, LS_DM_COUNTERS, LS_DM_CAMPAIGN } from '../core/constants.js';
 import { creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled, autoCache, renderGrid, renderFearDots } from './tracker.js';
 import { vaultCreatures, setVaultCreatures, vaultGroups, setVaultGroups, autoCacheVault, renderVaultGrid } from './vault.js';
 import { chronicleEntries, setChronicleEntries, autoCacheChronicle, renderChronicle } from './chronicle.js';
@@ -252,7 +252,13 @@ async function showCampaignPicker() {
     showCloudPicker({
         table: TABLE_DM_TABLES, nameColumn: 'campaign_name',
         modalId: 'campaignPickerModal', listId: 'campaignPickerList',
-        onPick: applyCampaignRow, emptyText: 'No saved campaigns found.'
+        onPick: applyCampaignRow, emptyText: 'No saved campaigns found.',
+        onBeforeDelete: async (ids) => {
+            const sb = getSupabase();
+            for (const id of ids) {
+                await sb.from(TABLE_CHARACTERS).update({ table_id: null, table_approved: null }).eq('table_id', id);
+            }
+        }
     });
 }
 

@@ -80,10 +80,20 @@ async function cloudAutoSaveNow() {
 }
 
 async function refreshTableApproval() {
-    if (!currentCharacterRowId || !linkedTable) return;
+    if (!currentCharacterRowId) return;
     const sb = getSupabase();
-    const { data } = await sb.from(TABLE_CHARACTERS).select('table_approved').eq('id', currentCharacterRowId).single();
+    const { data } = await sb.from(TABLE_CHARACTERS).select('table_id, table_approved').eq('id', currentCharacterRowId).single();
     if (!data) return;
+    if (!data.table_id && data.table_approved === null) {
+        linkedTable = { _closed: true };
+        renderTableLink();
+        return;
+    }
+    if (!data.table_id) {
+        if (linkedTable) { linkedTable = null; renderTableLink(); }
+        return;
+    }
+    if (!linkedTable || linkedTable._closed) return;
     const wasApproved = linkedTable._approved;
     linkedTable._approved = data.table_approved || false;
     if (wasApproved !== linkedTable._approved) renderTableLink();
@@ -232,6 +242,14 @@ window.openTableLinkModal = openTableLinkModal;
 window.closeTableLinkModal = () => document.getElementById('tableLinkModal').classList.add('hidden');
 window.submitTableLink = submitTableLink;
 window.unlinkTable = unlinkFromTable;
+window.dismissClosedTable = () => {
+    if (!currentCharacterRowId) return;
+    const sb = getSupabase();
+    sb.from(TABLE_CHARACTERS).update({ table_approved: false }).eq('id', currentCharacterRowId).then(() => {
+        linkedTable = null;
+        renderTableLink();
+    });
+};
 
 // ========== CHARACTER PICKER ==========
 function applyCharacterRow(row) {
@@ -240,6 +258,7 @@ function applyCharacterRow(row) {
     currentCharacterRowId = row.id;
     linkedTable = null;
     if (row.table_id) loadLinkedTable(row.table_id, row.table_approved);
+    else if (!row.table_id && row.table_approved === null) { linkedTable = { _closed: true }; renderTableLink(); }
     else renderTableLink();
     showSyncStatus('☁️ Loaded');
 }
@@ -284,11 +303,15 @@ function renderTableLink() {
         container.innerHTML = '';
         return;
     }
-    if (linkedTable) {
+    if (linkedTable && linkedTable._closed) {
+        container.innerHTML = `<div class="px-4 py-3 border-b border-[#3d362a]">
+            <div class="text-[10px] text-red-400 uppercase tracking-wide font-bold mb-1">⚠️ Table closed by DM</div>
+            <button onclick="dismissClosedTable()" class="mt-2 text-[10px] text-zinc-400 hover:text-zinc-300 font-bold uppercase">Dismiss</button>
+        </div>`;
+    } else if (linkedTable) {
         const isApproved = linkedTable._approved;
         const statusIcon = isApproved ? '✅' : '⏳';
         const statusText = isApproved ? 'Linked' : 'Pending approval';
-        const statusColor = isApproved ? 'text-green-400' : 'text-yellow-500';
         container.innerHTML = `<div class="px-4 py-3 border-b border-[#3d362a]">
             <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-1">${statusIcon} ${statusText}</div>
             <div class="text-xs text-[#f5efe6] font-bold font-[Cinzel]">${escHtml(linkedTable.campaign_name)}</div>
