@@ -7,9 +7,9 @@ export const AUTOSAVE_INTERVAL = 30 * 1000; // 30s for testing — revert to 15 
 export const PASSWORD_MIN_LENGTH = 6;
 
 // ========== SUPABASE TABLES ==========
-export const TABLE_SESSIONS = 'sessions';
 export const TABLE_CHARACTERS = 'characters';
 export const TABLE_PROFILES = 'profiles';
+export const TABLE_DM_TABLES = 'dm_tables';
 
 // ========== LOCALSTORAGE KEYS: SHARED ==========
 export const LS_CONSENT = 'dh_terms_accepted';
@@ -29,6 +29,7 @@ export const LS_DM_VAULT_GROUPS = 'dh_dm_vault_groups';
 export const LS_DM_VAULT_COLLAPSED = 'dh_dm_vault_collapsed';
 export const LS_DM_CHRONICLE = 'dh_dm_chronicle';
 export const LS_DM_ADVERSARIES_CACHE = 'dh_adversaries_cache';
+export const LS_DM_TABLE_ID = 'dh_dm_table_id';
 
 // ========== LOCALSTORAGE KEYS: CHARACTER ==========
 export const LS_CHAR_SAVE = 'dh_sheet';

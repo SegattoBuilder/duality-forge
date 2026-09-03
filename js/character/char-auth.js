@@ -1,17 +1,20 @@
-import { initAuth, getUser, getProfile, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as coreSignOut, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
+import { initAuth, getUser, getProfile, getSupabase, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as coreSignOut, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
 import { showCloudPicker } from '../core/cloud-picker.js';
-import { TOAST_DURATION, SYNC_STATUS_DURATION, AUTOSAVE_INTERVAL, TABLE_CHARACTERS, LS_CHAR_SAVE } from '../core/constants.js';
+import { TOAST_DURATION, SYNC_STATUS_DURATION, AUTOSAVE_INTERVAL, TABLE_CHARACTERS, TABLE_DM_TABLES, LS_CHAR_SAVE } from '../core/constants.js';
 import { gatherData, applyData, autoCache, resetSheet } from './save.js';
 
 let cloudAutoSaveInterval = null;
 let lastSavedSnapshot = null;
 let syncStatusTimer = null;
 let characterPickerShown = false;
+let linkedTable = null;
+let currentCharacterRowId = null;
 
 export function initCharAuth() {
     onAuthChange(renderAuthUI);
     onAuthChange(user => { if (user) startCloudAutoSave(); else stopCloudAutoSave(); });
     onAuthChange(user => {
+        renderTableLink();
         if (user && !characterPickerShown) {
             characterPickerShown = true;
             const localRaw = localStorage.getItem(LS_CHAR_SAVE);
@@ -68,8 +71,11 @@ function stopCloudAutoSave() {
 async function cloudAutoSaveNow() {
     const data = gatherData();
     const charName = data.fields?.charName?.trim() || 'My Character';
-    const { error } = await cloudSaveRow(TABLE_CHARACTERS, { character_name: charName }, data, { isAutosave: true });
-    if (!error) showSyncStatus('☁️ Auto-saved');
+    const { error, id } = await cloudSaveRow(TABLE_CHARACTERS, { character_name: charName }, data, { isAutosave: true });
+    if (!error) {
+        if (id && !currentCharacterRowId) currentCharacterRowId = id;
+        showSyncStatus('☁️ Auto-saved');
+    }
 }
 
 // ========== CLOUD SAVE / LOAD ==========
@@ -77,9 +83,14 @@ async function cloudSave() {
     if (!getUser()) { openAuthModal(); return; }
     const data = gatherData();
     const charName = data.fields?.charName?.trim() || 'My Character';
-    const { error } = await cloudSaveRow(TABLE_CHARACTERS, { character_name: charName }, data);
+    const { error, id } = await cloudSaveRow(TABLE_CHARACTERS, { character_name: charName }, data);
     if (error) showAlert('Cloud save failed: ' + error);
-    else { lastSavedSnapshot = JSON.stringify(data); showSyncStatus('☁️ Saved'); }
+    else {
+        lastSavedSnapshot = JSON.stringify(data);
+        if (id) currentCharacterRowId = id;
+        renderTableLink();
+        showSyncStatus('☁️ Saved');
+    }
 }
 
 async function cloudLoad() {
@@ -206,11 +217,19 @@ window.openProfileModal = openProfileModal;
 window.closeProfileModal = closeProfileModal;
 window.previewAvatar = previewAvatar;
 window.saveProfile = doSaveProfile;
+window.openTableLinkModal = openTableLinkModal;
+window.closeTableLinkModal = () => document.getElementById('tableLinkModal').classList.add('hidden');
+window.submitTableLink = submitTableLink;
+window.unlinkTable = unlinkFromTable;
 
 // ========== CHARACTER PICKER ==========
 function applyCharacterRow(row) {
     applyData(row.data);
     localStorage.setItem(LS_CHAR_SAVE, JSON.stringify(row.data));
+    currentCharacterRowId = row.id;
+    linkedTable = null;
+    if (row.table_id) loadLinkedTable(row.table_id, row.table_approved);
+    else renderTableLink();
     showSyncStatus('☁️ Loaded');
 }
 
@@ -227,4 +246,84 @@ function closeCharacterPicker() { document.getElementById('characterPickerModal'
 function startNewCharacter() {
     closeCharacterPicker();
     resetSheet();
+    currentCharacterRowId = null;
+    linkedTable = null;
+    renderTableLink();
+}
+
+// ========== TABLE LINK / UNLINK ==========
+
+async function loadLinkedTable(tableId, approved) {
+    const sb = getSupabase();
+    if (!sb) return;
+    const { data } = await sb.from(TABLE_DM_TABLES).select('id, campaign_name').eq('id', tableId).single();
+    if (data) {
+        linkedTable = data;
+        linkedTable._approved = approved || false;
+    } else {
+        linkedTable = null;
+    }
+    renderTableLink();
+}
+
+function renderTableLink() {
+    const container = document.getElementById('tableLinkStatus');
+    if (!container) return;
+    if (!getUser()) {
+        container.innerHTML = '';
+        return;
+    }
+    if (linkedTable) {
+        const isApproved = linkedTable._approved;
+        const statusIcon = isApproved ? '✅' : '⏳';
+        const statusText = isApproved ? 'Linked' : 'Pending approval';
+        const statusColor = isApproved ? 'text-green-400' : 'text-yellow-500';
+        container.innerHTML = `<div class="px-4 py-3 border-b border-[#3d362a]">
+            <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-1">${statusIcon} ${statusText}</div>
+            <div class="text-xs text-[#f5efe6] font-bold font-[Cinzel]">${escHtml(linkedTable.campaign_name)}</div>
+            <button onclick="unlinkTable()" class="mt-2 text-[10px] text-red-400 hover:text-red-300 font-bold uppercase">Unlink</button>
+        </div>`;
+    } else {
+        container.innerHTML = `<button onclick="openTableLinkModal()" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">🔗 Link to Table</button>`;
+    }
+}
+
+function openTableLinkModal() {
+    if (!getUser()) { openAuthModal(); return; }
+    document.getElementById('tableLinkInput').value = '';
+    document.getElementById('tableLinkModal').classList.remove('hidden');
+}
+
+async function submitTableLink() {
+    const code = document.getElementById('tableLinkInput').value.trim();
+    if (!code) { showAlert('Enter a table code.'); return; }
+    const sb = getSupabase();
+    const { data: table, error: lookupErr } = await sb.from(TABLE_DM_TABLES).select('id, campaign_name').eq('id', code).single();
+    if (lookupErr || !table) { showAlert('Table not found. Check the code and try again.'); return; }
+    if (!currentCharacterRowId) {
+        const data = gatherData();
+        const charName = data.fields?.charName?.trim() || 'My Character';
+        const { error: saveErr, id } = await cloudSaveRow(TABLE_CHARACTERS, { character_name: charName }, data);
+        if (saveErr) { showAlert('Failed to save character: ' + saveErr); return; }
+        if (id) currentCharacterRowId = id;
+    }
+    const { error } = await sb.from(TABLE_CHARACTERS).update({ table_id: table.id }).eq('id', currentCharacterRowId);
+    if (error) { showAlert('Link failed: ' + error.message); return; }
+    linkedTable = table;
+    linkedTable._approved = false;
+    document.getElementById('tableLinkModal').classList.add('hidden');
+    renderTableLink();
+    showToast('🔗 Linked to ' + table.campaign_name);
+}
+
+async function unlinkFromTable() {
+    if (!currentCharacterRowId) return;
+    showConfirm('Unlink from this table?', async () => {
+        const sb = getSupabase();
+        const { error } = await sb.from(TABLE_CHARACTERS).update({ table_id: null }).eq('id', currentCharacterRowId);
+        if (error) { showAlert('Unlink failed: ' + error.message); return; }
+        linkedTable = null;
+        renderTableLink();
+        showToast('Unlinked from table.');
+    });
 }

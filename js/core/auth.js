@@ -170,16 +170,20 @@ export async function cloudSaveRow(table, matchFields, data, { isAutosave = fals
     for (const [k, v] of Object.entries(matchFields)) query.eq(k, v);
     const { data: existing } = await query.limit(1);
 
-    let error;
+    let error, rowId;
     if (existing && existing.length > 0) {
+        rowId = existing[0].id;
         ({ error } = await sb.from(table)
             .update({ data, updated_at: new Date().toISOString() })
             .eq('id', existing[0].id));
     } else {
-        ({ error } = await sb.from(table)
-            .insert({ user_id: currentUser.id, ...matchFields, data, is_autosave: isAutosave }));
+        const { data: inserted, error: insertErr } = await sb.from(table)
+            .insert({ user_id: currentUser.id, ...matchFields, data, is_autosave: isAutosave })
+            .select('id').single();
+        error = insertErr;
+        rowId = inserted?.id;
     }
-    return { error: error?.message || null };
+    return { error: error?.message || null, id: rowId || null };
 }
 
 export async function cloudLoadRows(table, orderBy = 'updated_at') {

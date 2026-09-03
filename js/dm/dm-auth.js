@@ -1,15 +1,15 @@
-import { getUser, getProfile, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as coreSignOut, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
+import { getUser, getProfile, getSupabase, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as coreSignOut, saveProfile as coreSaveProfile, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
 import { showCloudPicker } from '../core/cloud-picker.js';
-import { TOAST_DURATION, SYNC_STATUS_DURATION, AUTOSAVE_INTERVAL, TABLE_SESSIONS, LS_DM_CREATURES, LS_DM_VAULT, LS_DM_CHRONICLE, LS_DM_COUNTERS, LS_DM_CAMPAIGN } from '../core/constants.js';
+import { TOAST_DURATION, SYNC_STATUS_DURATION, AUTOSAVE_INTERVAL, TABLE_DM_TABLES, LS_DM_CREATURES, LS_DM_VAULT, LS_DM_CHRONICLE, LS_DM_COUNTERS, LS_DM_CAMPAIGN } from '../core/constants.js';
 import { creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled, autoCache, renderGrid, renderFearDots } from './tracker.js';
 import { vaultCreatures, setVaultCreatures, vaultGroups, setVaultGroups, autoCacheVault, renderVaultGrid } from './vault.js';
 import { chronicleEntries, setChronicleEntries, autoCacheChronicle, renderChronicle } from './chronicle.js';
 import { switchTab } from './app.js';
+import { setCurrentTable, getCurrentTable, restoreCurrentTable } from './party.js';
 
 let cloudAutoSaveInterval = null;
 let lastSavedSnapshot = null;
 let syncStatusTimer = null;
-
 let campaignPickerShown = false;
 
 function gatherDmData() {
@@ -20,7 +20,8 @@ function gatherDmData() {
 export function initDmAuth() {
     onAuthChange(renderAuthUI);
     onAuthChange(user => { if (user) startCloudAutoSave(); else stopCloudAutoSave(); });
-    onAuthChange(user => {
+    onAuthChange(async user => {
+        if (user) await restoreCurrentTable();
         if (user && !campaignPickerShown) {
             campaignPickerShown = true;
             if (!hasLocalDmData()) showCampaignPicker();
@@ -50,7 +51,6 @@ function showToast(message) {
 
 function startCloudAutoSave() {
     if (cloudAutoSaveInterval) return;
-    // Take initial snapshot
     lastSavedSnapshot = JSON.stringify(gatherDmData());
     cloudAutoSaveInterval = setInterval(async () => {
         if (!getUser()) return;
@@ -67,50 +67,71 @@ function stopCloudAutoSave() {
 }
 
 async function cloudAutoSaveNow() {
-    const campaign = document.getElementById('campaignName').value.trim() || 'My Campaign';
+    const table = getCurrentTable();
+    if (!table) return;
+    const sb = getSupabase();
     const data = gatherDmData();
-    const { error } = await cloudSaveRow(TABLE_SESSIONS, { campaign_name: campaign }, data, { isAutosave: true });
+    const campaign = data.campaign;
+
+    // Check if autosave row exists for this campaign
+    const { data: existing } = await sb.from(TABLE_DM_TABLES)
+        .select('id').eq('user_id', getUser().id).eq('campaign_name', campaign).eq('is_autosave', true).limit(1);
+
+    let error;
+    if (existing && existing.length) {
+        ({ error } = await sb.from(TABLE_DM_TABLES)
+            .update({ data, campaign_name: campaign, updated_at: new Date().toISOString() })
+            .eq('id', existing[0].id));
+    } else {
+        ({ error } = await sb.from(TABLE_DM_TABLES)
+            .insert({ user_id: getUser().id, campaign_name: campaign, data, is_autosave: true }));
+    }
     if (!error) showSyncStatus('☁️ Auto-saved');
 }
 
 function hasLocalDmData() {
-    try {
-        const c = JSON.parse(localStorage.getItem(LS_DM_CREATURES) || '[]');
-        if (c.length) return true;
-    } catch {}
+    try { if (JSON.parse(localStorage.getItem(LS_DM_CREATURES) || '[]').length) return true; } catch {}
     if (localStorage.getItem(LS_DM_CAMPAIGN)) return true;
-    try {
-        const v = JSON.parse(localStorage.getItem(LS_DM_VAULT) || '[]');
-        if (v.length) return true;
-    } catch {}
-    try {
-        const ch = JSON.parse(localStorage.getItem(LS_DM_CHRONICLE) || '[]');
-        if (ch.length) return true;
-    } catch {}
-    try {
-        const ac = JSON.parse(localStorage.getItem(LS_DM_COUNTERS) || '[]');
-        if (ac.length) return true;
-    } catch {}
+    try { if (JSON.parse(localStorage.getItem(LS_DM_VAULT) || '[]').length) return true; } catch {}
+    try { if (JSON.parse(localStorage.getItem(LS_DM_CHRONICLE) || '[]').length) return true; } catch {}
+    try { if (JSON.parse(localStorage.getItem(LS_DM_COUNTERS) || '[]').length) return true; } catch {}
     return false;
 }
 
 // ========== CLOUD SAVE / LOAD ==========
+
 async function cloudSave() {
     if (!getUser()) { openAuthModal(); return; }
-    const campaign = document.getElementById('campaignName').value.trim() || 'My Campaign';
+    const sb = getSupabase();
     const data = gatherDmData();
-    const { error } = await cloudSaveRow(TABLE_SESSIONS, { campaign_name: campaign }, data);
-    if (error) showAlert('Cloud save failed: ' + error);
-    else { lastSavedSnapshot = JSON.stringify(data); showSyncStatus('☁️ Saved'); }
+    const campaign = data.campaign;
+    let table = getCurrentTable();
+
+    if (table) {
+        // Update existing campaign
+        const { error } = await sb.from(TABLE_DM_TABLES)
+            .update({ data, campaign_name: campaign, updated_at: new Date().toISOString() })
+            .eq('id', table.id);
+        if (error) { showAlert('Cloud save failed: ' + error.message); return; }
+        table.campaign_name = campaign;
+        table.data = data;
+    } else {
+        // Create new campaign
+        const { data: row, error } = await sb.from(TABLE_DM_TABLES)
+            .insert({ user_id: getUser().id, campaign_name: campaign, data, is_autosave: false })
+            .select().single();
+        if (error) { showAlert('Cloud save failed: ' + error.message); return; }
+        table = row;
+    }
+
+    setCurrentTable(table);
+    lastSavedSnapshot = JSON.stringify(data);
+    showSyncStatus('☁️ Saved');
 }
 
 async function cloudLoad() {
     if (!getUser()) { openAuthModal(); return; }
-    showCloudPicker({
-        table: TABLE_SESSIONS, nameColumn: 'campaign_name',
-        modalId: 'campaignPickerModal', listId: 'campaignPickerList',
-        onPick: applyCampaignRow, emptyText: 'No saved campaigns found.'
-    });
+    showCampaignPicker();
 }
 
 async function importLocalToCloud() {
@@ -121,15 +142,13 @@ async function importLocalToCloud() {
 }
 
 async function doSignOut() {
-    const finishSignOut = async () => {
-        await coreSignOut();
-        setCreatures([]); setActionCounters([]); setFearFilled(0); setVaultCreatures([]); setVaultGroups([]); setChronicleEntries([]);
-        document.getElementById('campaignName').value = '';
-        localStorage.removeItem(LS_DM_CAMPAIGN);
-        autoCache(); autoCacheVault(); autoCacheChronicle(); renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
-        switchTab('tracker');
-    };
-    await finishSignOut();
+    await coreSignOut();
+    setCurrentTable(null);
+    setCreatures([]); setActionCounters([]); setFearFilled(0); setVaultCreatures([]); setVaultGroups([]); setChronicleEntries([]);
+    document.getElementById('campaignName').value = '';
+    localStorage.removeItem(LS_DM_CAMPAIGN);
+    autoCache(); autoCacheVault(); autoCacheChronicle(); renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
+    switchTab('tracker');
 }
 
 // ========== AUTH UI ==========
@@ -217,18 +236,21 @@ async function doSaveProfile() {
 }
 
 // ========== CAMPAIGN PICKER ==========
+
 function applyCampaignRow(row) {
-    const d = row.data;
+    const d = row.data || {};
     setCreatures(d.creatures || []); setActionCounters(d.actionCounters || []); setFearFilled(d.fearFilled || 0);
     setVaultCreatures(d.vaultCreatures || []); setVaultGroups(d.vaultGroups || []); setChronicleEntries(d.chronicleEntries || []);
-    if (d.campaign) { document.getElementById('campaignName').value = d.campaign; localStorage.setItem(LS_DM_CAMPAIGN, d.campaign); }
+    const campaign = d.campaign || row.campaign_name || '';
+    if (campaign) { document.getElementById('campaignName').value = campaign; localStorage.setItem(LS_DM_CAMPAIGN, campaign); }
     autoCache(); autoCacheVault(); autoCacheChronicle(); renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
+    setCurrentTable(row);
     showSyncStatus('☁️ Loaded');
 }
 
 async function showCampaignPicker() {
     showCloudPicker({
-        table: TABLE_SESSIONS, nameColumn: 'campaign_name',
+        table: TABLE_DM_TABLES, nameColumn: 'campaign_name',
         modalId: 'campaignPickerModal', listId: 'campaignPickerList',
         onPick: applyCampaignRow, emptyText: 'No saved campaigns found.'
     });
@@ -236,8 +258,9 @@ async function showCampaignPicker() {
 
 function closeCampaignPicker() { document.getElementById('campaignPickerModal').classList.add('hidden'); }
 
-function startNewCampaign() {
+async function startNewCampaign() {
     closeCampaignPicker();
+    setCurrentTable(null);
     setCreatures([]); setActionCounters([]); setFearFilled(0);
     setVaultCreatures([]); setVaultGroups([]); setChronicleEntries([]);
     document.getElementById('campaignName').value = '';
@@ -245,6 +268,14 @@ function startNewCampaign() {
     localStorage.removeItem(LS_DM_CAMPAIGN);
     autoCache(); autoCacheVault(); autoCacheChronicle();
     renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
+    // Create dm_tables row immediately
+    if (getUser()) {
+        const sb = getSupabase();
+        const { data: row, error } = await sb.from(TABLE_DM_TABLES)
+            .insert({ user_id: getUser().id, campaign_name: 'My Campaign', is_autosave: false })
+            .select().single();
+        if (!error && row) setCurrentTable(row);
+    }
     switchTab('tracker');
 }
 

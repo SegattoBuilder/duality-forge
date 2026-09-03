@@ -1,11 +1,12 @@
-import { initAuth, onAuthChange, escHtml, escHtmlAttr, showAlert, showConfirm } from '../core/auth.js';
-import { LS_DM_CREATURES, LS_DM_FEAR, LS_DM_COUNTERS, LS_DM_CAMPAIGN, LS_DM_MODE, LS_DM_ACTIONBAR, LS_DM_FEARPOOL, LS_DM_TITLE, LS_DM_ACTIVE_TAB } from '../core/constants.js';
+import { initAuth, onAuthChange, getUser, getSupabase, escHtml, escHtmlAttr, showAlert, showConfirm } from '../core/auth.js';
+import { LS_DM_CREATURES, LS_DM_FEAR, LS_DM_COUNTERS, LS_DM_CAMPAIGN, LS_DM_MODE, LS_DM_ACTIONBAR, LS_DM_FEARPOOL, LS_DM_TITLE, LS_DM_ACTIVE_TAB, TABLE_DM_TABLES } from '../core/constants.js';
 import { initTracker, renderGrid, renderFearDots, autoCache, creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled } from './tracker.js';
 import { initVault, renderVaultGrid, autoCacheVault, vaultCreatures, setVaultCreatures, vaultGroups, setVaultGroups } from './vault.js';
 import { initChronicle, renderChronicle, autoCacheChronicle, chronicleEntries, setChronicleEntries } from './chronicle.js';
 import { loadCompendium, getLocStr as _getLocStr } from '../core/compendium.js';
 import { initAdversariesTab } from './adversaries.js';
 import { initDmAuth } from './dm-auth.js';
+import { initParty, renderParty, setCurrentTable } from './party.js';
 
 // ========== CONSTANTS ==========
 export const SAVE_KEY = LS_DM_CREATURES;
@@ -59,7 +60,7 @@ const ACTION_BAR_KEY = LS_DM_ACTIONBAR;
 const FEAR_POOL_KEY = LS_DM_FEARPOOL;
 const TITLE_KEY = LS_DM_TITLE;
 
-const PANEL_IDS = ['panelTracker','panelAdversaries','panelCompendium','panelChronicle','panelVault'];
+const PANEL_IDS = ['panelTracker','panelAdversaries','panelCompendium','panelChronicle','panelVault','panelParty'];
 
 function applyActionBarMargins(collapsed) {
     PANEL_IDS.forEach(id => {
@@ -123,13 +124,14 @@ function initTitle() {
 
 // ========== TAB SWITCHING ==========
 export function switchTab(tab) {
-    ['tracker','vault','chronicle','adversaries','compendium'].forEach(t => {
+    ['tracker','vault','chronicle','adversaries','compendium','party'].forEach(t => {
         document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('hidden', tab !== t);
         document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', tab === t);
     });
     document.getElementById('trackerActions').classList.toggle('hidden', tab !== 'tracker');
     document.getElementById('vaultActions').classList.toggle('hidden', tab !== 'vault');
     document.getElementById('chronicleActions').classList.toggle('hidden', tab !== 'chronicle');
+    if (tab === 'party') renderParty();  // async, renders on resolve
     const cloak = document.getElementById('tab-cloak');
     if (cloak) cloak.remove();
     localStorage.setItem(LS_DM_ACTIVE_TAB, tab);
@@ -181,9 +183,10 @@ export function loadSession(event) {
 }
 
 // ========== NEW CAMPAIGN ==========
-export function newCampaign(event) {
+export async function newCampaign(event) {
     if (event) { event.stopPropagation(); event.preventDefault(); }
-    showConfirm('Start a new campaign? This will clear all tracker, vault, chronicle, counters and fear data.', () => {
+    showConfirm('Start a new campaign? This will clear all tracker, vault, chronicle, counters and fear data.', async () => {
+        setCurrentTable(null);
         setCreatures([]); setActionCounters([]); setFearFilled(0);
         setVaultCreatures([]); setVaultGroups([]);
         setChronicleEntries([]);
@@ -192,6 +195,13 @@ export function newCampaign(event) {
         localStorage.removeItem(CAMPAIGN_KEY);
         autoCache(); autoCacheVault(); autoCacheChronicle();
         renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
+        if (getUser()) {
+            const sb = getSupabase();
+            const { data: row, error } = await sb.from(TABLE_DM_TABLES)
+                .insert({ user_id: getUser().id, campaign_name: 'My Campaign', is_autosave: false })
+                .select().single();
+            if (!error && row) setCurrentTable(row);
+        }
         switchTab('tracker');
     });
 }
@@ -227,6 +237,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     initTracker();
     initVault();
     initChronicle();
+    initParty();
     renderFearDots();
     renderGrid();
     renderVaultGrid();

@@ -49,6 +49,7 @@
                     <button onclick="switchTab('chronicle')" id="tabChronicle" class="modern-tab-btn">📜 Chronicle</button>
                     <button onclick="switchTab('adversaries')" id="tabAdversaries" class="modern-tab-btn">👹 Adversaries</button>
                     <button onclick="switchTab('compendium')" id="tabCompendium" class="modern-tab-btn">📖 Compendium</button>
+                    <button onclick="switchTab('party')" id="tabParty" class="modern-tab-btn">👥 Party</button>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                 <div class="relative">
@@ -176,6 +177,11 @@
         <button id="vaultGroupToggle" onclick="window._showVaultGroupForm()" class="bg-[#2a2418] border border-[#4a3f30] text-[10px] px-3 py-2 rounded-lg font-bold uppercase text-[#d4a017] font-[Cinzel] hover:border-[#d4a017]">+ Group</button>
     </div>
     <div id="vaultGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"><div class="col-span-full text-center py-20"><div class="text-zinc-600 text-sm italic">Vault is empty. Use 📦 on tracker cards to stash creatures here.</div></div></div>
+</div>
+
+<!-- PARTY TAB -->
+<div id="panelParty" class="hidden mt-52 sm:mt-36">
+    <div id="partyContent"><div class="text-center py-20"><div class="text-zinc-600 text-sm italic">Loading party...</div></div></div>
 </div>
 
 
@@ -307,6 +313,14 @@
                 <div class="col-span-2 text-center text-zinc-600 text-xs py-4">Loading campaigns...</div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Character Detail Modal (Party) -->
+<div id="charDetailModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-start justify-center pt-8" onclick="if(event.target===this)closeCharDetail()">
+    <div class="modal-panel p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
+        <button onclick="closeCharDetail()" class="absolute top-4 right-4 text-[#6b5d4d] hover:text-white text-2xl leading-none z-10">✕</button>
+        <div id="charDetailBody"></div>
     </div>
 </div>
 

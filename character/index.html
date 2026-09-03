@@ -77,6 +77,7 @@
                         <span id="syncStatus" class="hidden absolute left-1/2 -translate-x-1/2 top-full mt-1 text-[9px] font-bold text-[#d4a017] whitespace-nowrap pointer-events-none z-50"></span>
                         <div id="authMenu" class="hidden absolute right-0 top-12 w-48 bg-[#1e1b16] border border-[#4a3f30] rounded-xl shadow-xl z-50 overflow-hidden">
                             <button onclick="openProfileModal(); closeAuthMenu()" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">👤 Profile</button>
+                            <div id="tableLinkStatus"></div>
                             <button onclick="cloudSave(); closeAuthMenu()" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">☁️ Save to Cloud</button>
                             <button onclick="cloudLoad(); closeAuthMenu()" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">☁️ Load from Cloud</button>
                             <button onclick="signOut(); closeAuthMenu()" class="w-full text-left px-4 py-3 text-xs text-red-400 hover:bg-[#2a2418] transition-colors">🚪 Sign Out</button>
@@ -403,6 +404,18 @@
             <div id="characterPickerList" class="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto">
                 <div class="col-span-2 text-center text-zinc-600 text-xs py-4">Loading characters...</div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table Link Modal -->
+<div id="tableLinkModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-center justify-center" onclick="if(event.target===this)closeTableLinkModal()">
+    <div class="modal-panel p-6 w-full max-w-sm">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5"><h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Link to Table</h2><button onclick="closeTableLinkModal()" class="text-[#6b5d4d] hover:text-white text-2xl leading-none">✕</button></div>
+        <div class="space-y-4">
+            <div class="text-xs text-zinc-400 text-center">Enter the table code from your DM.</div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Table Code</label><input id="tableLinkInput" type="text" placeholder="Paste table code here..." class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600 text-center font-mono text-[10px]" onkeydown="if(event.key==='Enter')submitTableLink()"></div>
+            <div class="flex gap-3"><button onclick="submitTableLink()" class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">Link</button><button onclick="closeTableLinkModal()" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880]">Cancel</button></div>
         </div>
     </div>
 </div>
