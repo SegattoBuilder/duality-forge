@@ -306,6 +306,9 @@
         <div class="mt-2 text-center">
             <button onclick="signOutAll(); closeProfileModal()" class="btn-link text-red-400/60 hover:text-red-400">🚪 Sign Out All Devices</button>
         </div>
+        <div class="mt-2 text-center">
+            <button onclick="deleteAccount(); closeProfileModal()" class="btn-link text-red-500/60 hover:text-red-500">🗑️ Delete Account</button>
+        </div>
         <div id="changeEmailRow" class="hidden mt-3 flex gap-2">
             <input id="changeEmailInput" type="email" placeholder="new@email.com" class="flex-1 input-compact text-left px-3">
             <button onclick="changeEmailFromProfile(); closeProfileModal()" class="btn-primary text-[10px] px-4 py-2">Send</button>
@@ -339,6 +342,21 @@
     <div class="modal-panel p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
         <button onclick="closeCharDetail()" class="btn-close absolute top-4 right-4 z-10">✕</button>
         <div id="charDetailBody"></div>
+    </div>
+</div>
+
+<!-- Delete Account Confirmation Modal -->
+<div id="deleteAccountModal" class="fixed inset-0 modal-overlay hidden z-[9999] p-4 flex items-center justify-center">
+    <div class="modal-panel p-6 w-full max-w-sm">
+        <div class="border-b border-[#363026] pb-3 mb-5"><h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide text-red-500">Delete Account</h2></div>
+        <div class="space-y-4">
+            <p class="text-xs text-zinc-400">This will <span class="text-red-400 font-bold">permanently delete</span> your account, all characters, campaigns, and profile data. This action cannot be undone.</p>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Type DELETE to confirm</label><input id="deleteConfirmInput" type="text" placeholder="DELETE" class="w-full input-field text-center font-mono uppercase" autocomplete="off"></div>
+            <div class="flex gap-3">
+                <button id="deleteConfirmBtn" disabled class="flex-1 bg-red-600 text-xs py-3 rounded-xl font-bold uppercase text-white opacity-40 cursor-not-allowed">Delete Forever</button>
+                <button id="deleteCancelBtn" class="flex-1 btn-secondary">Cancel</button>
+            </div>
+        </div>
     </div>
 </div>
 

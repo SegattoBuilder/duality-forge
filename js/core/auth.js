@@ -184,6 +184,27 @@ export async function signOutAll() {
     onAuthChangeCallbacks.forEach(cb => cb(null));
 }
 
+export async function deleteAccount() {
+    const sb = getSupabase();
+    if (!sb || !currentUser) { showAlert('You must be signed in.'); return false; }
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session?.access_token) { showAlert('Session expired. Please sign in again.'); return false; }
+    const res = await fetch('/api/delete-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token }
+    });
+    const body = await res.json().catch(() => null);
+    if (!res.ok || !body?.ok) {
+        showAlert('Delete failed: ' + (body?.error || 'Unknown error'));
+        return false;
+    }
+    currentUser = null;
+    currentProfile = null;
+    Object.keys(localStorage).filter(k => k.startsWith('dh_')).forEach(k => localStorage.removeItem(k));
+    localStorage.removeItem(LS_CONSENT);
+    return true;
+}
+
 // ========== PROFILE ==========
 async function loadProfile() {
     if (!currentUser || currentProfile || profileLoading) return;
