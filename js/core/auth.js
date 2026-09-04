@@ -194,7 +194,6 @@ export async function deleteAccount() {
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token }
     });
     const body = await res.json().catch(() => null);
-    console.log('[deleteAccount] response:', JSON.stringify(body, null, 2));
     if (!res.ok || !body?.ok) {
         showAlert('Delete failed: ' + (body?.error || 'Unknown error'));
         return false;

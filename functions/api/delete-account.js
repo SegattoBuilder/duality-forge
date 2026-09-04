@@ -1,6 +1,5 @@
 export async function onRequestPost(context) {
     const { request, env } = context;
-    const debug = {};
     try {
         const authHeader = request.headers.get('Authorization');
         if (!authHeader?.startsWith('Bearer ')) {
@@ -21,7 +20,6 @@ export async function onRequestPost(context) {
         if (!userRes.ok) return json({ ok: false, error: 'Invalid session' }, 401);
         const user = await userRes.json();
         const uid = user.id;
-        debug.uid = uid;
 
         const headers = { 'apikey': serviceRoleKey, 'Authorization': `Bearer ${serviceRoleKey}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
         const rest = `${supabaseUrl}/rest/v1`;
@@ -30,25 +28,13 @@ export async function onRequestPost(context) {
         const profileRes = await fetch(`${rest}/profiles?id=eq.${uid}&select=*`, { headers });
         const profiles = await profileRes.json();
         const profile = profiles?.[0] || null;
-        debug.profileFound = !!profile;
 
-        const charRes = await fetch(`${rest}/characters?user_id=eq.${uid}&select=id`, { headers });
-        const charRaw = await charRes.text();
-        debug.charQueryStatus = charRes.status;
-        debug.charQueryBody = charRaw;
-        const charRows = JSON.parse(charRaw);
+        const charRows = await (await fetch(`${rest}/characters?user_id=eq.${uid}&select=id`, { headers })).json();
         const charCount = Array.isArray(charRows) ? charRows.length : 0;
-
-        const tableRes = await fetch(`${rest}/dm_tables?user_id=eq.${uid}&select=id`, { headers });
-        const tableRaw = await tableRes.text();
-        debug.tableQueryStatus = tableRes.status;
-        debug.tableQueryBody = tableRaw;
-        const tableRows = JSON.parse(tableRaw);
+        const tableRows = await (await fetch(`${rest}/dm_tables?user_id=eq.${uid}&select=id`, { headers })).json();
         const tableCount = Array.isArray(tableRows) ? tableRows.length : 0;
-        debug.charCount = charCount;
-        debug.tableCount = tableCount;
 
-        const snapRes = await fetch(`${rest}/user_analytics_snapshots`, {
+        await fetch(`${rest}/user_analytics_snapshots`, {
             method: 'POST', headers,
             body: JSON.stringify({
                 account_created_at: user.created_at,
@@ -66,8 +52,6 @@ export async function onRequestPost(context) {
                 player_experience: profile?.player_experience || null
             })
         });
-        debug.snapshotStatus = snapRes.status;
-        debug.snapshotBody = await snapRes.text();
 
         // 2. Unlink party members from this user's DM tables
         const tablesRes = await fetch(`${rest}/dm_tables?user_id=eq.${uid}&select=id`, { headers });
@@ -89,16 +73,14 @@ export async function onRequestPost(context) {
         const deleteRes = await fetch(`${supabaseUrl}/auth/v1/admin/users/${uid}`, {
             method: 'DELETE', headers: { 'apikey': serviceRoleKey, 'Authorization': `Bearer ${serviceRoleKey}` }
         });
-        debug.authDeleteStatus = deleteRes.status;
-        debug.authDeleteBody = await deleteRes.text();
         if (!deleteRes.ok) {
-            return json({ ok: false, error: 'Failed to delete auth user', debug }, 500);
+            const err = await deleteRes.json().catch(() => ({}));
+            return json({ ok: false, error: 'Failed to delete auth user: ' + (err.message || 'Unknown') }, 500);
         }
 
-        return json({ ok: true, debug });
+        return json({ ok: true });
     } catch (e) {
-        debug.exception = e.message;
-        return json({ ok: false, error: 'Internal error', debug }, 500);
+        return json({ ok: false, error: 'Internal error' }, 500);
     }
 }
 
