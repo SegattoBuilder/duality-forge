@@ -10,6 +10,7 @@ export const PASSWORD_MIN_LENGTH = 6;
 export const TABLE_CHARACTERS = 'characters';
 export const TABLE_PROFILES = 'profiles';
 export const TABLE_DM_TABLES = 'dm_tables';
+export const TABLE_ANALYTICS = 'user_analytics_snapshots';
 
 // ========== LOCALSTORAGE KEYS: SHARED ==========
 export const LS_CONSENT = 'dh_terms_accepted';

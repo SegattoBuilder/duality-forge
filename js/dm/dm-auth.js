@@ -1,4 +1,4 @@
-import { getUser, getProfile, getSupabase, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, changeEmail, isEmailUser, signOut as coreSignOut, signOutAll as coreSignOutAll, saveProfile as coreSaveProfile, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
+import { getUser, getProfile, getSupabase, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, changeEmail, isEmailUser, signOut as coreSignOut, signOutAll as coreSignOutAll, deleteAccount as coreDeleteAccount, saveProfile as coreSaveProfile, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
 import { showCloudPicker } from '../core/cloud-picker.js';
 import { TOAST_DURATION, SYNC_STATUS_DURATION, AUTOSAVE_INTERVAL, TABLE_DM_TABLES, TABLE_CHARACTERS, LS_DM_CREATURES, LS_DM_VAULT, LS_DM_CHRONICLE, LS_DM_COUNTERS, LS_DM_CAMPAIGN } from '../core/constants.js';
 import { creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled, autoCache, renderGrid, renderFearDots } from './tracker.js';
@@ -151,6 +151,32 @@ async function doSignOutAll() {
         await coreSignOutAll();
         window.location.href = '/';
     });
+}
+
+function doDeleteAccount() {
+    showDeleteAccountModal(async () => {
+        const ok = await coreDeleteAccount();
+        if (ok) window.location.href = '/';
+    });
+}
+
+function showDeleteAccountModal(onConfirm) {
+    const modal = document.getElementById('deleteAccountModal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    const input = document.getElementById('deleteConfirmInput');
+    const btn = document.getElementById('deleteConfirmBtn');
+    input.value = '';
+    btn.disabled = true;
+    btn.classList.add('opacity-40', 'cursor-not-allowed');
+    input.oninput = () => {
+        const ok = input.value.trim().toUpperCase() === 'DELETE';
+        btn.disabled = !ok;
+        btn.classList.toggle('opacity-40', !ok);
+        btn.classList.toggle('cursor-not-allowed', !ok);
+    };
+    btn.onclick = () => { modal.classList.add('hidden'); onConfirm(); };
+    document.getElementById('deleteCancelBtn').onclick = () => modal.classList.add('hidden');
 }
 
 // ========== AUTH UI ==========
@@ -314,6 +340,7 @@ window.toggleChangeEmail = () => {
 };
 window.signOut = doSignOut;
 window.signOutAll = doSignOutAll;
+window.deleteAccount = doDeleteAccount;
 window.cloudSave = cloudSave;
 window.cloudLoad = cloudLoad;
 window.importLocalToCloud = importLocalToCloud;

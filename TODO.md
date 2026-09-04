@@ -70,7 +70,7 @@
 ## 🔜 Planned
 
 ### v0.9 — Account & Auth Improvements
-- [ ] Delete account (with confirmation + cascade cleanup of characters, tables, profile)
+- [x] Delete account (with confirmation + cascade cleanup of characters, tables, profile + analytics snapshot)
 - [ ] Link Google account to existing email account (or vice versa)
 
 ---

@@ -33,8 +33,9 @@
             <button onclick="goBack()" class="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-[#d4a017] transition-colors">← Back</button>
         </div>
 
-        <div class="text-center">
+        <div class="text-center space-y-2">
             <a href="support/" class="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-[#d4a017] transition-colors">🤝 Support & Feedback</a>
+            <div id="signOutRow" class="hidden"><button onclick="doSignOut()" class="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-red-400 transition-colors">🚪 Sign Out</button></div>
         </div>
 
         <div class="text-center mt-8">
@@ -157,7 +158,7 @@
 
         // Check if user is already signed in (e.g. returning from Google OAuth)
         const { data: { session } } = await sb.auth.getSession();
-        if (session) { showTools(); backRow.classList.add('hidden'); }
+        if (session) { showTools(); backRow.classList.add('hidden'); document.getElementById('signOutRow').classList.remove('hidden'); }
         else showAuthChoice();
 
         // Listen for password recovery redirect
@@ -196,7 +197,8 @@
         // Expose to onclick handlers
         window.go = (tool) => { window.location.href = tool + '/'; };
         window.chooseMode = (mode) => { if (mode === 'online') openAuthModal(); else showTools(); };
-        window.goBack = showAuthChoice;
+        window.goBack = () => { showAuthChoice(); document.getElementById('signOutRow').classList.add('hidden'); };
+        window.doSignOut = async () => { await sb.auth.signOut({ scope: 'local' }); showAuthChoice(); document.getElementById('signOutRow').classList.add('hidden'); };
         window.doSignIn = doSignIn;
         window.doSignUp = doSignUp;
         window.signInWithGoogle = signInWithGoogle;
