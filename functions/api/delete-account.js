@@ -73,12 +73,12 @@ export async function onRequestPost(context) {
         const deleteRes = await fetch(`${supabaseUrl}/auth/v1/admin/users/${uid}`, {
             method: 'DELETE', headers: { 'apikey': serviceRoleKey, 'Authorization': `Bearer ${serviceRoleKey}` }
         });
+        const deleteBody = await deleteRes.text();
         if (!deleteRes.ok) {
-            const err = await deleteRes.json().catch(() => ({}));
-            return json({ ok: false, error: 'Failed to delete auth user: ' + (err.message || 'Unknown') }, 500);
+            return json({ ok: false, error: 'Failed to delete auth user', debug: { status: deleteRes.status, body: deleteBody } }, 500);
         }
 
-        return json({ ok: true });
+        return json({ ok: true, debug: { uid, authDeleteStatus: deleteRes.status, authDeleteBody: deleteBody } });
     } catch (e) {
         return json({ ok: false, error: 'Internal error' }, 500);
     }
