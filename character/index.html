@@ -449,7 +449,7 @@
         <div class="border-b border-[#363026] pb-3 mb-5"><h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide text-red-500">Delete Account</h2></div>
         <div class="space-y-4">
             <p class="text-xs text-zinc-400">This will <span class="text-red-400 font-bold">permanently delete</span> your account, all characters, campaigns, and profile data. This action cannot be undone.</p>
-            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Type DELETE to confirm</label><input id="deleteConfirmInput" type="text" placeholder="DELETE" class="w-full input-field text-center font-mono uppercase" autocomplete="off"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Type <span class="text-red-500 cursor-pointer hover:underline" onclick="document.getElementById('deleteConfirmInput').value='DELETE';document.getElementById('deleteConfirmInput').dispatchEvent(new Event('input'))">DELETE</span> to confirm</label><input id="deleteConfirmInput" type="text" placeholder="DELETE" class="w-full input-field text-center font-mono uppercase" autocomplete="off"></div>
             <div class="flex gap-3">
                 <button id="deleteConfirmBtn" disabled class="flex-1 bg-red-600 text-xs py-3 rounded-xl font-bold uppercase text-white opacity-40 cursor-not-allowed">Delete Forever</button>
                 <button id="deleteCancelBtn" class="flex-1 btn-secondary">Cancel</button>

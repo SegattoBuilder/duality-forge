@@ -159,7 +159,7 @@ function showDeleteAccountModal(onConfirm) {
     btn.disabled = true;
     btn.classList.add('opacity-40', 'cursor-not-allowed');
     input.oninput = () => {
-        const ok = input.value.trim() === 'DELETE';
+        const ok = input.value.trim().toUpperCase() === 'DELETE';
         btn.disabled = !ok;
         btn.classList.toggle('opacity-40', !ok);
         btn.classList.toggle('cursor-not-allowed', !ok);

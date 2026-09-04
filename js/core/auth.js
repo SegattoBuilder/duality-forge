@@ -194,6 +194,7 @@ export async function deleteAccount() {
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token }
     });
     const body = await res.json().catch(() => null);
+    console.log('[deleteAccount] response:', JSON.stringify(body, null, 2));
     if (!res.ok || !body?.ok) {
         showAlert('Delete failed: ' + (body?.error || 'Unknown error'));
         return false;
@@ -202,6 +203,7 @@ export async function deleteAccount() {
     currentProfile = null;
     Object.keys(localStorage).filter(k => k.startsWith('dh_')).forEach(k => localStorage.removeItem(k));
     localStorage.removeItem(LS_CONSENT);
+    try { await getSupabase().auth.signOut({ scope: 'local' }); } catch {}
     return true;
 }
 

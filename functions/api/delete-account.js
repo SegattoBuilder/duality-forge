@@ -1,5 +1,6 @@
 export async function onRequestPost(context) {
     const { request, env } = context;
+    const debug = {};
     try {
         const authHeader = request.headers.get('Authorization');
         if (!authHeader?.startsWith('Bearer ')) {
@@ -20,6 +21,7 @@ export async function onRequestPost(context) {
         if (!userRes.ok) return json({ ok: false, error: 'Invalid session' }, 401);
         const user = await userRes.json();
         const uid = user.id;
+        debug.uid = uid;
 
         const headers = { 'apikey': serviceRoleKey, 'Authorization': `Bearer ${serviceRoleKey}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
         const rest = `${supabaseUrl}/rest/v1`;
@@ -28,13 +30,25 @@ export async function onRequestPost(context) {
         const profileRes = await fetch(`${rest}/profiles?id=eq.${uid}&select=*`, { headers });
         const profiles = await profileRes.json();
         const profile = profiles?.[0] || null;
+        debug.profileFound = !!profile;
 
-        const charCountRes = await fetch(`${rest}/characters?user_id=eq.${uid}&select=id`, { headers, method: 'HEAD' });
-        const charCount = parseInt(charCountRes.headers.get('content-range')?.split('/')[1] || '0');
-        const tableCountRes = await fetch(`${rest}/dm_tables?user_id=eq.${uid}&select=id`, { headers, method: 'HEAD' });
-        const tableCount = parseInt(tableCountRes.headers.get('content-range')?.split('/')[1] || '0');
+        const charRes = await fetch(`${rest}/characters?user_id=eq.${uid}&select=id`, { headers });
+        const charRaw = await charRes.text();
+        debug.charQueryStatus = charRes.status;
+        debug.charQueryBody = charRaw;
+        const charRows = JSON.parse(charRaw);
+        const charCount = Array.isArray(charRows) ? charRows.length : 0;
 
-        await fetch(`${rest}/user_analytics_snapshots`, {
+        const tableRes = await fetch(`${rest}/dm_tables?user_id=eq.${uid}&select=id`, { headers });
+        const tableRaw = await tableRes.text();
+        debug.tableQueryStatus = tableRes.status;
+        debug.tableQueryBody = tableRaw;
+        const tableRows = JSON.parse(tableRaw);
+        const tableCount = Array.isArray(tableRows) ? tableRows.length : 0;
+        debug.charCount = charCount;
+        debug.tableCount = tableCount;
+
+        const snapRes = await fetch(`${rest}/user_analytics_snapshots`, {
             method: 'POST', headers,
             body: JSON.stringify({
                 account_created_at: user.created_at,
@@ -52,6 +66,8 @@ export async function onRequestPost(context) {
                 player_experience: profile?.player_experience || null
             })
         });
+        debug.snapshotStatus = snapRes.status;
+        debug.snapshotBody = await snapRes.text();
 
         // 2. Unlink party members from this user's DM tables
         const tablesRes = await fetch(`${rest}/dm_tables?user_id=eq.${uid}&select=id`, { headers });
@@ -73,14 +89,16 @@ export async function onRequestPost(context) {
         const deleteRes = await fetch(`${supabaseUrl}/auth/v1/admin/users/${uid}`, {
             method: 'DELETE', headers: { 'apikey': serviceRoleKey, 'Authorization': `Bearer ${serviceRoleKey}` }
         });
-        const deleteBody = await deleteRes.text();
+        debug.authDeleteStatus = deleteRes.status;
+        debug.authDeleteBody = await deleteRes.text();
         if (!deleteRes.ok) {
-            return json({ ok: false, error: 'Failed to delete auth user', debug: { status: deleteRes.status, body: deleteBody } }, 500);
+            return json({ ok: false, error: 'Failed to delete auth user', debug }, 500);
         }
 
-        return json({ ok: true, debug: { uid, authDeleteStatus: deleteRes.status, authDeleteBody: deleteBody } });
+        return json({ ok: true, debug });
     } catch (e) {
-        return json({ ok: false, error: 'Internal error' }, 500);
+        debug.exception = e.message;
+        return json({ ok: false, error: 'Internal error', debug }, 500);
     }
 }
 
