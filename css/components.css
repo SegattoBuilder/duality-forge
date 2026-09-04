@@ -738,3 +738,47 @@
 /* Support tab link hover */
 .support-link:hover { border-color: color-mix(in srgb, var(--accent-1) 50%, transparent) !important; }
 .support-link:hover .support-link-title { color: var(--accent-1) !important; }
+
+/* ========== QUILL EDITOR — CHRONICLE ========== */
+.chronicle-editor .ql-toolbar {
+    background: #1a1714;
+    border: 1px solid #4a3f30 !important;
+    border-radius: 8px 8px 0 0;
+}
+.chronicle-editor .ql-container {
+    border: 1px solid #4a3f30 !important;
+    border-top: none !important;
+    border-radius: 0 0 8px 8px;
+    min-height: 200px;
+    font-size: 14px;
+    color: #e8e0d4;
+    font-family: 'Inter', sans-serif;
+}
+.chronicle-editor .ql-editor {
+    min-height: 200px;
+    color: #e8e0d4;
+}
+.chronicle-editor .ql-editor.ql-blank::before {
+    color: #52524e;
+    font-style: italic;
+}
+.chronicle-editor .ql-toolbar .ql-stroke { stroke: #6b5d4d; }
+.chronicle-editor .ql-toolbar .ql-fill { fill: #6b5d4d; }
+.chronicle-editor .ql-toolbar .ql-picker-label { color: #6b5d4d; }
+.chronicle-editor .ql-toolbar button:hover .ql-stroke { stroke: #d4a017; }
+.chronicle-editor .ql-toolbar button:hover .ql-fill { fill: #d4a017; }
+.chronicle-editor .ql-toolbar button.ql-active .ql-stroke { stroke: #d4a017; }
+.chronicle-editor .ql-toolbar button.ql-active .ql-fill { fill: #d4a017; }
+.chronicle-editor .ql-toolbar .ql-picker-label:hover { color: #d4a017; }
+.chronicle-editor .ql-toolbar .ql-picker-label:hover .ql-stroke { stroke: #d4a017; }
+.chronicle-editor .ql-snow .ql-picker-options {
+    background: #1e1b16;
+    border: 1px solid #4a3f30;
+    border-radius: 8px;
+}
+.chronicle-editor .ql-snow .ql-picker-item:hover { color: #d4a017; }
+.chronicle-editor .ql-editor blockquote {
+    border-left: 3px solid #d4a017;
+    padding-left: 12px;
+    color: #a89880;
+}

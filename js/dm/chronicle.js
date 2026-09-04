@@ -1,9 +1,9 @@
 import { escHtml, escHtmlAttr } from './app.js';
-import { showConfirm } from '../core/auth.js';
-
-import { LS_DM_CHRONICLE } from '../core/constants.js';
+import { showConfirm, getUser, getProfile, getSupabase, showAlert } from '../core/auth.js';
+import { LS_DM_CHRONICLE, TABLE_COMMUNITY_CHAPTERS } from '../core/constants.js';
 const CHRONICLE_KEY = LS_DM_CHRONICLE;
 let _chronicleEntries = [];
+const _quillInstances = {};
 
 export function chronicleEntries() { return _chronicleEntries; }
 export function setChronicleEntries(v) { _chronicleEntries = v; }
@@ -22,22 +22,52 @@ export function addEntry() {
     autoCacheChronicle(); renderChronicle();
 }
 
-function removeEntry(id) { const ch = _chronicleEntries.find(c => c.id === id); showConfirm(`Remove ${ch ? ch.title : 'this chapter'}?`, () => { _chronicleEntries = _chronicleEntries.filter(c => c.id !== id); autoCacheChronicle(); renderChronicle(); }); }
+function removeEntry(id) {
+    const ch = _chronicleEntries.find(c => c.id === id);
+    showConfirm(`Remove ${ch ? ch.title : 'this chapter'}?`, () => {
+        delete _quillInstances[id];
+        _chronicleEntries = _chronicleEntries.filter(c => c.id !== id);
+        autoCacheChronicle(); renderChronicle();
+    });
+}
 function updateEntryTitle(id, value) { const ch = _chronicleEntries.find(c => c.id === id); if (ch) { ch.title = value || 'Untitled Chapter'; autoCacheChronicle(); } }
 function updateEntryText(id, value) { const ch = _chronicleEntries.find(c => c.id === id); if (ch) { ch.text = value; autoCacheChronicle(); } }
-function toggleEntry(id) { const ch = _chronicleEntries.find(c => c.id === id); if (ch) { ch.open = !ch.open; autoCacheChronicle(); renderChronicle(); } }
+function toggleEntry(id) {
+    const ch = _chronicleEntries.find(c => c.id === id);
+    if (!ch) return;
+    // Save current Quill content before collapsing
+    if (ch.open && _quillInstances[id]) {
+        ch.text = _quillInstances[id].root.innerHTML;
+        delete _quillInstances[id];
+    }
+    ch.open = !ch.open;
+    autoCacheChronicle(); renderChronicle();
+}
 
-function addChapterNpc(chId) { const ch = _chronicleEntries.find(c => c.id === chId); if (!ch) return; if (!ch.npcs) ch.npcs = []; ch.npcs.push({ name: '', faction: '', disposition: '', notes: '' }); autoCacheChronicle(); renderChronicle(); }
-function removeChapterNpc(chId, idx) { const ch = _chronicleEntries.find(c => c.id === chId); if (!ch || !ch.npcs) return; ch.npcs.splice(idx, 1); autoCacheChronicle(); renderChronicle(); }
+function addChapterNpc(chId) { const ch = _chronicleEntries.find(c => c.id === chId); if (!ch) return; if (!ch.npcs) ch.npcs = []; ch.npcs.push({ name: '', faction: '', disposition: '', notes: '' }); saveQuillContent(chId); autoCacheChronicle(); renderChronicle(); }
+function removeChapterNpc(chId, idx) { const ch = _chronicleEntries.find(c => c.id === chId); if (!ch || !ch.npcs) return; ch.npcs.splice(idx, 1); saveQuillContent(chId); autoCacheChronicle(); renderChronicle(); }
 function updateChapterNpc(chId, idx, field, value) { const ch = _chronicleEntries.find(c => c.id === chId); if (!ch || !ch.npcs || !ch.npcs[idx]) return; ch.npcs[idx][field] = value; autoCacheChronicle(); }
 
-function addChapterMusic(chId) { const ch = _chronicleEntries.find(c => c.id === chId); if (!ch) return; if (!ch.music) ch.music = []; ch.music.push({ scene: '', cue: '' }); autoCacheChronicle(); renderChronicle(); }
-function removeChapterMusic(chId, idx) { const ch = _chronicleEntries.find(c => c.id === chId); if (!ch || !ch.music) return; ch.music.splice(idx, 1); autoCacheChronicle(); renderChronicle(); }
+function addChapterMusic(chId) { const ch = _chronicleEntries.find(c => c.id === chId); if (!ch) return; if (!ch.music) ch.music = []; ch.music.push({ scene: '', cue: '' }); saveQuillContent(chId); autoCacheChronicle(); renderChronicle(); }
+function removeChapterMusic(chId, idx) { const ch = _chronicleEntries.find(c => c.id === chId); if (!ch || !ch.music) return; ch.music.splice(idx, 1); saveQuillContent(chId); autoCacheChronicle(); renderChronicle(); }
 function updateChapterMusic(chId, idx, field, value) {
     const ch = _chronicleEntries.find(c => c.id === chId); if (!ch || !ch.music || !ch.music[idx]) return;
     const wasLink = ch.music[idx].cue && ch.music[idx].cue.match(/^https?:\/\//);
     ch.music[idx][field] = value; autoCacheChronicle();
-    if (field === 'cue') { const isLink = value && value.match(/^https?:\/\//); if (!!wasLink !== !!isLink) renderChronicle(); }
+    if (field === 'cue') { const isLink = value && value.match(/^https?:\/\//); if (!!wasLink !== !!isLink) { saveQuillContent(chId); renderChronicle(); } }
+}
+
+// Save Quill content before re-render
+function saveQuillContent(chId) {
+    if (_quillInstances[chId]) {
+        const ch = _chronicleEntries.find(c => c.id === chId);
+        if (ch) ch.text = _quillInstances[chId].root.innerHTML;
+        delete _quillInstances[chId];
+    }
+}
+
+function saveAllQuillContent() {
+    for (const id of Object.keys(_quillInstances)) saveQuillContent(id);
 }
 
 // ========== DRAG & DROP ==========
@@ -49,7 +79,37 @@ function onChDrop(e, targetId) {
     const fromIdx = _chronicleEntries.findIndex(c => c.id === chDraggedId), toIdx = _chronicleEntries.findIndex(c => c.id === targetId);
     if (fromIdx === -1 || toIdx === -1) return;
     const [moved] = _chronicleEntries.splice(fromIdx, 1); _chronicleEntries.splice(toIdx, 0, moved);
-    autoCacheChronicle(); renderChronicle();
+    saveAllQuillContent(); autoCacheChronicle(); renderChronicle();
+}
+
+// ========== QUILL SETUP ==========
+const QUILL_TOOLBAR = [
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'color': [] }, { 'background': [] }],
+    [{ 'header': [1, 2, 3, false] }],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+    ['blockquote', 'link'],
+    ['clean']
+];
+
+function initQuillEditor(chId, content) {
+    const container = document.getElementById('editor-' + chId);
+    if (!container || _quillInstances[chId]) return;
+    const quill = new Quill(container, {
+        theme: 'snow',
+        placeholder: 'Write your notes here...',
+        modules: { toolbar: QUILL_TOOLBAR }
+    });
+    if (content) quill.root.innerHTML = content;
+    let debounce = null;
+    quill.on('text-change', () => {
+        clearTimeout(debounce);
+        debounce = setTimeout(() => {
+            const ch = _chronicleEntries.find(c => c.id === chId);
+            if (ch) { ch.text = quill.root.innerHTML; autoCacheChronicle(); }
+        }, 500);
+    });
+    _quillInstances[chId] = quill;
 }
 
 // ========== RENDER HELPERS ==========
@@ -86,16 +146,22 @@ export function renderChronicle() {
         list.innerHTML = '<div class="text-center py-20"><div class="text-zinc-600 text-sm italic">No chapters yet. Click "+ Chapter" to start your chronicle.</div></div>';
         return;
     }
+    // Clear old instances
+    for (const id of Object.keys(_quillInstances)) {
+        if (!_chronicleEntries.find(c => c.id === id)) delete _quillInstances[id];
+    }
+
     list.innerHTML = _chronicleEntries.map(ch => {
         const npcs = ch.npcs || [], music = ch.music || [];
         return `<div id="${ch.id}" class="fear-pool p-4 rounded-xl border border-[#3d362a] bg-[#1e1b16]" draggable="true">
             <div class="section-divider flex items-center gap-2 mb-3 pb-2 border-b border-[#3d362a] cursor-pointer select-none" onclick="window._toggleEntry('${ch.id}')">
                 <span class="text-[10px] text-zinc-600 transition-transform ${ch.open ? 'rotate-90' : ''}">▶</span>
                 <input value="${escHtmlAttr(ch.title)}" onclick="event.stopPropagation()" oninput="window._updateEntryTitle('${ch.id}', this.value)" class="flex-1 bg-transparent section-header font-[Cinzel] text-xs uppercase tracking-widest text-zinc-500 outline-none border-b border-transparent focus:border-[#d4a017] placeholder-zinc-700" placeholder="Chapter title...">
+                <button onclick="event.stopPropagation(); window._shareEntry('${ch.id}')" class="text-[10px] text-zinc-600 hover:text-[#d4a017] transition-colors" title="Share to Community">🌐</button>
                 <button onclick="event.stopPropagation(); window._removeEntry('${ch.id}')" class="btn-remove" title="Remove">✕</button>
             </div>
             <div class="${ch.open ? '' : 'hidden'} space-y-4">
-                <textarea oninput="window._updateEntryText('${ch.id}', this.value)" placeholder="Write your notes here..." class="w-full min-h-[200px] input-field resize-y placeholder-zinc-700 text-sm text-[#e8e0d4]">${escHtml(ch.text)}</textarea>
+                <div id="editor-${ch.id}" class="chronicle-editor"></div>
                 ${npcs.length ? `<div><div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1.5">🧑 NPCs & Factions</div><div class="space-y-1">${renderNpcRows(ch)}</div></div>` : ''}
                 ${music.length ? `<div><div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1.5">🎵 Music Cues</div><div class="space-y-1">${renderMusicRows(ch)}</div></div>` : ''}
                 <div class="flex gap-2 pt-1">
@@ -105,6 +171,11 @@ export function renderChronicle() {
             </div>
         </div>`;
     }).join('');
+
+    // Initialize Quill editors for open chapters
+    _chronicleEntries.forEach(ch => {
+        if (ch.open) initQuillEditor(ch.id, ch.text);
+    });
 
     // Bind drag events
     _chronicleEntries.forEach(ch => {
@@ -122,8 +193,72 @@ export function renderChronicle() {
 export function clearChronicle(event) {
     if (event) { event.stopPropagation(); event.preventDefault(); }
     showConfirm('Clear all chapters? This cannot be undone.', () => {
+        Object.keys(_quillInstances).forEach(id => delete _quillInstances[id]);
         _chronicleEntries = []; autoCacheChronicle(); renderChronicle();
     });
+}
+
+// ========== SHARE TO COMMUNITY ==========
+let _shareChapterId = null;
+
+function openShareModal(id) {
+    if (!getUser()) { showAlert('Sign in to share chapters.'); return; }
+    const ch = _chronicleEntries.find(c => c.id === id);
+    if (!ch) return;
+    // Save latest Quill content
+    if (_quillInstances[id]) ch.text = _quillInstances[id].root.innerHTML;
+    _shareChapterId = id;
+    document.getElementById('shareTitle').value = ch.title || '';
+    document.getElementById('shareDescription').value = '';
+    document.getElementById('shareLevelMin').value = 1;
+    document.getElementById('shareLevelMax').value = 5;
+    document.getElementById('sharePartyMin').value = 3;
+    document.getElementById('sharePartyMax').value = 5;
+    document.getElementById('shareEnvironment').value = '';
+    document.getElementById('shareDifficulty').value = '';
+    document.getElementById('shareDuration').value = '';
+    document.getElementById('shareChapterModal').classList.remove('hidden');
+    const consent = document.getElementById('shareConsent');
+    const btn = document.getElementById('shareSubmitBtn');
+    consent.checked = false;
+    btn.disabled = true;
+    btn.classList.add('opacity-40', 'cursor-not-allowed');
+    consent.onchange = () => {
+        btn.disabled = !consent.checked;
+        btn.classList.toggle('opacity-40', !consent.checked);
+        btn.classList.toggle('cursor-not-allowed', !consent.checked);
+    };
+}
+
+function closeShareModal() {
+    document.getElementById('shareChapterModal').classList.add('hidden');
+    _shareChapterId = null;
+}
+
+async function submitShare() {
+    const ch = _chronicleEntries.find(c => c.id === _shareChapterId);
+    if (!ch || !getUser()) return;
+    const title = document.getElementById('shareTitle').value.trim();
+    if (!title) { showAlert('Please enter a title.'); return; }
+    const profile = getProfile();
+    const row = {
+        author_id: getUser().id,
+        author_nickname: profile?.nickname || getUser().user_metadata?.full_name || getUser().email?.split('@')[0] || 'Unknown',
+        title,
+        content: { text: ch.text || '', npcs: ch.npcs || [], music: ch.music || [] },
+        description: document.getElementById('shareDescription').value.trim() || null,
+        level_min: parseInt(document.getElementById('shareLevelMin').value) || 1,
+        level_max: parseInt(document.getElementById('shareLevelMax').value) || 5,
+        party_size_min: parseInt(document.getElementById('sharePartyMin').value) || 3,
+        party_size_max: parseInt(document.getElementById('sharePartyMax').value) || 5,
+        environment: document.getElementById('shareEnvironment').value || null,
+        difficulty: document.getElementById('shareDifficulty').value || null,
+        duration: document.getElementById('shareDuration').value || null
+    };
+    const { error } = await getSupabase().from(TABLE_COMMUNITY_CHAPTERS).insert(row);
+    if (error) { showAlert('Share failed: ' + error.message); return; }
+    closeShareModal();
+    showAlert('Chapter shared to the community!');
 }
 
 // ========== WINDOW BINDINGS ==========
@@ -136,6 +271,9 @@ window._updateEntryText = updateEntryText;
 window._addChapterNpc = addChapterNpc;
 window._removeChapterNpc = removeChapterNpc;
 window._updateChapterNpc = updateChapterNpc;
+window._shareEntry = openShareModal;
+window.closeShareChapter = closeShareModal;
+window.submitShareChapter = submitShare;
 window._addChapterMusic = addChapterMusic;
 window._removeChapterMusic = removeChapterMusic;
 window._updateChapterMusic = updateChapterMusic;

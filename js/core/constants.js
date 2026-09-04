@@ -11,6 +11,9 @@ export const TABLE_CHARACTERS = 'characters';
 export const TABLE_PROFILES = 'profiles';
 export const TABLE_DM_TABLES = 'dm_tables';
 export const TABLE_ANALYTICS = 'user_analytics_snapshots';
+export const TABLE_COMMUNITY_CHAPTERS = 'community_chapters';
+export const TABLE_COMMUNITY_RATINGS = 'community_ratings';
+export const TABLE_COMMUNITY_IMPORTS = 'community_imports';
 
 // ========== LOCALSTORAGE KEYS: SHARED ==========
 export const LS_CONSENT = 'dh_terms_accepted';

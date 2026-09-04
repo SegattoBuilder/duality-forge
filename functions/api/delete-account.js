@@ -64,12 +64,20 @@ export async function onRequestPost(context) {
             });
         }
 
-        // 3. Delete all user data
+        // 3. Anonymize community shared content (keep content, remove author link)
+        await fetch(`${rest}/community_chapters?author_id=eq.${uid}`, {
+            method: 'PATCH', headers,
+            body: JSON.stringify({ author_id: null, author_nickname: 'Unknown' })
+        });
+
+        // 4. Delete all user data
+        await fetch(`${rest}/community_ratings?user_id=eq.${uid}`, { method: 'DELETE', headers });
+        await fetch(`${rest}/community_imports?user_id=eq.${uid}`, { method: 'DELETE', headers });
         await fetch(`${rest}/characters?user_id=eq.${uid}`, { method: 'DELETE', headers });
         await fetch(`${rest}/dm_tables?user_id=eq.${uid}`, { method: 'DELETE', headers });
         await fetch(`${rest}/profiles?id=eq.${uid}`, { method: 'DELETE', headers });
 
-        // 4. Delete auth user
+        // 5. Delete auth user
         const deleteRes = await fetch(`${supabaseUrl}/auth/v1/admin/users/${uid}`, {
             method: 'DELETE', headers: { 'apikey': serviceRoleKey, 'Authorization': `Bearer ${serviceRoleKey}` }
         });
