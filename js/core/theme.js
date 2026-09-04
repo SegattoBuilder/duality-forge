@@ -58,6 +58,7 @@ export function setMode(mode) {
     localStorage.setItem(LS_MODE, mode);
     const icon = document.getElementById('modeToggleIcon');
     if (icon) icon.textContent = MODE_ICONS[mode];
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.getAttribute('onclick')?.includes(`'${mode}'`)));
 }
 
 export function toggleMode() {
@@ -68,7 +69,5 @@ export function toggleMode() {
 
 export function initMode() {
     const saved = localStorage.getItem(LS_MODE) || 'dark';
-    document.body.setAttribute('data-mode', saved);
-    const icon = document.getElementById('modeToggleIcon');
-    if (icon) icon.textContent = MODE_ICONS[saved] || '🌙';
+    setMode(saved);
 }

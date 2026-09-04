@@ -79,7 +79,6 @@
                             <button onclick="cloudSave(); closeAuthMenu()" class="menu-item">☁️ Save to Cloud</button>
                             <button onclick="cloudLoad(); closeAuthMenu()" class="menu-item">☁️ Load from Cloud</button>
                             <button onclick="signOut(); closeAuthMenu()" class="menu-item menu-item-danger">🚪 Sign Out</button>
-                            <button onclick="signOutAll(); closeAuthMenu()" class="menu-item menu-item-danger-dim">🚪 Sign Out All Devices</button>
                         </div>
                     </div>
                     <div id="themePicker" class="hidden"></div>
@@ -387,6 +386,9 @@
         <div class="mt-4 text-center flex justify-center gap-4">
             <button id="profileResetPwBtn" onclick="resetPasswordFromProfile(); closeProfileModal()" class="btn-link">🔑 Reset Password</button>
             <button id="profileChangeEmailBtn" onclick="toggleChangeEmail()" class="btn-link">✉️ Change Email</button>
+        </div>
+        <div class="mt-2 text-center">
+            <button onclick="signOutAll(); closeProfileModal()" class="btn-link text-red-400/60 hover:text-red-400">🚪 Sign Out All Devices</button>
         </div>
         <div id="changeEmailRow" class="hidden mt-3 flex gap-2">
             <input id="changeEmailInput" type="email" placeholder="new@email.com" class="flex-1 input-compact text-left px-3">

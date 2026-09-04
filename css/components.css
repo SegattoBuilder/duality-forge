@@ -376,6 +376,7 @@
     border: 1px solid #3d362a;
 }
 .mode-btn:hover { border-color: var(--accent-1); }
+.mode-btn.active { border-color: var(--accent-1) !important; background: rgba(212,160,23,0.1) !important; }
 
 /* Menu item — gear/auth dropdown items */
 .menu-item {

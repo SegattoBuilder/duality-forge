@@ -46,18 +46,12 @@
 - [x] Auto-save syncs table approval status (15-min cycle)
 - [x] Forced campaign/character picker (no dismiss, back to forge link)
 
----
-
-## 🔜 Planned
-
 ### v0.8 — Authentication & Account Management
 - [x] Password reset from Profile (email users only)
 - [x] Forgot password on Sign In modal
 - [x] Hide password reset for Google OAuth users
-- [ ] Delete account (with confirmation + cascade cleanup of characters, tables, profile)
 - [x] Change email address
 - [x] Session management (sign out from all devices)
-- [ ] Link Google account to existing email account (or vice versa)
 
 ### v0.8.1 — Theme & Component Refactor
 - [x] Extracted shared theme module (`js/core/theme.js`) — both DM and Character use same `dh_theme` / `dh_mode` keys
@@ -71,9 +65,13 @@
 - [x] All 4 mode overrides (dark/light/scifi/fantasy) for every component class in `themes.css`
 - [x] Fixed vitals/stat box dark backgrounds bleeding into light mode with per-type sub-class overrides
 
-### v0.9 — DM Theme Support
-- [ ] Bring accent color themes to DM Tools
-- [ ] Bring display modes (Dark, Light, Sci-Fi, Fantasy) to DM Tools
+---
+
+## 🔜 Planned
+
+### v0.9 — Account & Auth Improvements
+- [ ] Delete account (with confirmation + cascade cleanup of characters, tables, profile)
+- [ ] Link Google account to existing email account (or vice versa)
 
 ---
 
