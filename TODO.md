@@ -82,6 +82,7 @@ Dedicated page for browsing, rating, and importing community-created content. Ac
 #### ✅ Done
 - [x] **DB schema** — `community_chapters`, `community_ratings`, `community_imports` tables with RLS, indexes, auto-updated avg_rating trigger, CASCADE deletes
 - [x] **Share from Chronicle** — 🌐 share button per chapter, metadata modal (title, description, level range, party size, environment, difficulty, duration), consent gate linking to Terms of Use
+- [x] **Share validation** — all metadata fields required (title, description 3+ words, environment, difficulty, duration) + consent before Share enables
 - [x] **Browse page** — `/community/` with search, filter (environment, difficulty, duration), sort (newest, top rated, most imported), preview modal with full content/NPCs/music, star rating, import to Chronicle
 - [x] **My Shares tab** — manage own shared chapters with edit (Quill rich text + NPCs + music + metadata), delete, stats (ratings, import count)
 - [x] **Version system** — auto-increments on content change (no cap), metadata-only edits don't bump version
@@ -90,10 +91,15 @@ Dedicated page for browsing, rating, and importing community-created content. Ac
 - [x] **Sharing consent gate** — one-time acknowledgment when first sharing
 - [x] **Legal update** — Terms of Use Section 5 (Community Sharing) with anchor `#community-sharing`
 - [x] **Landing page** — Community card added
+- [x] **Import flow** — everyone is a customer (including author); import always creates a new chronicle entry with version in title; 4-second toast confirmation; sign-in required
+- [x] **Import update notifications** — Chronicle checks imported chapters against DB versions on load; dismissible version-aware "Update available" badge; reappears if author publishes newer version beyond dismissed
+- [x] **Encoding fix** — fixed 29 double-encoded UTF-8 characters (stars, arrows, emoji) in community app.js
+- [x] **Theme/mode support** — Community page initializes saved display mode (dark/light/scifi/fantasy) and accent color on load; all component classes theme-compatible
+- [x] **Nav standardization** — Community header matches DM layout (logo left, tabs center, auth right); uses `modern-tab-btn` class; added `modern.css`
+- [x] **Duration options** — Short (1hr), Medium (2-3hr), Long (4-6hr), Extra Long (8hr+) across share modal, community filters, and edit modal
+- [x] **Quill theme overrides** — per-mode canvas: light (white bg, dark text), dark (dark bg, light text), scifi (navy bg, steel text), fantasy (warm dark bg, parchment text); toolbar icons adapt; user-picked colors render as-is
 
 #### 🔜 Next
-- [x] **Import update notifications** — Chronicle checks imported chapters against DB versions on load; dismissible "Update available" badge; user re-imports from Community as a new entry with version in title
-- [ ] **Quill theme overrides** — light/scifi/fantasy mode CSS for the Quill editor (currently dark-only)
 
 #### 📋 Future
 - [ ] **Homebrew Cards** — card builder for custom domain cards, subclasses, classes, ancestries, communities; publish to community library; DMs can approve homebrew for their table

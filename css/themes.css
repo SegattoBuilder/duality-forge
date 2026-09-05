@@ -85,8 +85,8 @@
 /* Text overrides */
 [data-mode="light"] .text-\[\#f5efe6\] { color: #2a2418 !important; }
 [data-mode="light"] .text-zinc-400 { color: #5a5045 !important; }
-[data-mode="light"] .text-zinc-500 { color: #6b5d4d !important; }
-[data-mode="light"] .text-zinc-600 { color: #7a6d5d !important; }
+[data-mode="light"] .text-zinc-500 { color: #4a3f30 !important; }
+[data-mode="light"] .text-zinc-600 { color: #5a4d3d !important; }
 
 /* Background utility overrides */
 [data-mode="light"] .bg-\[\#1a1714\] { background-color: #f5f0e8 !important; }
@@ -159,6 +159,15 @@
 [data-mode="light"] .modal-panel .text-indigo-300 { color: #4338ca !important; }
 [data-mode="light"] .modal-panel .hover\:bg-\[\#2a2418\]:hover { background-color: #f0ebe3 !important; }
 [data-mode="light"] .modal-panel .hover\:border-indigo-500:hover { border-color: #6366f1 !important; }
+
+/* Quill editor — light mode canvas */
+[data-mode="light"] .chronicle-editor .ql-toolbar { background: #f9f5ef; }
+[data-mode="light"] .chronicle-editor .ql-container { background: #fff; color: #2a2418 !important; }
+[data-mode="light"] .chronicle-editor .ql-editor { color: #2a2418 !important; }
+[data-mode="light"] .chronicle-editor .ql-editor.ql-blank::before { color: #a89880 !important; }
+[data-mode="light"] .chronicle-editor .ql-toolbar .ql-stroke { stroke: #6b5d4d; }
+[data-mode="light"] .chronicle-editor .ql-toolbar .ql-fill { fill: #6b5d4d; }
+[data-mode="light"] .chronicle-editor .ql-toolbar .ql-picker-label { color: #6b5d4d; }
 
 /* Support links */
 [data-mode="light"] .support-link { border-color: #d4c9b8 !important; }
@@ -491,6 +500,14 @@
 [data-mode="scifi"] .info-btn:hover { border-color: var(--accent-1); color: var(--accent-1); }
 [data-mode="scifi"] .info-popup { background: #0d1220; border-color: #1e3a5f; color: #6a8aa0; }
 
+/* Quill editor — scifi canvas */
+[data-mode="scifi"] .chronicle-editor .ql-toolbar { background: #0d1220; }
+[data-mode="scifi"] .chronicle-editor .ql-container { background: #0a0e1a; color: #c8dce8 !important; border-color: #1e3a5f !important; }
+[data-mode="scifi"] .chronicle-editor .ql-editor { color: #c8dce8 !important; }
+[data-mode="scifi"] .chronicle-editor .ql-toolbar .ql-stroke { stroke: #5a7a9a; }
+[data-mode="scifi"] .chronicle-editor .ql-toolbar .ql-fill { fill: #5a7a9a; }
+[data-mode="scifi"] .chronicle-editor .ql-toolbar .ql-picker-label { color: #5a7a9a; }
+
 /* Support links */
 [data-mode="scifi"] .support-link { border-color: #1e3a5f !important; }
 [data-mode="scifi"] .support-link:hover { border-color: color-mix(in srgb, var(--accent-1) 60%, transparent) !important; }
@@ -708,6 +725,14 @@
 [data-mode="fantasy"] .info-btn { border-color: #4a3518; color: #7a6040; }
 [data-mode="fantasy"] .info-btn:hover { border-color: var(--accent-1); color: var(--accent-1); }
 [data-mode="fantasy"] .info-popup { background: #1e1608; border-color: #4a3518; color: #8a7050; }
+
+/* Quill editor — fantasy canvas */
+[data-mode="fantasy"] .chronicle-editor .ql-toolbar { background: #1e1608; }
+[data-mode="fantasy"] .chronicle-editor .ql-container { background: #1a1208; color: #e8d8c0 !important; border-color: #4a3518 !important; }
+[data-mode="fantasy"] .chronicle-editor .ql-editor { color: #e8d8c0 !important; }
+[data-mode="fantasy"] .chronicle-editor .ql-toolbar .ql-stroke { stroke: #8a7050; }
+[data-mode="fantasy"] .chronicle-editor .ql-toolbar .ql-fill { fill: #8a7050; }
+[data-mode="fantasy"] .chronicle-editor .ql-toolbar .ql-picker-label { color: #8a7050; }
 
 /* Support links */
 [data-mode="fantasy"] .support-link { border-color: #4a3518 !important; }

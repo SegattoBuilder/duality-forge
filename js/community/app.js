@@ -37,13 +37,9 @@ async function initAuth() {
 function renderAuthBtn() {
     const btn = document.getElementById('authBtn');
     if (currentUser) {
-        const name = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'User';
-        const avatar = currentUser.user_metadata?.picture || '';
-        btn.innerHTML = avatar
-            ? `<img src="${esc(avatar)}" alt="" class="w-10 h-10 rounded-full border-2 object-cover" style="border-color:var(--accent-1)">`
-            : `<span class="w-10 h-10 rounded-full border-2 bg-[#2a2418] flex items-center justify-center text-sm font-bold" style="border-color:var(--accent-1);color:var(--accent-1)">${esc(name.charAt(0).toUpperCase())}</span>`;
+        btn.innerHTML = '';
         btn.onclick = null;
-        btn.className = 'h-10 w-10 flex items-center justify-center rounded-full hover:opacity-80 transition-opacity cursor-default';
+        btn.className = 'hidden';
     } else {
         btn.innerHTML = '<span class="text-[10px] text-zinc-400">Sign In</span>';
         btn.onclick = openAuthModal;
@@ -140,7 +136,7 @@ function renderResults() {
     status.classList.add('hidden');
     grid.innerHTML = filtered.map(ch => {
         const stars = renderStars(ch.avg_rating || 0);
-        return `<div class="compendium-card cat-domain-cards cursor-pointer" onclick="openPreview('${ch.id}')">
+        return `<div class="compendium-card cursor-pointer" style="border-top:2px solid var(--accent-1)" onclick="openPreview('${ch.id}')">
             <div class="flex items-start justify-between gap-2 mb-2">
                 <h3 class="font-[Cinzel] text-sm font-bold text-[#f5efe6] leading-tight">${esc(ch.title)}</h3>
             </div>
@@ -176,7 +172,7 @@ function renderMyShares() {
     grid.innerHTML = myShares.map(ch => {
         const stars = renderStars(ch.avg_rating || 0);
         const updated = ch.updated_at && ch.updated_at !== ch.created_at ? `Updated ${new Date(ch.updated_at).toLocaleDateString()}` : '';
-        return `<div class="compendium-card cat-domain-cards">
+        return `<div class="compendium-card" style="border-top:2px solid var(--accent-1)">
             <div class="flex items-start justify-between gap-2 mb-2">
                 <h3 class="font-[Cinzel] text-sm font-bold text-[#f5efe6] leading-tight">${esc(ch.title)}</h3>
             </div>
@@ -303,9 +299,13 @@ function openEdit(id) {
     renderEditMusic();
     // Init Quill after modal is visible
     setTimeout(() => {
-        const wrap = document.getElementById('editEditorWrap');
-        wrap.innerHTML = '';
-        editQuill = new Quill(wrap, { theme: 'snow', placeholder: 'Chapter content...', modules: { toolbar: QUILL_TOOLBAR } });
+        const parent = document.getElementById('editEditorWrap').parentNode;
+        while (parent.lastChild && parent.lastChild.tagName !== 'LABEL') parent.removeChild(parent.lastChild);
+        const fresh = document.createElement('div');
+        fresh.id = 'editEditorWrap';
+        fresh.className = 'chronicle-editor';
+        parent.appendChild(fresh);
+        editQuill = new Quill(fresh, { theme: 'snow', placeholder: 'Chapter content...', modules: { toolbar: QUILL_TOOLBAR } });
         if (content.text) editQuill.root.innerHTML = content.text;
     }, 50);
 }
@@ -535,6 +535,13 @@ window.updateEditNpc = updateEditNpc;
 window.addEditMusic = addEditMusic;
 window.removeEditMusic = removeEditMusic;
 window.updateEditMusic = updateEditMusic;
+
+document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (!document.getElementById('editModal').classList.contains('hidden')) closeEdit();
+    else if (!document.getElementById('previewModal').classList.contains('hidden')) closePreview();
+    else if (!document.getElementById('authModal').classList.contains('hidden')) closeAuthModal();
+});
 
 initMode();
 applyTheme(localStorage.getItem(LS_THEME) || 'gold');

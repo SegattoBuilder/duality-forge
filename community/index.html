@@ -134,7 +134,7 @@
             </button>
             <div class="flex items-center gap-3"><div class="flex-1 border-t border-[#3d362a]"></div><span class="text-[10px] text-zinc-600 uppercase">or</span><div class="flex-1 border-t border-[#3d362a]"></div></div>
             <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Email</label><input id="authEmail" type="email" placeholder="your@email.com" class="w-full input-field"></div>
-            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Password</label><input id="authPassword" type="password" placeholder="••••••••" class="w-full input-field"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Password</label><input id="authPassword" type="password" placeholder="••••••••" class="w-full input-field" onkeydown="if(event.key==='Enter')doSignIn()"></div>
             <div class="flex gap-3"><button onclick="doSignIn()" class="flex-1 btn-primary">Sign In</button><button onclick="doSignUp()" class="flex-1 btn-secondary">Sign Up</button></div>
             <div class="text-[10px] text-zinc-600 text-center">Sign in to import chapters and rate content.</div>
         </div>

@@ -64,6 +64,12 @@ window.addEventListener('DOMContentLoaded', async () => {
     renderThemePicker();
     applyTheme(localStorage.getItem(THEME_KEY) || 'gold');
 
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay:not(.hidden):not(#characterPickerModal)').forEach(m => m.classList.add('hidden'));
+        }
+    });
+
     ['hp', 'stress', 'hope', 'armor'].forEach(t => {
         const input = document.getElementById(`${t}_max`);
         if (input) {

@@ -745,18 +745,20 @@
     border: 1px solid #4a3f30 !important;
     border-radius: 8px 8px 0 0;
 }
+/* Quill editor — dark canvas (immune to theme text overrides) */
 .chronicle-editor .ql-container {
     border: 1px solid #4a3f30 !important;
     border-top: none !important;
     border-radius: 0 0 8px 8px;
     min-height: 200px;
     font-size: 14px;
-    color: #e8e0d4;
     font-family: 'Inter', sans-serif;
+    background: #1a1714;
+    color: #e8e0d4 !important;
 }
 .chronicle-editor .ql-editor {
     min-height: 200px;
-    color: #e8e0d4;
+    color: #e8e0d4 !important;
 }
 .chronicle-editor .ql-editor.ql-blank::before {
     color: #52524e;

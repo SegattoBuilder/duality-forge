@@ -115,3 +115,7 @@ select {
     letter-spacing: 0.5px;
     font-family: 'Cinzel', serif;
 }
+
+/* Darken zinc text utilities for better readability */
+.text-zinc-500 { color: #52524e !important; }
+.text-zinc-600 { color: #62605c !important; }
