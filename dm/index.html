@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="../css/components.css">
     <link rel="stylesheet" href="../css/themes.css">
     <link rel="stylesheet" href="../css/modern.css">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
     (function(){
@@ -277,7 +278,7 @@
             </button>
             <div class="flex items-center gap-3"><div class="flex-1 border-t border-[#3d362a]"></div><span class="text-[10px] text-zinc-600 uppercase">or</span><div class="flex-1 border-t border-[#3d362a]"></div></div>
             <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Email</label><input id="authEmail" type="email" placeholder="your@email.com" class="w-full input-field"></div>
-            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Password</label><input id="authPassword" type="password" placeholder="••••••••" class="w-full input-field"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Password</label><input id="authPassword" type="password" placeholder="••••••••" class="w-full input-field" onkeydown="if(event.key==='Enter')signInWithEmail()"></div>
             <div class="flex gap-3"><button onclick="signInWithEmail()" class="flex-1 btn-primary">Sign In</button><button onclick="signUpWithEmail()" class="flex-1 btn-secondary">Sign Up</button></div>
             <div class="text-[10px] text-zinc-600 text-center"><button onclick="resetPassword()" class="btn-link-accent">Forgot password?</button></div>
             <div class="text-[10px] text-zinc-600 text-center">Sign in to save your sessions to the cloud.</div>
@@ -345,13 +346,44 @@
     </div>
 </div>
 
+<!-- Share Chapter Modal -->
+<div id="shareChapterModal" class="fixed inset-0 modal-overlay hidden z-[60] p-4 overflow-y-auto flex items-center justify-center" onclick="if(event.target===this)closeShareChapter()">
+    <div class="modal-panel p-6 w-full max-w-md">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5">
+            <h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Share to Community</h2>
+            <button onclick="closeShareChapter()" class="btn-close">✕</button>
+        </div>
+        <div class="space-y-4">
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Title</label><input id="shareTitle" type="text" placeholder="A descriptive title for the community..." maxlength="80" class="w-full input-field"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Description</label><textarea id="shareDescription" rows="2" placeholder="Brief summary of this chapter..." maxlength="300" class="w-full input-field resize-y"></textarea></div>
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Level (min–max)</label><div class="flex items-center gap-1.5"><input id="shareLevelMin" type="number" value="1" min="1" max="20" class="w-full input-compact text-center"><span class="text-zinc-600 text-xs">–</span><input id="shareLevelMax" type="number" value="5" min="1" max="20" class="w-full input-compact text-center"></div></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Party Size (min–max)</label><div class="flex items-center gap-1.5"><input id="sharePartyMin" type="number" value="3" min="1" max="10" class="w-full input-compact text-center"><span class="text-zinc-600 text-xs">–</span><input id="sharePartyMax" type="number" value="5" min="1" max="10" class="w-full input-compact text-center"></div></div>
+            </div>
+            <div class="grid grid-cols-3 gap-3">
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Environment</label><select id="shareEnvironment" class="w-full select-field"><option value="">Select...</option><option>City</option><option>Dungeon</option><option>Forest</option><option>Mountain</option><option>Coastal</option><option>Underground</option><option>Ruins</option><option>Tavern</option><option>Desert</option><option>Swamp</option><option>Other</option></select></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Difficulty</label><select id="shareDifficulty" class="w-full select-field"><option value="">Select...</option><option>Easy</option><option>Moderate</option><option>Hard</option><option>Deadly</option></select></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Duration</label><select id="shareDuration" class="w-full select-field"><option value="">Select...</option><option value="Short">Short (1hr)</option><option value="Medium">Medium (2-3hr)</option><option value="Long">Long (4-6hr)</option><option value="Extra Long">Extra Long (8hr+)</option></select></div>
+            </div>
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="shareConsent" class="accent-[#d4a017]">
+                <span class="text-[10px] text-zinc-400">I agree to the <a href="../terms.html#community-sharing" target="_blank" class="text-[#d4a017] hover:underline font-bold" onclick="event.stopPropagation()">Community Sharing Terms</a></span>
+            </label>
+        </div>
+        <div class="flex gap-3 mt-6">
+            <button id="shareSubmitBtn" onclick="submitShareChapter()" disabled class="flex-1 btn-primary opacity-40 cursor-not-allowed">Share</button>
+            <button onclick="closeShareChapter()" class="flex-1 btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <!-- Delete Account Confirmation Modal -->
 <div id="deleteAccountModal" class="fixed inset-0 modal-overlay hidden z-[9999] p-4 flex items-center justify-center">
     <div class="modal-panel p-6 w-full max-w-sm">
         <div class="border-b border-[#363026] pb-3 mb-5"><h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide text-red-500">Delete Account</h2></div>
         <div class="space-y-4">
             <p class="text-xs text-zinc-400">This will <span class="text-red-400 font-bold">permanently delete</span> your account, all characters, campaigns, and profile data. This action cannot be undone.</p>
-            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Type <span class="text-red-500 cursor-pointer hover:underline" onclick="document.getElementById('deleteConfirmInput').value='DELETE';document.getElementById('deleteConfirmInput').dispatchEvent(new Event('input'))">DELETE</span> to confirm</label><input id="deleteConfirmInput" type="text" placeholder="DELETE" class="w-full input-field text-center font-mono uppercase" autocomplete="off"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Type <span class="text-red-500 cursor-pointer hover:underline" onclick="document.getElementById('deleteConfirmInput').value='DELETE';document.getElementById('deleteConfirmInput').dispatchEvent(new Event('input'))">DELETE</span> to confirm</label><input id="deleteConfirmInput" type="text" placeholder="DELETE" class="w-full input-field text-center font-mono uppercase" autocomplete="off" onkeydown="if(event.key==='Enter'&&!document.getElementById('deleteConfirmBtn').disabled)document.getElementById('deleteConfirmBtn').click()"></div>
             <div class="flex gap-3">
                 <button id="deleteConfirmBtn" disabled class="flex-1 bg-red-600 text-xs py-3 rounded-xl font-bold uppercase text-white opacity-40 cursor-not-allowed">Delete Forever</button>
                 <button id="deleteCancelBtn" class="flex-1 btn-secondary">Cancel</button>
@@ -361,6 +393,7 @@
 </div>
 
 <script type="module" src="../js/dm/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
 <script type="module" src="../js/core/analytics.js"></script>
 </body>
 </html>

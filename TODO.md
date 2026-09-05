@@ -27,6 +27,7 @@
 - [x] All 4 mode overrides (dark/light/scifi/fantasy) for every component class in `themes.css`
 - [x] Fixed vitals/stat box dark backgrounds bleeding into light mode
 - [x] Browser autofill styling fix across all themes
+- [x] Darkened `text-zinc-500` / `text-zinc-600` globally in `base.css` for readability; light mode overrides in `themes.css`
 
 ### Compendium & Cards
 - [x] Weapons, Armor, Items, Consumables can be added to character sheet from compendium
@@ -70,29 +71,50 @@
 - [x] Google verification, updated analytics
 - [x] Cloudflare Web Analytics integration
 
+### Community (`/community/`)
+
+**Platform & Page**
+- [x] Landing page card, nav header (logo left, `modern-tab-btn` tabs center, auth right)
+- [x] Theme/mode support — initializes saved display mode and accent color on load
+- [x] Auth — sign-in required; avatar hidden when signed in; sign-in button when logged out
+- [x] Escape/Enter key handling across all 3 pages
+- [x] Encoding fix — 29 double-encoded UTF-8 characters in community app.js
+- [x] Project rules — `.amazonq/rules/project-rules.md`
+
+**Database**
+- [x] `community_chapters`, `community_ratings`, `community_imports` tables with RLS, indexes, CASCADE deletes
+- [x] Auto-updated `avg_rating` trigger
+- [x] Account deletion — shared content anonymized; imported copies unaffected
+- [x] Legal — Terms of Use Section 5 (Community Sharing)
+
+**Chronicle Sharing**
+- [x] Share from Chronicle — metadata modal, consent gate, all-fields-required validation
+- [x] Browse tab — search, filter, sort, preview modal, star rating, import to Chronicle
+- [x] My Shares tab — edit (Quill + NPCs + music + metadata), delete, stats
+- [x] Version system — auto-increments on content change; metadata-only edits don't bump
+- [x] Duplicate prevention — same author can't share two chapters with the same title
+- [x] Import flow — always creates new chronicle entry with version in title; toast confirmation
+- [x] Import update notifications — dismissible version-aware badge; reappears on newer version
+- [x] Duration options — Short, Medium, Long, Extra Long
+- [x] Chapter card styling — `compendium-card` with accent border
+- [x] Quill theme overrides + toolbar stacking fix
+
 ---
 
 ## 🔜 Planned
 
-### v0.9 — Account & Auth Improvements
-- [x] Delete account (with confirmation + cascade cleanup of characters, tables, profile + analytics snapshot)
-- [ ] Link Google account to existing email account (or vice versa)
-=======
-- [ ] Companion/pet tracker on character sheet (HP, abilities, notes)
+**Adversary Sharing**
+- [ ] Share custom adversaries from Vault/Adversaries tab
+- [ ] Browse and import community adversaries into Vault
 
-### Community Sharing (`/community/`)
-Dedicated page for browsing, rating, and importing community-created content. Accessible from the landing page and contextually from existing tools.
+**Homebrew Cards**
+- [ ] Card builder for custom domain cards, subclasses, classes, ancestries, communities
+- [ ] Publish to community library; DMs can approve homebrew for their table
 
-- [ ] **Chronicles** — DMs share individual chapters with metadata (recommended level, party size, environment type, difficulty, duration); other DMs browse, rate, and import into their own Chronicle as editable copies
-- [ ] **Homebrew Cards** — card builder for custom domain cards, subclasses, classes, ancestries, communities; publish to community library; DMs can approve homebrew for their table, making it available to all party members
-- [ ] **Custom Adversaries** — DMs publish custom adversaries for others to browse and import into their vault
-- [ ] Contextual access — "Share to Community" / "Browse Community" links from Chronicle, Compendium, and Adversary tabs
+**Future**
+- [ ] Contextual access — "Browse Community" links from Compendium and Adversary tabs
 - [ ] Compendium toggle — option to show community homebrew alongside SRD data
 - [ ] DM table integration — DM curates and approves community content for party use
-- [ ] Versioning — authors can update shared chapters (max 3 versions); importers see ℹ️ notification and choose to update or keep their version
-- [ ] Account deletion — shared content stays in community as "Unknown" author; imported copies unaffected
-- [ ] Sharing consent gate — one-time acknowledgment when first sharing (imported copies persist even if shared version is removed)
-- [ ] **Legal update** — update Terms of Use and Privacy Policy to cover community-shared content, licensing, and user-generated content rights
 
 ---
 
@@ -103,3 +125,4 @@ _Brainstorm space — no commitment, just possibilities._
 - **Account Linking** — link Google account to existing email account (or vice versa) to unify data under one identity
 - **Party Message Board** — a simple board for DMs and players to post updates within the app _(low priority — most groups already use Discord, etc.)_
 - **Table Scheduling** — DM sets a session schedule, players and DM receive email reminders _(high effort — requires email integration and additional infrastructure)_
+- **Companion/Pet Tracker** — HP, abilities, notes on character sheet
