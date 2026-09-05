@@ -192,8 +192,8 @@ export function renderChronicle() {
                 <span class="text-[10px] text-zinc-600 transition-transform ${ch.open ? 'rotate-90' : ''}">▶</span>
                 <input value="${escHtmlAttr(ch.title)}" onclick="event.stopPropagation()" oninput="window._updateEntryTitle('${ch.id}', this.value)" class="flex-1 bg-transparent section-header font-[Cinzel] text-xs uppercase tracking-widest text-zinc-500 outline-none border-b border-transparent focus:border-[#d4a017] placeholder-zinc-700" placeholder="Chapter title...">
                 ${hasUpdate ? `<button onclick="event.stopPropagation(); window._dismissUpdate('${ch._imported.community_id}')" class="text-[9px] bg-amber-900/40 text-amber-400 px-2 py-0.5 rounded-full font-bold uppercase hover:bg-amber-900/60 transition-colors" title="Dismiss — check Community for the update">Update available ✕</button>` : ''}
-                <button onclick="event.stopPropagation(); window._shareEntry('${ch.id}')" class="text-[10px] text-zinc-600 hover:text-[#d4a017] transition-colors" title="Share to Community">🌐</button>
-                <button onclick="event.stopPropagation(); window._removeEntry('${ch.id}')" class="btn-remove" title="Remove">✕</button>
+                <button onclick="event.stopPropagation(); window._shareEntry('${ch.id}')" class="text-emerald-500 hover:text-emerald-300 transition-colors text-sm" title="Share to Community">↪</button>
+                <button onclick="event.stopPropagation(); window._removeEntry('${ch.id}')" class="btn-remove text-sm" title="Remove">✕</button>
             </div>
             <div class="${ch.open ? '' : 'hidden'} space-y-4">
                 <div id="editor-${ch.id}" class="chronicle-editor"></div>
