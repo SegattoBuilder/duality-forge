@@ -236,11 +236,24 @@ export function clearChronicle(event) {
 // ========== SHARE TO COMMUNITY ==========
 let _shareChapterId = null;
 
+function validateShareForm() {
+    const title = document.getElementById('shareTitle').value.trim();
+    const desc = document.getElementById('shareDescription').value.trim();
+    const env = document.getElementById('shareEnvironment').value;
+    const diff = document.getElementById('shareDifficulty').value;
+    const dur = document.getElementById('shareDuration').value;
+    const consent = document.getElementById('shareConsent').checked;
+    const valid = title && desc && desc.split(/\s+/).length >= 3 && env && diff && dur && consent;
+    const btn = document.getElementById('shareSubmitBtn');
+    btn.disabled = !valid;
+    btn.classList.toggle('opacity-40', !valid);
+    btn.classList.toggle('cursor-not-allowed', !valid);
+}
+
 function openShareModal(id) {
     if (!getUser()) { showAlert('Sign in to share chapters.'); return; }
     const ch = _chronicleEntries.find(c => c.id === id);
     if (!ch) return;
-    // Save latest Quill content
     if (_quillInstances[id]) ch.text = _quillInstances[id].root.innerHTML;
     _shareChapterId = id;
     document.getElementById('shareTitle').value = ch.title || '';
@@ -253,16 +266,13 @@ function openShareModal(id) {
     document.getElementById('shareDifficulty').value = '';
     document.getElementById('shareDuration').value = '';
     document.getElementById('shareChapterModal').classList.remove('hidden');
-    const consent = document.getElementById('shareConsent');
-    const btn = document.getElementById('shareSubmitBtn');
-    consent.checked = false;
-    btn.disabled = true;
-    btn.classList.add('opacity-40', 'cursor-not-allowed');
-    consent.onchange = () => {
-        btn.disabled = !consent.checked;
-        btn.classList.toggle('opacity-40', !consent.checked);
-        btn.classList.toggle('cursor-not-allowed', !consent.checked);
-    };
+    document.getElementById('shareConsent').checked = false;
+    validateShareForm();
+    ['shareTitle', 'shareDescription', 'shareEnvironment', 'shareDifficulty', 'shareDuration', 'shareConsent'].forEach(id => {
+        const el = document.getElementById(id);
+        el.oninput = validateShareForm;
+        el.onchange = validateShareForm;
+    });
 }
 
 function closeShareModal() {
@@ -274,7 +284,11 @@ async function submitShare() {
     const ch = _chronicleEntries.find(c => c.id === _shareChapterId);
     if (!ch || !getUser()) return;
     const title = document.getElementById('shareTitle').value.trim();
-    if (!title) { showAlert('Please enter a title.'); return; }
+    const description = document.getElementById('shareDescription').value.trim();
+    const environment = document.getElementById('shareEnvironment').value;
+    const difficulty = document.getElementById('shareDifficulty').value;
+    const duration = document.getElementById('shareDuration').value;
+    if (!title || !description || description.split(/\s+/).length < 3 || !environment || !difficulty || !duration) { showAlert('Please fill in all fields. Description needs at least 3 words.'); return; }
     // Duplicate check: same author + same title
     const { data: existing } = await getSupabase().from(TABLE_COMMUNITY_CHAPTERS)
         .select('id').eq('author_id', getUser().id).eq('title', title).limit(1);
@@ -288,14 +302,14 @@ async function submitShare() {
         author_nickname: profile?.nickname || getUser().user_metadata?.full_name || getUser().email?.split('@')[0] || 'Unknown',
         title,
         content: { text: ch.text || '', npcs: ch.npcs || [], music: ch.music || [] },
-        description: document.getElementById('shareDescription').value.trim() || null,
+        description,
         level_min: parseInt(document.getElementById('shareLevelMin').value) || 1,
         level_max: parseInt(document.getElementById('shareLevelMax').value) || 5,
         party_size_min: parseInt(document.getElementById('sharePartyMin').value) || 3,
         party_size_max: parseInt(document.getElementById('sharePartyMax').value) || 5,
-        environment: document.getElementById('shareEnvironment').value || null,
-        difficulty: document.getElementById('shareDifficulty').value || null,
-        duration: document.getElementById('shareDuration').value || null
+        environment,
+        difficulty,
+        duration
     };
     const { data: inserted, error } = await getSupabase().from(TABLE_COMMUNITY_CHAPTERS).insert(row).select('id').single();
     if (error) { showAlert('Share failed: ' + error.message); return; }
