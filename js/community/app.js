@@ -1,5 +1,6 @@
 ﻿import SUPABASE_CONFIG from '../core/config.js';
-import { TABLE_COMMUNITY_CHAPTERS, TABLE_COMMUNITY_RATINGS, TABLE_COMMUNITY_IMPORTS } from '../core/constants.js';
+import { TABLE_COMMUNITY_CHAPTERS, TABLE_COMMUNITY_RATINGS, TABLE_COMMUNITY_IMPORTS, LS_THEME } from '../core/constants.js';
+import { initMode, applyTheme } from '../core/theme.js';
 
 const sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
 let chapters = [];
@@ -149,14 +150,14 @@ function renderResults() {
                 ${ch.environment ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.environment}</span>` : ''}
                 ${ch.difficulty ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.difficulty}</span>` : ''}
                 ${ch.duration ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.duration}</span>` : ''}
-                <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">Lv ${ch.level_min}â€“${ch.level_max}</span>
-                <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.party_size_min}â€“${ch.party_size_max} players</span>
+                <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">Lv ${ch.level_min}–${ch.level_max}</span>
+                <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.party_size_min}–${ch.party_size_max} players</span>
             </div>
             <div class="flex items-center justify-between text-[10px] text-zinc-600">
                 <span>by ${esc(ch.author_nickname || 'Unknown')}</span>
                 <div class="flex items-center gap-2">
                     <span>${stars} (${ch.rating_count || 0})</span>
-                    <span>ðŸ“¥ ${ch.import_count || 0}</span>
+                    <span>📥 ${ch.import_count || 0}</span>
                 </div>
             </div>
         </div>`;
@@ -167,7 +168,7 @@ function renderMyShares() {
     const status = document.getElementById('communityStatus');
     const grid = document.getElementById('communityResults');
     if (myShares.length === 0) {
-        status.textContent = 'You haven\'t shared any chapters yet. Share from DM Tools â†’ Chronicle.';
+        status.textContent = 'You haven\'t shared any chapters yet. Share from DM Tools → Chronicle.';
         status.classList.remove('hidden');
         grid.innerHTML = '';
         return;
@@ -185,16 +186,16 @@ function renderMyShares() {
                 ${ch.environment ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.environment}</span>` : ''}
                 ${ch.difficulty ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.difficulty}</span>` : ''}
                 ${ch.duration ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.duration}</span>` : ''}
-                <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">Lv ${ch.level_min}â€“${ch.level_max}</span>
-                <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.party_size_min}â€“${ch.party_size_max} players</span>
+                <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">Lv ${ch.level_min}–${ch.level_max}</span>
+                <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.party_size_min}–${ch.party_size_max} players</span>
             </div>
             <div class="flex items-center justify-between text-[10px] text-zinc-600 mb-3">
-                <span>${stars} (${ch.rating_count || 0}) Â· ðŸ“¥ ${ch.import_count || 0}</span>
+                <span>${stars} (${ch.rating_count || 0}) · 📥 ${ch.import_count || 0}</span>
                 ${updated ? `<span>${updated}</span>` : ''}
             </div>
             <div class="flex gap-2">
-                <button onclick="openEdit('${ch.id}')" class="flex-1 btn-outline text-[10px]">âœï¸ Edit</button>
-                <button onclick="deleteShare('${ch.id}')" class="btn-outline text-[10px] text-red-400 border-red-900/50 hover:border-red-500 hover:text-red-300">ðŸ—‘</button>
+                <button onclick="openEdit('${ch.id}')" class="flex-1 btn-outline text-[10px]">✏️ Edit</button>
+                <button onclick="deleteShare('${ch.id}')" class="btn-outline text-[10px] text-red-400 border-red-900/50 hover:border-red-500 hover:text-red-300">🗑</button>
             </div>
         </div>`;
     }).join('');
@@ -202,7 +203,7 @@ function renderMyShares() {
 
 function renderStars(avg) {
     let s = '';
-    for (let i = 1; i <= 5; i++) s += i <= Math.round(avg) ? 'â˜…' : 'â˜†';
+    for (let i = 1; i <= 5; i++) s += i <= Math.round(avg) ? '★' : '☆';
     return `<span class="text-[#d4a017]">${s}</span>`;
 }
 
@@ -210,7 +211,7 @@ function renderInteractiveStars(chapterId, current) {
     let s = '';
     for (let i = 1; i <= 5; i++) {
         const filled = i <= current;
-        s += `<span class="cursor-pointer text-lg ${filled ? 'text-[#d4a017]' : 'text-zinc-600'} hover:text-[#d4a017] transition-colors" onclick="event.stopPropagation(); rateChapter('${chapterId}', ${i})">${filled ? 'â˜…' : 'â˜†'}</span>`;
+        s += `<span class="cursor-pointer text-lg ${filled ? 'text-[#d4a017]' : 'text-zinc-600'} hover:text-[#d4a017] transition-colors" onclick="event.stopPropagation(); rateChapter('${chapterId}', ${i})">${filled ? '★' : '☆'}</span>`;
     }
     return s;
 }
@@ -228,14 +229,14 @@ function openPreview(id) {
     let html = `<div class="space-y-5">
         <div>
             <h2 class="font-[Cinzel] text-lg font-black text-[#f5efe6] mb-1">${esc(ch.title)}</h2>
-            <div class="text-[10px] text-zinc-500">by ${esc(ch.author_nickname || 'Unknown')} Â· v${ch.version} Â· ${new Date(ch.created_at).toLocaleDateString()}</div>
+            <div class="text-[10px] text-zinc-500">by ${esc(ch.author_nickname || 'Unknown')} · v${ch.version} · ${new Date(ch.created_at).toLocaleDateString()}</div>
         </div>
         <div class="flex flex-wrap gap-1.5">
             ${ch.environment ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.environment}</span>` : ''}
             ${ch.difficulty ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.difficulty}</span>` : ''}
             ${ch.duration ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.duration}</span>` : ''}
-            <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">Lv ${ch.level_min}â€“${ch.level_max}</span>
-            <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.party_size_min}â€“${ch.party_size_max} players</span>
+            <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">Lv ${ch.level_min}–${ch.level_max}</span>
+            <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.party_size_min}–${ch.party_size_max} players</span>
         </div>
         ${ch.description ? `<p class="text-xs text-zinc-400 italic">${esc(ch.description)}</p>` : ''}
         <div class="border-t border-[#3d362a] pt-4">
@@ -243,22 +244,22 @@ function openPreview(id) {
         </div>`;
 
     if (content.npcs?.length) {
-        html += `<div class="border-t border-[#3d362a] pt-4"><div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-2">ðŸ§‘ NPCs & Factions</div><div class="space-y-1">`;
+        html += `<div class="border-t border-[#3d362a] pt-4"><div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-2">🧑 NPCs & Factions</div><div class="space-y-1">`;
         content.npcs.forEach(npc => {
             html += `<div class="text-xs text-zinc-400"><span class="text-[#f5efe6] font-bold">${esc(npc.name || 'Unnamed')}</span>`;
-            if (npc.faction) html += ` Â· ${esc(npc.faction)}`;
-            if (npc.disposition) html += ` Â· <span class="${npc.disposition === 'Friendly' ? 'text-green-400' : npc.disposition === 'Hostile' ? 'text-red-400' : 'text-amber-400'}">${npc.disposition}</span>`;
-            if (npc.notes) html += ` â€” ${esc(npc.notes)}`;
+            if (npc.faction) html += ` · ${esc(npc.faction)}`;
+            if (npc.disposition) html += ` · <span class="${npc.disposition === 'Friendly' ? 'text-green-400' : npc.disposition === 'Hostile' ? 'text-red-400' : 'text-amber-400'}">${npc.disposition}</span>`;
+            if (npc.notes) html += ` — ${esc(npc.notes)}`;
             html += `</div>`;
         });
         html += `</div></div>`;
     }
 
     if (content.music?.length) {
-        html += `<div class="border-t border-[#3d362a] pt-4"><div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-2">ðŸŽµ Music Cues</div><div class="space-y-1">`;
+        html += `<div class="border-t border-[#3d362a] pt-4"><div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-2">🎵 Music Cues</div><div class="space-y-1">`;
         content.music.forEach(m => {
             const isLink = m.cue && m.cue.match(/^https?:\/\//);
-            html += `<div class="text-xs text-zinc-400"><span class="text-[#f5efe6]">${esc(m.scene || 'Scene')}</span> â€” ${isLink ? `<a href="${esc(m.cue)}" target="_blank" rel="noopener" class="text-[#d4a017] hover:underline">ðŸ”— Link</a>` : esc(m.cue || '')}</div>`;
+            html += `<div class="text-xs text-zinc-400"><span class="text-[#f5efe6]">${esc(m.scene || 'Scene')}</span> — ${isLink ? `<a href="${esc(m.cue)}" target="_blank" rel="noopener" class="text-[#d4a017] hover:underline">🔗 Link</a>` : esc(m.cue || '')}</div>`;
         });
         html += `</div></div>`;
     }
@@ -266,7 +267,7 @@ function openPreview(id) {
     // Rating
     html += `<div class="border-t border-[#3d362a] pt-4 flex items-center justify-between">
         <div><span class="text-[10px] text-zinc-500 uppercase font-bold">Your Rating:</span> <span id="previewStars">${renderInteractiveStars(ch.id, myRating)}</span></div>
-        <div class="text-[10px] text-zinc-500">${renderStars(ch.avg_rating || 0)} (${ch.rating_count || 0} ratings) Â· ðŸ“¥ ${ch.import_count || 0}</div>
+        <div class="text-[10px] text-zinc-500">${renderStars(ch.avg_rating || 0)} (${ch.rating_count || 0} ratings) · 📥 ${ch.import_count || 0}</div>
     </div>`;
 
     // Import button
@@ -329,7 +330,7 @@ function renderEditNpcs() {
             <option value="Hostile"${npc.disposition==='Hostile'?' selected':''}>Hostile</option>
         </select>
         <input value="${esc(npc.notes)}" onchange="updateEditNpc(${i},'notes',this.value)" placeholder="Notes" class="input-compact text-left px-2 flex-1">
-        <button onclick="removeEditNpc(${i})" class="btn-remove text-xs">âœ•</button>
+        <button onclick="removeEditNpc(${i})" class="btn-remove text-xs">✕</button>
     </div>`).join('');
 }
 
@@ -339,7 +340,7 @@ function renderEditMusic() {
     el.innerHTML = editMusic.map((m, i) => `<div class="flex gap-1.5 items-center">
         <input value="${esc(m.scene)}" onchange="updateEditMusic(${i},'scene',this.value)" placeholder="Scene" class="input-compact text-left px-2 flex-1">
         <input value="${esc(m.cue)}" onchange="updateEditMusic(${i},'cue',this.value)" placeholder="Link or text" class="input-compact text-left px-2 flex-1">
-        <button onclick="removeEditMusic(${i})" class="btn-remove text-xs">âœ•</button>
+        <button onclick="removeEditMusic(${i})" class="btn-remove text-xs">✕</button>
     </div>`).join('');
 }
 
@@ -491,7 +492,8 @@ function esc(str) { if (!str) return ''; return String(str).replace(/&/g, '&amp;
 
 function showToast(msg) {
     const el = document.createElement('div');
-    el.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#2a2418] border border-[#d4a017] text-[#f5efe6] text-xs px-5 py-3 rounded-lg shadow-lg z-[999] font-[Cinzel] tracking-wide transition-opacity duration-300';
+    el.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#1e1b16] border border-[#3d362a] text-[#f5efe6] text-xs px-5 py-3 rounded-lg shadow-lg z-[999] font-[Cinzel] tracking-wide transition-opacity duration-300';
+    el.style.borderColor = 'var(--accent-1)';
     el.textContent = msg;
     document.body.appendChild(el);
     setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 4000);
@@ -535,5 +537,7 @@ window.addEditMusic = addEditMusic;
 window.removeEditMusic = removeEditMusic;
 window.updateEditMusic = updateEditMusic;
 
+initMode();
+applyTheme(localStorage.getItem(LS_THEME) || 'gold');
 initAuth();
 loadChapters();
