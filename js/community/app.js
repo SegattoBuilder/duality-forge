@@ -56,7 +56,6 @@ function switchTab(tab) {
     activeTab = tab;
     document.getElementById('tabBrowse').classList.toggle('active', tab === 'browse');
     document.getElementById('tabMyShares').classList.toggle('active', tab === 'myshares');
-    // Show/hide browse filters
     const filters = document.querySelector('.space-y-3.mb-6');
     filters.style.display = tab === 'browse' ? '' : 'none';
     if (tab === 'myshares') {
