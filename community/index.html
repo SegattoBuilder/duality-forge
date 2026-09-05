@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="../css/components.css">
     <link rel="stylesheet" href="../css/themes.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 </head>
 <body class="max-w-[1200px] mx-auto p-4 pb-24">
 
@@ -31,8 +33,14 @@
 <div class="h-24"></div>
 
 <!-- Guidance -->
-<div class="text-center mb-6 px-4">
+<div class="text-center mb-4 px-4">
     <p class="text-[11px] text-zinc-500 italic leading-relaxed">Shared chapters are story frameworks — narrative notes, NPCs, and music cues to inspire your sessions. Adapt creatures, difficulty, and encounters to fit your table.</p>
+</div>
+
+<!-- Tabs -->
+<div class="flex gap-1 mb-6 border-b border-[#3d362a]">
+    <button id="tabBrowse" class="tab-btn active px-4 py-2 text-xs font-bold uppercase font-[Cinzel] tracking-wide" onclick="switchTab('browse')">🌐 Browse</button>
+    <button id="tabMyShares" class="tab-btn px-4 py-2 text-xs font-bold uppercase font-[Cinzel] tracking-wide" onclick="switchTab('myshares')">📤 My Shares</button>
 </div>
 
 <!-- Filters -->
@@ -58,6 +66,55 @@
     <div class="modal-panel p-6 w-full max-w-2xl relative max-h-[85vh] overflow-y-auto">
         <button onclick="closePreview()" class="btn-close absolute top-4 right-4 z-10">✕</button>
         <div id="previewContent"></div>
+    </div>
+</div>
+
+<!-- Edit Chapter Modal -->
+<div id="editModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-start justify-center pt-8" onclick="if(event.target===this)closeEdit()">
+    <div class="modal-panel p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5">
+            <h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Edit Chapter</h2>
+            <button onclick="closeEdit()" class="btn-close">✕</button>
+        </div>
+        <div class="space-y-4">
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Title</label><input id="editTitle" type="text" maxlength="80" class="w-full input-field"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Description</label><textarea id="editDescription" rows="2" maxlength="300" class="w-full input-field resize-y"></textarea></div>
+            <!-- Content Editor -->
+            <div>
+                <label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Content</label>
+                <div id="editEditorWrap" class="chronicle-editor"></div>
+            </div>
+            <!-- NPCs -->
+            <div>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold">🧑 NPCs & Factions</label>
+                    <button onclick="addEditNpc()" class="btn-outline text-[9px] py-1 px-2">+ NPC</button>
+                </div>
+                <div id="editNpcList" class="space-y-1"></div>
+            </div>
+            <!-- Music -->
+            <div>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold">🎵 Music Cues</label>
+                    <button onclick="addEditMusic()" class="btn-outline text-[9px] py-1 px-2">+ Music</button>
+                </div>
+                <div id="editMusicList" class="space-y-1"></div>
+            </div>
+            <!-- Metadata -->
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Level (min–max)</label><div class="flex items-center gap-1.5"><input id="editLevelMin" type="number" min="1" max="20" class="w-full input-compact text-center"><span class="text-zinc-600 text-xs">–</span><input id="editLevelMax" type="number" min="1" max="20" class="w-full input-compact text-center"></div></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Party Size (min–max)</label><div class="flex items-center gap-1.5"><input id="editPartyMin" type="number" min="1" max="10" class="w-full input-compact text-center"><span class="text-zinc-600 text-xs">–</span><input id="editPartyMax" type="number" min="1" max="10" class="w-full input-compact text-center"></div></div>
+            </div>
+            <div class="grid grid-cols-3 gap-3">
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Environment</label><select id="editEnvironment" class="w-full select-field"><option value="">Select...</option><option>City</option><option>Dungeon</option><option>Forest</option><option>Mountain</option><option>Coastal</option><option>Underground</option><option>Ruins</option><option>Tavern</option><option>Desert</option><option>Swamp</option><option>Other</option></select></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Difficulty</label><select id="editDifficulty" class="w-full select-field"><option value="">Select...</option><option>Easy</option><option>Moderate</option><option>Hard</option><option>Deadly</option></select></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Duration</label><select id="editDuration" class="w-full select-field"><option value="">Select...</option><option value="Short">Short (1hr)</option><option value="Medium">Medium (2-3hr)</option><option value="Long">Long (4hr+)</option></select></div>
+            </div>
+        </div>
+        <div class="flex gap-3 mt-6">
+            <button onclick="saveEdit()" class="flex-1 btn-primary">Save Changes</button>
+            <button onclick="closeEdit()" class="flex-1 btn-secondary">Cancel</button>
+        </div>
     </div>
 </div>
 

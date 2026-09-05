@@ -79,16 +79,28 @@
 ### Community Sharing (`/community/`)
 Dedicated page for browsing, rating, and importing community-created content. Accessible from the landing page and contextually from existing tools.
 
-- [ ] **Chronicles** — DMs share individual chapters with metadata (recommended level, party size, environment type, difficulty, duration); other DMs browse, rate, and import into their own Chronicle as editable copies
-- [ ] **Homebrew Cards** — card builder for custom domain cards, subclasses, classes, ancestries, communities; publish to community library; DMs can approve homebrew for their table, making it available to all party members
+#### ✅ Done
+- [x] **DB schema** — `community_chapters`, `community_ratings`, `community_imports` tables with RLS, indexes, auto-updated avg_rating trigger, CASCADE deletes
+- [x] **Share from Chronicle** — 🌐 share button per chapter, metadata modal (title, description, level range, party size, environment, difficulty, duration), consent gate linking to Terms of Use
+- [x] **Browse page** — `/community/` with search, filter (environment, difficulty, duration), sort (newest, top rated, most imported), preview modal with full content/NPCs/music, star rating, import to Chronicle
+- [x] **My Shares tab** — manage own shared chapters with edit (Quill rich text + NPCs + music + metadata), delete, stats (ratings, import count)
+- [x] **Version system** — auto-increments on content change (no cap), metadata-only edits don't bump version
+- [x] **Duplicate prevention** — same author can't share two chapters with the same title
+- [x] **Account deletion** — shared content anonymized to "Unknown" author; imported copies unaffected
+- [x] **Sharing consent gate** — one-time acknowledgment when first sharing
+- [x] **Legal update** — Terms of Use Section 5 (Community Sharing) with anchor `#community-sharing`
+- [x] **Landing page** — Community card added
+
+#### 🔜 Next
+- [x] **Import update notifications** — Chronicle checks imported chapters against DB versions on load; dismissible "Update available" badge; user re-imports from Community as a new entry with version in title
+- [ ] **Quill theme overrides** — light/scifi/fantasy mode CSS for the Quill editor (currently dark-only)
+
+#### 📋 Future
+- [ ] **Homebrew Cards** — card builder for custom domain cards, subclasses, classes, ancestries, communities; publish to community library; DMs can approve homebrew for their table
 - [ ] **Custom Adversaries** — DMs publish custom adversaries for others to browse and import into their vault
-- [ ] Contextual access — "Share to Community" / "Browse Community" links from Chronicle, Compendium, and Adversary tabs
+- [ ] Contextual access — "Browse Community" links from Compendium and Adversary tabs
 - [ ] Compendium toggle — option to show community homebrew alongside SRD data
 - [ ] DM table integration — DM curates and approves community content for party use
-- [ ] Versioning — authors can update shared chapters (max 3 versions); importers see ℹ️ notification and choose to update or keep their version
-- [ ] Account deletion — shared content stays in community as "Unknown" author; imported copies unaffected
-- [ ] Sharing consent gate — one-time acknowledgment when first sharing (imported copies persist even if shared version is removed)
-- [ ] **Legal update** — update Terms of Use and Privacy Policy to cover community-shared content, licensing, and user-generated content rights
 
 ---
 

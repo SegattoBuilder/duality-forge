@@ -2,8 +2,11 @@ import { escHtml, escHtmlAttr } from './app.js';
 import { showConfirm, getUser, getProfile, getSupabase, showAlert } from '../core/auth.js';
 import { LS_DM_CHRONICLE, TABLE_COMMUNITY_CHAPTERS } from '../core/constants.js';
 const CHRONICLE_KEY = LS_DM_CHRONICLE;
+const DISMISSED_KEY = 'dh_dm_dismissed_updates';
 let _chronicleEntries = [];
 const _quillInstances = {};
+let _importUpdates = {}; // { community_id: remoteVersion }
+let _dismissedUpdates = {};
 
 export function chronicleEntries() { return _chronicleEntries; }
 export function setChronicleEntries(v) { _chronicleEntries = v; }
@@ -15,6 +18,8 @@ export function autoCacheChronicle() {
 
 export function initChronicle() {
     try { _chronicleEntries = JSON.parse(localStorage.getItem(CHRONICLE_KEY)) || []; } catch { _chronicleEntries = []; }
+    try { _dismissedUpdates = JSON.parse(localStorage.getItem(DISMISSED_KEY)) || {}; } catch { _dismissedUpdates = {}; }
+    checkImportUpdates();
 }
 
 export function addEntry() {
@@ -68,6 +73,34 @@ function saveQuillContent(chId) {
 
 function saveAllQuillContent() {
     for (const id of Object.keys(_quillInstances)) saveQuillContent(id);
+}
+
+// ========== IMPORT UPDATE CHECK ==========
+async function checkImportUpdates() {
+    const imported = _chronicleEntries.filter(ch => ch._imported?.community_id);
+    if (!imported.length) return;
+    const ids = imported.map(ch => ch._imported.community_id);
+    const sb = getSupabase();
+    if (!sb) return;
+    const { data } = await sb.from(TABLE_COMMUNITY_CHAPTERS)
+        .select('id, version')
+        .in('id', ids);
+    if (!data) return;
+    _importUpdates = {};
+    data.forEach(row => {
+        const local = imported.find(ch => ch._imported.community_id === row.id);
+        if (local && row.version > local._imported.version && _dismissedUpdates[row.id] !== row.version) {
+            _importUpdates[row.id] = row.version;
+        }
+    });
+    if (Object.keys(_importUpdates).length) renderChronicle();
+}
+
+function dismissUpdate(communityId) {
+    _dismissedUpdates[communityId] = _importUpdates[communityId] || 999;
+    delete _importUpdates[communityId];
+    localStorage.setItem(DISMISSED_KEY, JSON.stringify(_dismissedUpdates));
+    renderChronicle();
 }
 
 // ========== DRAG & DROP ==========
@@ -153,10 +186,12 @@ export function renderChronicle() {
 
     list.innerHTML = _chronicleEntries.map(ch => {
         const npcs = ch.npcs || [], music = ch.music || [];
-        return `<div id="${ch.id}" class="fear-pool p-4 rounded-xl border border-[#3d362a] bg-[#1e1b16]" draggable="true">
+        const hasUpdate = ch._imported?.community_id && _importUpdates[ch._imported.community_id];
+        return `<div id="${ch.id}" class="fear-pool p-4 rounded-xl border ${hasUpdate ? 'border-amber-700/60' : 'border-[#3d362a]'} bg-[#1e1b16]" draggable="true">
             <div class="section-divider flex items-center gap-2 mb-3 pb-2 border-b border-[#3d362a] cursor-pointer select-none" onclick="window._toggleEntry('${ch.id}')">
                 <span class="text-[10px] text-zinc-600 transition-transform ${ch.open ? 'rotate-90' : ''}">▶</span>
                 <input value="${escHtmlAttr(ch.title)}" onclick="event.stopPropagation()" oninput="window._updateEntryTitle('${ch.id}', this.value)" class="flex-1 bg-transparent section-header font-[Cinzel] text-xs uppercase tracking-widest text-zinc-500 outline-none border-b border-transparent focus:border-[#d4a017] placeholder-zinc-700" placeholder="Chapter title...">
+                ${hasUpdate ? `<button onclick="event.stopPropagation(); window._dismissUpdate('${ch._imported.community_id}')" class="text-[9px] bg-amber-900/40 text-amber-400 px-2 py-0.5 rounded-full font-bold uppercase hover:bg-amber-900/60 transition-colors" title="Dismiss — check Community for the update">Update available ✕</button>` : ''}
                 <button onclick="event.stopPropagation(); window._shareEntry('${ch.id}')" class="text-[10px] text-zinc-600 hover:text-[#d4a017] transition-colors" title="Share to Community">🌐</button>
                 <button onclick="event.stopPropagation(); window._removeEntry('${ch.id}')" class="btn-remove" title="Remove">✕</button>
             </div>
@@ -240,6 +275,13 @@ async function submitShare() {
     if (!ch || !getUser()) return;
     const title = document.getElementById('shareTitle').value.trim();
     if (!title) { showAlert('Please enter a title.'); return; }
+    // Duplicate check: same author + same title
+    const { data: existing } = await getSupabase().from(TABLE_COMMUNITY_CHAPTERS)
+        .select('id').eq('author_id', getUser().id).eq('title', title).limit(1);
+    if (existing && existing.length > 0) {
+        showAlert('You already shared a chapter with this title. Use a different title or edit it from Community \u2192 My Shares.');
+        return;
+    }
     const profile = getProfile();
     const row = {
         author_id: getUser().id,
@@ -255,8 +297,11 @@ async function submitShare() {
         difficulty: document.getElementById('shareDifficulty').value || null,
         duration: document.getElementById('shareDuration').value || null
     };
-    const { error } = await getSupabase().from(TABLE_COMMUNITY_CHAPTERS).insert(row);
+    const { data: inserted, error } = await getSupabase().from(TABLE_COMMUNITY_CHAPTERS).insert(row).select('id').single();
     if (error) { showAlert('Share failed: ' + error.message); return; }
+    // Stamp local entry so we can link it
+    if (inserted) ch._shared = { community_id: inserted.id };
+    autoCacheChronicle();
     closeShareModal();
     showAlert('Chapter shared to the community!');
 }
@@ -274,6 +319,7 @@ window._updateChapterNpc = updateChapterNpc;
 window._shareEntry = openShareModal;
 window.closeShareChapter = closeShareModal;
 window.submitShareChapter = submitShare;
+window._dismissUpdate = dismissUpdate;
 window._addChapterMusic = addChapterMusic;
 window._removeChapterMusic = removeChapterMusic;
 window._updateChapterMusic = updateChapterMusic;
