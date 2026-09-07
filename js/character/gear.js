@@ -24,7 +24,16 @@ function toggleCollapse(id) {
     details.style.display = collapsed ? 'none' : '';
     btn.textContent = collapsed ? '▶' : '▼';
     el.dataset.collapsed = collapsed;
+    if (!collapsed) autoResizeTextareas(el);
     autoCache();
+}
+
+function autoResizeTextareas(container) {
+    container.querySelectorAll('textarea.overflow-hidden').forEach(ta => {
+        const resize = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+        resize();
+        ta.addEventListener('input', resize);
+    });
 }
 
 function applyCollapsed(el, collapsed) {
@@ -59,7 +68,7 @@ export function addWeapon(data) {
                 <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">DAMAGE</div><input type="text" value="${d.dmg || ''}" placeholder="—" class="gear-input" data-autocache></div>
                 <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">ATK BONUS</div><div class="wep-atk w-full bg-gray-800 border border-gray-700 rounded py-1.5 text-center font-bold text-indigo-400 text-sm">—</div></div>
             </div>
-            <div class="mt-2"><div class="text-[10px] text-zinc-600 mb-1">FEATURE</div><input type="text" value="${d.feature || ''}" placeholder="Weapon feature..." class="w-full gear-input text-left px-3" data-autocache></div>
+            <div class="mt-2"><div class="text-[10px] text-zinc-600 mb-1">FEATURE</div><textarea placeholder="Weapon feature..." class="w-full gear-input text-left px-3 resize-none overflow-hidden" rows="1" data-autocache>${d.feature || ''}</textarea></div>
         </div>
     </div>`;
     container.insertAdjacentHTML('beforeend', html);
@@ -67,6 +76,7 @@ export function addWeapon(data) {
     if (d.trait) el.querySelector('.wep-trait').value = d.trait;
     applyEquipStyle(el, equipped);
     if (d.collapsed) applyCollapsed(el, true);
+    autoResizeTextareas(el);
     el.querySelector('.collapse-btn').addEventListener('click', () => toggleCollapse(id));
     el.querySelector('.equip-star').addEventListener('click', () => toggleEquipWeapon(id));
     el.querySelector('.wep-remove').addEventListener('click', () => removeWeapon(id));
@@ -102,9 +112,10 @@ export function getWeaponData() {
     const items = [];
     document.querySelectorAll('#weaponList > div[id^="wep-"]').forEach(el => {
         const inputs = el.querySelectorAll('input[type="text"]');
+        const textarea = el.querySelector('.gear-details textarea');
         items.push({
             name: inputs[0].value, trait: el.querySelector('.wep-trait').value,
-            range: inputs[1].value, dmg: inputs[2].value, feature: inputs[3].value,
+            range: inputs[1].value, dmg: inputs[2].value, feature: textarea ? textarea.value : '',
             equipped: el.dataset.equipped === 'true',
             collapsed: el.dataset.collapsed === 'true'
         });
@@ -140,13 +151,14 @@ export function addArmor(data) {
                 <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">SEVERE</div><input type="number" value="${d.severe || '0'}" placeholder="0" class="arm-severe w-full gear-input text-sm" data-autocache></div>
                 <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">SCORE</div><input type="text" value="${d.score || ''}" placeholder="0" class="w-full gear-input text-sm" data-autocache></div>
             </div>
-            <div class="mt-2"><div class="text-[10px] text-zinc-600 mb-1">FEATURE</div><input type="text" value="${d.feature || ''}" placeholder="Armor feature..." class="w-full gear-input text-left px-3" data-autocache></div>
+            <div class="mt-2"><div class="text-[10px] text-zinc-600 mb-1">FEATURE</div><textarea placeholder="Armor feature..." class="w-full gear-input text-left px-3 resize-none overflow-hidden" rows="1" data-autocache>${d.feature || ''}</textarea></div>
         </div>
     </div>`;
     container.insertAdjacentHTML('beforeend', html);
     const el = document.getElementById(id);
     applyEquipStyle(el, equipped);
     if (d.collapsed) applyCollapsed(el, true);
+    autoResizeTextareas(el);
     el.querySelector('.collapse-btn').addEventListener('click', () => toggleCollapse(id));
     el.querySelector('.equip-star').addEventListener('click', () => toggleEquipArmor(id));
     el.querySelector('.arm-remove').addEventListener('click', () => removeArmor(id));
@@ -183,9 +195,10 @@ export function getArmorData() {
     const items = [];
     document.querySelectorAll('#armorList > div[id^="arm-"]').forEach(el => {
         const inputs = el.querySelectorAll('input');
+        const textarea = el.querySelector('.gear-details textarea');
         items.push({
             name: inputs[0].value, major: inputs[1].value, severe: inputs[2].value,
-            score: inputs[3].value, feature: inputs[4].value,
+            score: inputs[3].value, feature: textarea ? textarea.value : '',
             equipped: el.dataset.equipped === 'true',
             collapsed: el.dataset.collapsed === 'true'
         });
@@ -216,11 +229,12 @@ export function addItem(data) {
             <input type="text" value="${d.name || ''}" placeholder="Item name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
             <button class="btn-remove item-remove" title="Remove">✕</button>
         </div>
-        <div class="gear-details mt-1"><input type="text" value="${d.desc || ''}" placeholder="Description..." class="w-full bg-transparent border-b border-zinc-800 px-1 py-1 text-xs outline-none text-zinc-400" data-autocache></div>
+        <div class="gear-details mt-1"><textarea placeholder="Description..." class="w-full bg-transparent border-b border-zinc-800 px-1 py-1 text-xs outline-none text-zinc-400 resize-none overflow-hidden" rows="1" data-autocache>${d.desc || ''}</textarea></div>
     </div>`;
     container.insertAdjacentHTML('beforeend', html);
     const el = document.getElementById(id);
     if (d.collapsed) applyCollapsed(el, true);
+    autoResizeTextareas(el);
     el.querySelector('.collapse-btn').addEventListener('click', () => toggleCollapse(id));
     el.querySelector('.item-remove').addEventListener('click', () => removeItem(id));
     if (!data) autoCache();
@@ -237,8 +251,9 @@ function removeItem(id) {
 export function getItemData() {
     const items = [];
     document.querySelectorAll('#itemList > div[id^="item-"]').forEach(el => {
-        const inputs = el.querySelectorAll('input');
-        items.push({ name: inputs[0].value, desc: inputs[1].value, collapsed: el.dataset.collapsed === 'true' });
+        const nameInput = el.querySelector('.flex input[type="text"]');
+        const textarea = el.querySelector('.gear-details textarea');
+        items.push({ name: nameInput.value, desc: textarea ? textarea.value : '', collapsed: el.dataset.collapsed === 'true' });
     });
     return items;
 }
@@ -258,11 +273,12 @@ export function addConsumable(data) {
             <input type="text" value="${d.qty || '1'}" placeholder="x1" class="w-10 bg-transparent text-center text-sm outline-none border-b border-zinc-800" data-autocache>
             <button class="btn-remove cons-remove" title="Remove">✕</button>
         </div>
-        <div class="gear-details mt-1"><input type="text" value="${d.desc || ''}" placeholder="Effect..." class="w-full bg-transparent border-b border-zinc-800 px-1 py-1 text-xs outline-none text-zinc-400" data-autocache></div>
+        <div class="gear-details mt-1"><textarea placeholder="Effect..." class="w-full bg-transparent border-b border-zinc-800 px-1 py-1 text-xs outline-none text-zinc-400 resize-none overflow-hidden" rows="1" data-autocache>${d.desc || ''}</textarea></div>
     </div>`;
     container.insertAdjacentHTML('beforeend', html);
     const el = document.getElementById(id);
     if (d.collapsed) applyCollapsed(el, true);
+    autoResizeTextareas(el);
     el.querySelector('.collapse-btn').addEventListener('click', () => toggleCollapse(id));
     el.querySelector('.cons-remove').addEventListener('click', () => removeConsumable(id));
     if (!data) autoCache();
@@ -279,8 +295,10 @@ function removeConsumable(id) {
 export function getConsumableData() {
     const items = [];
     document.querySelectorAll('#consumableList > div[id^="cons-"]').forEach(el => {
-        const inputs = el.querySelectorAll('input');
-        items.push({ name: inputs[0].value, qty: inputs[1].value, desc: inputs[2].value, collapsed: el.dataset.collapsed === 'true' });
+        const nameInput = el.querySelectorAll('.flex input[type="text"]')[0];
+        const qtyInput = el.querySelectorAll('.flex input[type="text"]')[1];
+        const textarea = el.querySelector('.gear-details textarea');
+        items.push({ name: nameInput.value, qty: qtyInput.value, desc: textarea ? textarea.value : '', collapsed: el.dataset.collapsed === 'true' });
     });
     return items;
 }
