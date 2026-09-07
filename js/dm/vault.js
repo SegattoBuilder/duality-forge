@@ -1,8 +1,10 @@
 import { escHtml, escHtmlAttr, getNextName, switchTab } from './app.js';
-import { creatures, autoCache, renderGrid, editCharacterCard, editCustomCard, editEnemyCard, renderCard } from './tracker.js';
-import { showConfirm } from '../core/auth.js';
+import { creatures, autoCache, renderGrid, editCharacterCard, editCustomCard, editEnemyCard, renderCard, adversariesData } from './tracker.js';
+import { showConfirm, getUser, getProfile, getSupabase, showAlert } from '../core/auth.js';
+import { TABLE_COMMUNITY_ADVERSARIES } from '../core/constants.js';
 
 import { LS_DM_VAULT, LS_DM_VAULT_GROUPS, LS_DM_VAULT_COLLAPSED } from '../core/constants.js';
+
 const VAULT_KEY = LS_DM_VAULT;
 const VAULT_GROUPS_KEY = LS_DM_VAULT_GROUPS;
 const VAULT_COLLAPSED_KEY = LS_DM_VAULT_COLLAPSED;
@@ -149,7 +151,7 @@ function buildVaultCardInner(creature) {
         const [major, severe] = (ed.thresholds || '').split('/').map(s => s.trim());
         const features = ed.feature || [];
         enemyInfo = `<div class="mt-3 pt-3 border-t border-[#2a2418] space-y-2">
-            <div class="flex flex-wrap gap-1.5"><span class="text-[10px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${escHtml(ed.type || '')} • T${escHtml(ed.tier || '')}</span>${major ? `<span class="text-[10px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-amber-300">Major ${escHtml(major)}+</span>` : ''}${severe ? `<span class="text-[10px] bg-[#2a1a1a] border border-[#3d2a2a] rounded px-1.5 py-0.5 text-red-300">Severe ${escHtml(severe)}+</span>` : ''}</div>
+            <div class="flex flex-wrap gap-1.5"><span class="text-[10px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${escHtml(ed.type || '')}</span>${ed.tier ? `<span class="text-[10px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">Tier ${escHtml(ed.tier)}</span>` : ''}<span class="text-[10px] bg-[#1a2a3b] border border-[#2a3d5a] rounded px-1.5 py-0.5 text-blue-300">Difficulty ${escHtml(String(evasion))}</span>${major ? `<span class="text-[10px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-amber-300">Major ${escHtml(major)}+</span>` : ''}${severe ? `<span class="text-[10px] bg-[#2a1a1a] border border-[#3d2a2a] rounded px-1.5 py-0.5 text-red-300">Severe ${escHtml(severe)}+</span>` : ''}</div>
             <div class="text-xs text-[#e8e0d4]">${(ed.attacks && ed.attacks.length ? ed.attacks : (ed.attack ? [{name: ed.attack, damage: ed.damage, range: ed.range, atk: ed.atk}] : [])).map(a => `⚔️ <span class="font-bold">${escHtml(a.name || '')}</span>${(a.atk || ed.atk) ? ' • ' + escHtml(a.atk || ed.atk || '') : ''} • ${escHtml(a.damage || '')} • ${escHtml(a.range || '')}`).join('<br>')}</div>
             ${ed.experience ? `<div class="text-xs text-[#e8e0d4]">📋 ${escHtml(ed.experience)}</div>` : ''}
             ${ed.motives_and_tactics ? `<div class="text-xs text-[#e8e0d4]">🎯 ${escHtml(ed.motives_and_tactics)}</div>` : ''}
@@ -163,9 +165,12 @@ function buildVaultCardInner(creature) {
     else if (!ed) editBtn = `<button onclick="window._editVaultCharacterCard('${creature.id}')" class="btn-icon" title="Edit">✏️</button>`;
     else editBtn = `<button onclick="window._editVaultEnemyCard('${creature.id}')" class="btn-icon" title="Edit">✏️</button>`;
 
+    const isSrd = ed && adversariesData.some(a => a.name === creature.name);
+    const shareBtn = getUser() && ed && !isSrd ? `<button onclick="window._shareVaultCreature('${creature.id}')" class="text-emerald-500 hover:text-emerald-300 transition-colors text-sm" title="Share to Community">↪</button>` : '';
+
     return `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2">${dead ? '<span class="text-red-500 text-sm">💀</span>' : '<span class="text-zinc-600 text-sm">📦</span>'}<span class="font-black text-sm uppercase font-[Cinzel] ${dead ? 'text-zinc-600 line-through' : 'text-[#f5efe6]'}">${creature.name}</span></div>
-        <div class="flex items-center gap-2"><button onclick="window._copyVaultCreature('${creature.id}')" class="btn-icon" title="Duplicate">➕</button>${editBtn}<button onclick="window._flipVaultCard('${creature.id}')" class="btn-icon" title="Notes">📝</button><button onclick="window._removeVaultCreature('${creature.id}', event)" class="btn-remove" title="Remove">✕</button></div></div>
-        ${evasion > 0 ? `<div class="flex items-center gap-2 mb-3 pb-2.5 border-b border-[#2a2418]"><span class="text-[10px] font-bold text-blue-300 uppercase tracking-wide">${ed ? 'Difficulty' : 'Evasion'}</span>${adjBtn('evasion', -1)}<span class="text-sm font-bold text-blue-200">${evasion}</span>${adjBtn('evasion', 1)}</div>` : ''}
+        <div class="flex items-center gap-2">${shareBtn}<button onclick="window._copyVaultCreature('${creature.id}')" class="btn-icon" title="Duplicate">➕</button>${editBtn}<button onclick="window._flipVaultCard('${creature.id}')" class="btn-icon" title="Notes">📝</button><button onclick="window._removeVaultCreature('${creature.id}', event)" class="btn-remove" title="Remove">✕</button></div></div>
+        ${evasion > 0 && !ed ? `<div class="flex flex-wrap gap-1.5 mb-3 pb-2.5 border-b border-[#2a2418]"><span class="text-[10px] bg-[#1a2a3b] border border-[#2a3d5a] rounded px-1.5 py-0.5 text-blue-300">Evasion ${evasion}</span></div>` : ''}
         ${dotRow('hp', 'HP', 'text-red-400')}${dotRow('stress', 'Stress', 'text-purple-400')}${dotRow('hope', 'Hope', 'text-amber-400')}${dotRow('armor', 'Armor', 'text-blue-400')}${enemyInfo}
         <div class="mt-3 pt-3 border-t border-[#2a2418] flex gap-2"><button onclick="window._deployToTracker('${creature.id}', false)" class="flex-1 btn-primary-pill py-2">⚔️ Deploy</button><button onclick="window._deployToTracker('${creature.id}', true)" class="flex-1 btn-outline py-2">⚔️ As-Is</button></div>`;
 }
@@ -351,6 +356,107 @@ export function clearVault(event) {
     });
 }
 
+// ========== SHARE ADVERSARY ==========
+let _shareCreatureId = null;
+
+function validateShareAdvForm() {
+    const title = document.getElementById('shareAdvTitle').value.trim();
+    const desc = document.getElementById('shareAdvDescription').value.trim();
+    const consent = document.getElementById('shareAdvConsent').checked;
+    const valid = title && desc && desc.split(/\s+/).length >= 3 && consent;
+    const btn = document.getElementById('shareAdvSubmitBtn');
+    btn.disabled = !valid;
+    btn.classList.toggle('opacity-40', !valid);
+    btn.classList.toggle('cursor-not-allowed', !valid);
+}
+
+function shareVaultCreature(id) {
+    if (!getUser()) { showAlert('Sign in to share adversaries.'); return; }
+    const profile = getProfile();
+    if (!profile?.nickname) { showAlert('Set a nickname in your Profile before sharing.'); return; }
+    const creature = _vaultCreatures.find(c => c.id === id);
+    if (!creature || !creature.enemyData) return;
+    _shareCreatureId = id;
+    const ed = creature.enemyData;
+    document.getElementById('shareAdvTitle').value = creature.name || '';
+    document.getElementById('shareAdvDescription').value = '';
+    document.getElementById('shareAdvConsent').checked = false;
+    // Show summary
+    const [major, severe] = (ed.thresholds || '').split('/').map(s => s.trim());
+    document.getElementById('shareAdvPreview').innerHTML = `<div class="flex flex-wrap gap-1.5">
+        ${ed.type ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${escHtml(ed.type)}</span>` : ''}
+        ${ed.tier ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">Tier ${escHtml(ed.tier)}</span>` : ''}
+        <span class="text-[9px] bg-[#1a2a3b] border border-[#2a3d5a] rounded px-1.5 py-0.5 text-blue-300">Difficulty ${escHtml(ed.difficulty || String(creature.evasion || ''))}</span>
+        <span class="text-[9px] bg-[#2a1a1a] border border-[#3d2a2a] rounded px-1.5 py-0.5 text-red-300">HP ${escHtml(ed.hp || String(creature.hpMax || ''))}</span>
+        ${major ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-amber-300">Major ${escHtml(major)}+</span>` : ''}
+        ${severe ? `<span class="text-[9px] bg-[#2a1a1a] border border-[#3d2a2a] rounded px-1.5 py-0.5 text-red-400">Severe ${escHtml(severe)}+</span>` : ''}
+    </div>`;
+    document.getElementById('shareAdvModal').classList.remove('hidden');
+    validateShareAdvForm();
+    ['shareAdvTitle', 'shareAdvDescription', 'shareAdvConsent'].forEach(id => {
+        const el = document.getElementById(id);
+        el.oninput = validateShareAdvForm;
+        el.onchange = validateShareAdvForm;
+    });
+}
+
+function closeShareAdv() {
+    document.getElementById('shareAdvModal').classList.add('hidden');
+    _shareCreatureId = null;
+}
+
+async function submitShareAdv() {
+    const creature = _vaultCreatures.find(c => c.id === _shareCreatureId);
+    if (!creature || !getUser()) return;
+    const ed = creature.enemyData;
+    const title = document.getElementById('shareAdvTitle').value.trim();
+    const description = document.getElementById('shareAdvDescription').value.trim();
+    if (!title || !description || description.split(/\s+/).length < 3) { showAlert('Please fill in all fields. Description needs at least 3 words.'); return; }
+    const sb = getSupabase();
+    // Duplicate check
+    const { data: existing } = await sb.from(TABLE_COMMUNITY_ADVERSARIES)
+        .select('id').eq('author_id', getUser().id).eq('title', title).limit(1);
+    if (existing && existing.length > 0) {
+        showAlert('You already shared an adversary with this title. Use a different title or edit it from Community → My Shares.');
+        return;
+    }
+    const row = {
+        author_id: getUser().id,
+        author_nickname: getProfile().nickname,
+        title,
+        description,
+        adversary_data: {
+            name: creature.name,
+            hp: ed.hp || String(creature.hpMax || 0),
+            stress: ed.stress || String(creature.stressMax || 0),
+            difficulty: ed.difficulty || String(creature.evasion || 0),
+            thresholds: ed.thresholds || '',
+            type: ed.type || '',
+            tier: ed.tier || '',
+            attack: ed.attack || '',
+            damage: ed.damage || '',
+            range: ed.range || '',
+            atk: ed.atk || '',
+            attacks: ed.attacks || [],
+            experience: ed.experience || '',
+            motives_and_tactics: ed.motives_and_tactics || '',
+            ability: ed.ability || '',
+            description: ed.description || '',
+            feature: ed.feature || []
+        },
+        adv_type: ed.type || '',
+        tier: ed.tier || '',
+        difficulty: ed.difficulty || String(creature.evasion || 0)
+    };
+    const { error } = await sb.from(TABLE_COMMUNITY_ADVERSARIES).insert(row);
+    if (error) { showAlert('Share failed: ' + error.message); return; }
+    closeShareAdv();
+    showAlert('Adversary shared to the community!');
+}
+
+window.closeShareAdv = closeShareAdv;
+window.submitShareAdv = submitShareAdv;
+
 // ========== WINDOW BINDINGS ==========
 window._toggleVaultDot = toggleVaultDot;
 window._adjustVaultMax = adjustVaultMax;
@@ -373,3 +479,4 @@ window._assignVaultGroup = assignVaultGroup;
 window._toggleVaultGroupCollapse = toggleVaultGroupCollapse;
 window._deployGroupToTracker = deployGroupToTracker;
 window._onGroupDrop = onGroupDrop;
+window._shareVaultCreature = shareVaultCreature;

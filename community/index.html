@@ -30,8 +30,10 @@
                 <span class="font-[Cinzel] text-[14px] tracking-widest uppercase font-black italic leading-tight" style="color: var(--accent-1)">Community</span>
             </div>
             <div class="flex items-center justify-center gap-1 flex-wrap">
-                <button id="tabBrowse" class="modern-tab-btn active" onclick="switchTab('browse')">🌐 Browse</button>
-                <button id="tabMyShares" class="modern-tab-btn" onclick="switchTab('myshares')">📤 My Shares</button>
+                <button id="tabChapters" class="modern-tab-btn active" onclick="switchTab('chapters')">📜 Chapters</button>
+                <button id="tabAdversaries" class="modern-tab-btn" onclick="switchTab('adversaries')">👹 Adversaries</button>
+                <button id="tabHomebrew" class="modern-tab-btn" onclick="switchTab('homebrew')">🧪 Homebrew</button>
+                <button id="tabMyshares" class="modern-tab-btn" onclick="switchTab('myshares')">📤 My Shares</button>
             </div>
             <div class="flex items-center gap-2 shrink-0">
                 <div id="authBtn" class="btn-nav px-3 w-auto cursor-pointer" onclick="openAuthModal()"><span class="text-[10px]">Sign In</span></div>
@@ -41,12 +43,13 @@
 </nav>
 <div id="navSpacer" class="h-24"></div>
 
+<!-- ===== CHAPTERS PANEL ===== -->
+<div id="panelChapters">
+
 <!-- Guidance -->
 <div class="text-center mb-4 px-4">
     <p class="text-[11px] text-zinc-500 italic leading-relaxed">Shared chapters are story frameworks — narrative notes, NPCs, and music cues to inspire your sessions. Adapt creatures, difficulty, and encounters to fit your table.</p>
 </div>
-
-
 
 <!-- Filters -->
 <div class="space-y-3 mb-6">
@@ -65,6 +68,102 @@
 <!-- Results -->
 <div id="communityStatus" class="text-center text-zinc-600 text-sm py-8">Loading community chapters...</div>
 <div id="communityResults" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+</div><!-- /panelChapters -->
+
+<!-- ===== ADVERSARIES PANEL ===== -->
+<div id="panelAdversaries" class="hidden">
+    <div class="text-center mb-4 px-4">
+        <p class="text-[11px] text-zinc-500 italic leading-relaxed">Community-shared adversaries — custom creatures built by other DMs. Add them to your Vault with one click.</p>
+    </div>
+    <div class="space-y-3 mb-6">
+        <div class="flex flex-wrap gap-3 items-end">
+            <div class="flex-1 min-w-[200px]"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Search by Name</label><input id="advSearchInput" type="text" placeholder="Search adversaries by name or author..." class="w-full input-search"></div>
+            <button onclick="clearAdvFilters()" class="btn-outline py-3">Clear</button>
+        </div>
+        <div class="flex flex-wrap gap-4 items-end">
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Tier</label><div class="flex items-center gap-1.5"><input id="advFilterTierMin" type="number" placeholder="Min" min="1" max="4" class="w-16 input-compact"><span class="text-zinc-600 text-xs">–</span><input id="advFilterTierMax" type="number" placeholder="Max" min="1" max="4" class="w-16 input-compact"></div></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Difficulty</label><div class="flex items-center gap-1.5"><input id="advFilterDiffMin" type="number" placeholder="Min" min="0" max="99" class="w-16 input-compact"><span class="text-zinc-600 text-xs">–</span><input id="advFilterDiffMax" type="number" placeholder="Max" min="0" max="99" class="w-16 input-compact"></div></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Type</label><select id="advFilterType" class="input-compact cursor-pointer"><option value="">All</option></select></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Sort</label><select id="advSortBy" class="input-compact cursor-pointer"><option value="newest">Newest</option><option value="rating">Top Rated</option><option value="popular">Most Added</option></select></div>
+        </div>
+    </div>
+    <div id="advCommunityStatus" class="text-center text-zinc-600 text-sm py-8">Loading community adversaries...</div>
+    <div id="advCommunityResults" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+</div>
+
+<!-- ===== HOMEBREW PANEL ===== -->
+<div id="panelHomebrew" class="hidden">
+    <div class="text-center mb-4 px-4">
+        <p class="text-[11px] text-zinc-500 italic leading-relaxed">Community-crafted cards — domain cards, ancestries, communities, classes, subclasses, and more. Create your own or browse what others have shared.</p>
+    </div>
+    <div class="space-y-3 mb-6">
+        <div class="flex flex-wrap gap-3 items-end">
+            <div class="flex-1 min-w-[200px]"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Search</label><input id="hbSearchInput" type="text" placeholder="Search by name or author..." class="w-full input-search"></div>
+            <button onclick="clearHbFilters()" class="btn-outline py-3">Clear</button>
+        </div>
+        <div class="flex flex-wrap gap-3 items-end">
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Card Type</label><select id="hbFilterType" class="input-compact cursor-pointer"><option value="">All</option><option value="domain-card">Domain Card</option><option value="general">General</option></select></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Category</label><select id="hbFilterCategory" class="input-compact cursor-pointer"><option value="">All</option><option value="ancestries">Ancestry</option><option value="communities">Community</option><option value="classes">Class</option><option value="subclasses">Subclass</option><option value="homebrew">Homebrew</option></select></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Domain</label><select id="hbFilterDomain" class="input-compact cursor-pointer"><option value="">All</option><option>ARCANA</option><option>BLADE</option><option>BONE</option><option>CODEX</option><option>GRACE</option><option>MIDNIGHT</option><option>SAGE</option><option>SPLENDOR</option><option>VALOR</option></select></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Sort</label><select id="hbSortBy" class="input-compact cursor-pointer"><option value="newest">Newest</option><option value="rating">Top Rated</option><option value="popular">Most Added</option></select></div>
+        </div>
+    </div>
+    <div id="hbCommunityStatus" class="text-center text-zinc-600 text-sm py-8">Loading community homebrew...</div>
+    <div id="hbCommunityResults" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+</div>
+
+<!-- ===== MY SHARES PANEL ===== -->
+<div id="panelMyshares" class="hidden">
+    <div id="mySharesContent"></div>
+</div>
+
+<!-- Adversary Preview Modal -->
+<div id="advPreviewModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-start justify-center pt-12" onclick="if(event.target===this)closeAdvPreview()">
+    <div class="modal-panel p-6 w-full max-w-2xl relative max-h-[85vh] overflow-y-auto">
+        <button onclick="closeAdvPreview()" class="btn-close absolute top-4 right-4 z-10">✕</button>
+        <div id="advPreviewContent"></div>
+    </div>
+</div>
+
+<!-- Edit Adversary Modal -->
+<div id="editAdvModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-start justify-center pt-8" onclick="if(event.target===this)closeEditAdv()">
+    <div class="modal-panel p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5">
+            <h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Edit Adversary</h2>
+            <button onclick="closeEditAdv()" class="btn-close">✕</button>
+        </div>
+        <div class="space-y-4">
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Title</label><input id="editAdvTitle" type="text" maxlength="80" class="w-full input-field"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Description</label><textarea id="editAdvDescription" rows="2" maxlength="300" class="w-full input-field resize-y"></textarea></div>
+            <div class="grid grid-cols-3 gap-3">
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Type</label><input id="editAdvType" type="text" class="w-full input-field"></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Tier</label><input id="editAdvTier" type="text" class="w-full input-field"></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Difficulty</label><input id="editAdvDifficulty" type="text" class="w-full input-field"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">HP</label><input id="editAdvHp" type="text" class="w-full input-field"></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Stress</label><input id="editAdvStress" type="text" class="w-full input-field"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Major Threshold</label><input id="editAdvMajor" type="text" placeholder="e.g. 8" class="w-full input-field"></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Severe Threshold</label><input id="editAdvSevere" type="text" placeholder="e.g. 15" class="w-full input-field"></div>
+            </div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Attack</label><input id="editAdvAttack" type="text" class="w-full input-field"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Damage</label><input id="editAdvDamage" type="text" class="w-full input-field"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Range</label><input id="editAdvRange" type="text" class="w-full input-field"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Motives & Tactics</label><input id="editAdvMotives" type="text" class="w-full input-field"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Experience</label><input id="editAdvExperience" type="text" class="w-full input-field"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Ability</label><input id="editAdvAbility" type="text" class="w-full input-field"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Description (lore)</label><textarea id="editAdvLore" rows="2" class="w-full input-field resize-y"></textarea></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Features (one per line, Name: Text)</label><textarea id="editAdvFeatures" rows="4" class="w-full input-field resize-y"></textarea></div>
+        </div>
+        <div class="flex gap-3 mt-6">
+            <button onclick="saveEditAdv()" class="flex-1 btn-primary">Save Changes</button>
+            <button onclick="closeEditAdv()" class="flex-1 btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
 
 <!-- Chapter Preview Modal -->
 <div id="previewModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-start justify-center pt-12" onclick="if(event.target===this)closePreview()">
@@ -123,6 +222,90 @@
     </div>
 </div>
 
+<!-- Homebrew Guidelines Modal -->
+<div id="hbGuideModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-start justify-center pt-12" onclick="if(event.target===this)closeHbGuide()">
+    <div class="modal-panel p-6 w-full max-w-2xl relative max-h-[85vh] overflow-y-auto">
+        <button onclick="closeHbGuide()" class="btn-close absolute top-4 right-4 z-10">✕</button>
+        <h2 class="font-[Cinzel] text-base font-black uppercase tracking-wide mb-4" style="color: var(--accent-1)">Homebrew Guidelines</h2>
+        <div class="space-y-4 text-xs text-zinc-400 leading-relaxed">
+            <div>
+                <div class="text-[10px] font-bold text-zinc-300 uppercase tracking-wide mb-1">⚔️ Domain Cards</div>
+                <ul class="list-disc ml-4 space-y-1">
+                    <li><span class="text-zinc-300">Ability</span> — a non-magical action or passive benefit. Usually costs Hope or has a "once per rest" limit.</li>
+                    <li><span class="text-zinc-300">Spell</span> — a magical effect. Requires a Spellcast Roll and costs a spell slot or has a Recall Cost.</li>
+                    <li><span class="text-zinc-300">Recall Cost</span> — how many slots it takes to prepare. Higher level cards typically cost more (Lv 1–3 = 1, Lv 4–6 = 2, Lv 7+ = 3).</li>
+                    <li><span class="text-zinc-300">Level</span> — when the card becomes available. Match the power level to the tier (Lv 1–2 = Tier 1, Lv 3–4 = Tier 2, etc.).</li>
+                    <li>Keep effects focused — one clear thing per card. If it does too much, split it into two cards.</li>
+                </ul>
+            </div>
+            <div>
+                <div class="text-[10px] font-bold text-zinc-300 uppercase tracking-wide mb-1">🧬 Ancestries</div>
+                <ul class="list-disc ml-4 space-y-1">
+                    <li>SRD pattern: <span class="text-zinc-300">2 features</span> — one passive (always on) and one active (triggered or limited use).</li>
+                    <li>Features should be flavorful and broadly useful, not combat-only.</li>
+                </ul>
+            </div>
+            <div>
+                <div class="text-[10px] font-bold text-zinc-300 uppercase tracking-wide mb-1">🏠 Communities</div>
+                <ul class="list-disc ml-4 space-y-1">
+                    <li>SRD pattern: <span class="text-zinc-300">1 feature</span> — usually grants advantage on a specific type of social or knowledge roll.</li>
+                    <li>Think about what growing up in this community teaches you.</li>
+                </ul>
+            </div>
+            <div>
+                <div class="text-[10px] font-bold text-zinc-300 uppercase tracking-wide mb-1">📜 Classes & Subclasses</div>
+                <ul class="list-disc ml-4 space-y-1">
+                    <li>Classes have a <span class="text-zinc-300">Hope Feature</span> (costs Hope to activate) and <span class="text-zinc-300">Class Features</span> (core mechanics).</li>
+                    <li>Subclasses have 3 tiers: <span class="text-green-400">Foundation</span> (Lv 1), <span class="text-yellow-400">Specialization</span> (Lv 5), <span class="text-red-400">Mastery</span> (Lv 9). Power scales with tier.</li>
+                </ul>
+            </div>
+            <div>
+                <div class="text-[10px] font-bold text-zinc-300 uppercase tracking-wide mb-1">💡 General Tips</div>
+                <ul class="list-disc ml-4 space-y-1">
+                    <li>Don't duplicate existing SRD cards — check the Compendium first.</li>
+                    <li>Write clear, concise feature text. If a player can't understand it in 10 seconds, simplify.</li>
+                    <li>Playtest before publishing when possible. Theory and table experience are different.</li>
+                    <li>Use the description field to explain your design intent — it helps others decide if it fits their table.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Homebrew Preview Modal -->
+<div id="hbPreviewModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-start justify-center pt-12" onclick="if(event.target===this)closeHbPreview()">
+    <div class="modal-panel p-6 w-full max-w-2xl relative max-h-[85vh] overflow-y-auto">
+        <button onclick="closeHbPreview()" class="btn-close absolute top-4 right-4 z-10">✕</button>
+        <div id="hbPreviewContent"></div>
+    </div>
+</div>
+
+<!-- Edit Homebrew Modal -->
+<div id="editHbModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-start justify-center pt-8" onclick="if(event.target===this)closeEditHb()">
+    <div class="modal-panel p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5">
+            <h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Edit Homebrew</h2>
+            <button onclick="closeEditHb()" class="btn-close">✕</button>
+        </div>
+        <div class="space-y-4">
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Title</label><input id="editHbTitle" type="text" maxlength="80" class="w-full input-field"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Description</label><textarea id="editHbDesc" rows="2" maxlength="300" class="w-full input-field resize-y"></textarea></div>
+            <div id="editHbCardFields"></div>
+            <div>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold">Features</label>
+                    <button onclick="addEditHbFeature()" class="btn-outline text-[9px] py-1 px-2">+ Feature</button>
+                </div>
+                <div id="editHbFeatureList" class="space-y-1"></div>
+            </div>
+        </div>
+        <div class="flex gap-3 mt-6">
+            <button onclick="saveEditHb()" class="flex-1 btn-primary">Save Changes</button>
+            <button onclick="closeEditHb()" class="flex-1 btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <!-- Auth Modal -->
 <div id="authModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-center justify-center" onclick="if(event.target===this)closeAuthModal()">
     <div class="modal-panel p-6 w-full max-w-sm">
@@ -143,5 +326,16 @@
 
 <script type="module" src="../js/community/app.js"></script>
 <script type="module" src="../js/core/analytics.js"></script>
+<!-- Confirm Modal -->
+<div id="confirmModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 flex items-center justify-center">
+    <div class="modal-panel w-full max-w-sm p-6 text-center">
+        <p id="confirmMsg" class="text-sm text-[#f5efe6] mb-6"></p>
+        <div class="flex gap-3 justify-center">
+            <button id="confirmNo" class="btn-outline px-6">Cancel</button>
+            <button id="confirmYes" class="btn-danger px-6">Confirm</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

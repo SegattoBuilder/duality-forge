@@ -3,7 +3,7 @@ import { LS_CHAR_ACTIVE_TAB, LS_CHAR_SAVE_V1 } from '../core/constants.js';
 import { renderThemePicker, applyTheme, toggleMode, setMode, initMode } from './theme.js';
 import { toggleSection } from './ui.js';
 import { renderDots, updateThresholds, updateAttackBonus } from './trackers.js';
-import { openDatabase, closeDatabase, fetchData, filterCards, closeCardDetail, addCardToSheet } from './cards.js';
+import { openDatabase, closeDatabase, fetchData, filterCards, closeCardDetail, addCardToSheet, openCreateCard, closeCreateCard, onCreateCardTypeChange, addCreateCardFeature, updateCreateCardFeature, removeCreateCardFeature, validateCreateCard, submitCreateCard, openShareCard, closeShareCard, validateShareCard, submitShareCard, openEditCard, closeEditCard, addEditCardFeature, removeEditCardFeature, updateEditCardFeature, saveEditCard } from './cards.js';
 import { addInventoryItem } from './inventory.js';
 import { addExperience } from './experience.js';
 import { addGearItem, addWeapon, addArmor, addItem, addConsumable } from './gear.js';
@@ -21,6 +21,24 @@ window.closeDatabase = closeDatabase;
 window.closeCardDetail = closeCardDetail;
 window.fetchData = fetchData;
 window.filterCards = filterCards;
+window.openCreateCard = openCreateCard;
+window.closeCreateCard = closeCreateCard;
+window.onCreateCardTypeChange = onCreateCardTypeChange;
+window.addCreateCardFeature = addCreateCardFeature;
+window.updateCreateCardFeature = updateCreateCardFeature;
+window.removeCreateCardFeature = removeCreateCardFeature;
+window.validateCreateCard = validateCreateCard;
+window.submitCreateCard = submitCreateCard;
+window.openShareCard = openShareCard;
+window.closeShareCard = closeShareCard;
+window.validateShareCard = validateShareCard;
+window.submitShareCard = submitShareCard;
+window.openEditCard = openEditCard;
+window.closeEditCard = closeEditCard;
+window.addEditCardFeature = addEditCardFeature;
+window.removeEditCardFeature = removeEditCardFeature;
+window.updateEditCardFeature = updateEditCardFeature;
+window.saveEditCard = saveEditCard;
 window.addInventoryItem = addInventoryItem;
 window.addExperience = addExperience;
 window.addGearItem = addGearItem;
@@ -101,4 +119,17 @@ window.addEventListener('DOMContentLoaded', async () => {
     await initAuth();
     if (typeof window._ensureCharacterPicker === 'function') window._ensureCharacterPicker();
     loadCompendium({ characterMode: true, onAddWeapon: addWeapon, onAddArmor: addArmor, onAddItem: addItem, onAddConsumable: addConsumable, onAddGear: addGearItem, onAddInventory: addInventoryItem, onAddDomainCard: addCardToSheet, onAddGeneral: addCardToSheet });
+
+    // Create card form validation
+    ['createCardDomainName','createCardLevel','createCardRecall','createCardGeneralName'].forEach(id => {
+        document.getElementById(id).oninput = validateCreateCard;
+    });
+    ['createCardType','createCardDomain','createCardDomainType','createCardCategory'].forEach(id => {
+        document.getElementById(id).onchange = id === 'createCardType' ? onCreateCardTypeChange : validateCreateCard;
+    });
+
+    // Share card form validation
+    document.getElementById('shareCardTitle').oninput = validateShareCard;
+    document.getElementById('shareCardDesc').oninput = validateShareCard;
+    document.getElementById('shareCardConsent').onchange = validateShareCard;
 });

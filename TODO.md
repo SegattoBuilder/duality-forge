@@ -82,8 +82,12 @@
 - [x] Project rules — `.amazonq/rules/project-rules.md`
 
 **Database**
-- [x] `community_chapters`, `community_ratings`, `community_imports` tables with RLS, indexes, CASCADE deletes
-- [x] Auto-updated `avg_rating` trigger
+- [x] Triplet DB pattern — each content type gets 3 tables: `community_{type}`, `community_{type}_ratings`, `community_{type}_imports`
+- [x] Renamed: `community_ratings` → `community_chapter_ratings`, `community_imports` → `community_chapter_imports`
+- [x] `community_chapters`, `community_chapter_ratings`, `community_chapter_imports` tables with RLS, indexes, CASCADE deletes
+- [x] `community_adversaries`, `community_adversary_ratings`, `community_adversary_imports` tables with RLS, indexes, CASCADE deletes
+- [x] Auto-updated `avg_rating` trigger (per content type)
+- [x] Explicit GRANTs for raw-SQL tables (`anon`, `authenticated`, `service_role`)
 - [x] Account deletion — shared content anonymized; imported copies unaffected
 - [x] Legal — Terms of Use Section 5 (Community Sharing)
 
@@ -99,22 +103,52 @@
 - [x] Chapter card styling — `compendium-card` with accent border
 - [x] Quill theme overrides + toolbar stacking fix
 
+**Community Layout Rework**
+- [x] Nav tabs expanded: 📜 Chapters, 👹 Adversaries, 🧪 Homebrew, 📤 My Shares
+- [x] Browse Homebrew tab with "Coming Soon" placeholder
+- [x] My Shares grouped into sections: Chapters, Adversaries, Homebrew (Coming Soon)
+
+**Adversary Sharing**
+- [x] Share custom adversaries from Vault — share button (↪) on vault cards when signed in + has enemyData + has nickname + not SRD
+- [x] SRD share prevention — hide share button when creature name matches SRD adversary
+- [x] Share modal — title, description (3+ words), consent checkbox, duplicate prevention, preview badges
+- [x] Browse community adversaries — search, filter (tier min-max, difficulty min-max, type dropdown, sort), preview modal with full detail
+- [x] Add to vault — imports adversary as creature with enemyData, tracks unique imports via `community_adversary_imports`
+- [x] Rating system — 1–5 stars, one per account, updates avg_rating via trigger
+- [x] My Shares adversary section — edit (title, description), delete, stats
+- [x] Nickname required for sharing — blocks with alert if no profile.nickname
+- [x] Nickname sync on change — `saveProfile()` batch-updates `author_nickname` on `community_chapters` and `community_adversaries`
+- [x] `author_nickname` only uses `profile.nickname` — no fallback to Google display name or email
+
+**DM Tracker/Vault Refinements**
+- [x] Tier field added to Custom modal (number input, 1-4)
+- [x] Type and Tier shown as separate badges (was combined "Type • TX")
+- [x] Difficulty/Evasion moved to badge row — removed +/- inline adjustment (edit via ✏️ instead)
+- [x] Vault edit re-render fix — detect vault creatures (`v-{id}` prefix) and call `renderVaultGrid()` instead of `renderCard()`
+
+**Homebrew Cards**
+- [x] `community_homebrew`, `community_homebrew_ratings`, `community_homebrew_imports` tables (SQL + RLS + GRANTs + rating trigger)
+- [x] Table constants in `constants.js`
+- [x] Create card flow on Character Sheet — ✦ Create button in Cards tab, pick type (Domain Card / General), fill fields, add repeatable features
+- [x] Edit homebrew cards — ✏️ button on `_homebrew` cards, edit all fields + features in modal
+- [x] Share homebrew cards — ↪ button on `_homebrew` cards, title + description (3+ words) + consent, publishes to `community_homebrew`
+- [x] Browse tab — search, filter (card type, category, domain), sort, preview modal, star rating
+- [x] Import to character sheet — card_data matches `addCardToSheet` shape, `_homebrew` flag stripped so imported cards don't show edit/share buttons
+- [x] My Shares homebrew section — edit (title, description, card fields, features), delete, stats
+- [x] Homebrew guidelines modal — ℹ️ info button in My Shares with Daggerheart-specific advice
+- [x] Nickname sync on change covers `community_homebrew`
+- [x] Account deletion — anonymize homebrew rows + delete ratings/imports (all 3 content types)
+
+**Community UX**
+- [x] Replaced all browser `alert()` / `confirm()` with themed toasts and confirm modal
+- [x] Stripped UTF-8 BOM from `js/community/app.js`
+
 ---
 
 ## 🔜 Planned
 
-**Adversary Sharing**
-- [ ] Share custom adversaries from Vault/Adversaries tab
-- [ ] Browse and import community adversaries into Vault
-
-**Homebrew Cards**
-- [ ] Card builder for custom domain cards, subclasses, classes, ancestries, communities
-- [ ] Publish to community library; DMs can approve homebrew for their table
-
-**Future**
-- [ ] Contextual access — "Browse Community" links from Compendium and Adversary tabs
-- [ ] Compendium toggle — option to show community homebrew alongside SRD data
-- [ ] DM table integration — DM curates and approves community content for party use
+**Table Board** ← _next_
+- [ ] Shared board per DM table — DM and players can post notes, schedule, table rules, session recaps
 
 ---
 
@@ -123,6 +157,6 @@
 _Brainstorm space — no commitment, just possibilities._
 
 - **Account Linking** — link Google account to existing email account (or vice versa) to unify data under one identity
-- **Party Message Board** — a simple board for DMs and players to post updates within the app _(low priority — most groups already use Discord, etc.)_
-- **Table Scheduling** — DM sets a session schedule, players and DM receive email reminders _(high effort — requires email integration and additional infrastructure)_
+- **Community Discovery** — contextual "Browse Community" links from Compendium/Adversary tabs; optional toggle to show community homebrew alongside SRD data
+- **Table Scheduling** — DM sets a session schedule, players and DM receive email reminders _(high effort — requires email infrastructure)_
 - **Companion/Pet Tracker** — HP, abilities, notes on character sheet

@@ -12,8 +12,14 @@ export const TABLE_PROFILES = 'profiles';
 export const TABLE_DM_TABLES = 'dm_tables';
 export const TABLE_ANALYTICS = 'user_analytics_snapshots';
 export const TABLE_COMMUNITY_CHAPTERS = 'community_chapters';
-export const TABLE_COMMUNITY_RATINGS = 'community_ratings';
-export const TABLE_COMMUNITY_IMPORTS = 'community_imports';
+export const TABLE_COMMUNITY_CHAPTER_RATINGS = 'community_chapter_ratings';
+export const TABLE_COMMUNITY_CHAPTER_IMPORTS = 'community_chapter_imports';
+export const TABLE_COMMUNITY_ADVERSARIES = 'community_adversaries';
+export const TABLE_COMMUNITY_ADVERSARY_RATINGS = 'community_adversary_ratings';
+export const TABLE_COMMUNITY_ADVERSARY_IMPORTS = 'community_adversary_imports';
+export const TABLE_COMMUNITY_HOMEBREW = 'community_homebrew';
+export const TABLE_COMMUNITY_HOMEBREW_RATINGS = 'community_homebrew_ratings';
+export const TABLE_COMMUNITY_HOMEBREW_IMPORTS = 'community_homebrew_imports';
 
 // ========== LOCALSTORAGE KEYS: SHARED ==========
 export const LS_CONSENT = 'dh_terms_accepted';

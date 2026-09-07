@@ -34,7 +34,7 @@ export function initTracker() {
                 const idx = adversariesData.indexOf(a);
                 return `<div onclick="window._selectEnemy(${idx})" class="px-4 py-2 text-sm hover:bg-[#2a2418] cursor-pointer border-b border-[#3d362a] last:border-0">
                     <span class="text-[#f5efe6]">${escHtml(a.name)}</span>
-                    <span class="text-[10px] text-zinc-500 ml-2">${escHtml(a.type || '')} • T${escHtml(a.tier || '')}</span>
+                    <span class="text-[10px] text-zinc-500 ml-2">${escHtml(a.type || '')}${a.tier ? ' • Tier ' + escHtml(a.tier) : ''}</span>
                 </div>`;
             }).join('');
         });
@@ -219,7 +219,8 @@ function selectEnemy(index) {
     document.getElementById('enemyPreview').innerHTML = `
         <div class="flex items-center justify-between mb-2">
             <span class="font-black text-sm font-[Cinzel] text-[#f5efe6]">${escHtml(selectedEnemy.name)}</span>
-            <span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-400">${escHtml(selectedEnemy.type || '')} • T${escHtml(selectedEnemy.tier || '')}</span>
+            <span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-400">${escHtml(selectedEnemy.type || '')}</span>
+            ${selectedEnemy.tier ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-400">Tier ${escHtml(selectedEnemy.tier)}</span>` : ''}
         </div>
         <div class="flex flex-wrap gap-2 mb-2 text-[10px]">
             <span class="text-blue-300">Difficulty ${escHtml(selectedEnemy.difficulty || '')}</span>
@@ -267,7 +268,10 @@ export function addCreatures() {
         if (creature) {
             if (hasNameConflict(name, editId)) { showAlert('Name already in use.'); return; }
             Object.assign(creature, { name, evasion, hpMax: hp, hpFilled: Math.min(creature.hpFilled, hp), stressMax: stress, stressFilled: Math.min(creature.stressFilled, stress), hopeMax: hope, hopeFilled: Math.min(creature.hopeFilled, hope), armorMax: armor, armorFilled: Math.min(creature.armorFilled, armor), enemyData });
-            autoCache(); renderCard(creature); closeAddModal(); return;
+            autoCache();
+            if (vaultCreatures().includes(creature)) { import('./vault.js').then(m => { m.autoCacheVault(); m.renderVaultGrid(); }); }
+            else renderCard(creature);
+            closeAddModal(); return;
         }
     }
 
@@ -347,6 +351,7 @@ export function openCustomModal() {
     document.getElementById('customStress').value = '0';
     document.getElementById('customMajor').value = '';
     document.getElementById('customSevere').value = '';
+    document.getElementById('customTier').value = '';
     document.getElementById('customQty').value = '1';
     setCustomAttacks([]);
     document.getElementById('customName').focus();
@@ -378,6 +383,7 @@ export function editCustomCard(creatureId, fromVault) {
     document.getElementById('customMajor').value = major === '?' ? '' : (major || '');
     document.getElementById('customSevere').value = severe === '?' ? '' : (severe || '');
     document.getElementById('customType').value = ed.type || '';
+    document.getElementById('customTier').value = ed.tier || '';
     document.getElementById('customRange').value = ed.range || '';
     setCustomAttacks(enemyDataToAttacks(ed));
     document.getElementById('customMotives').value = ed.motives_and_tactics || '';
@@ -404,6 +410,7 @@ export function addCustom() {
     const major = document.getElementById('customMajor').value.trim();
     const severe = document.getElementById('customSevere').value.trim();
     const customType = document.getElementById('customType').value.trim();
+    const customTier = document.getElementById('customTier').value.trim();
     const customRange = document.getElementById('customRange').value.trim();
     const attacks = getCustomAttacks();
     const motives = document.getElementById('customMotives').value.trim();
@@ -416,7 +423,7 @@ export function addCustom() {
         const ci = line.indexOf(':');
         return ci > -1 ? { name: line.slice(0, ci).trim(), text: line.slice(ci + 1).trim() } : { name: line.trim(), text: '' };
     }) : [];
-    const enemyData = { name, difficulty: String(difficulty), hp: String(hp), stress: String(stress), thresholds, atk: attacks.length ? (attacks[0].name.match(/[+-]\d+/)?.[0] || '') : '', attack: attacks.length ? attacks[0].name : '', damage: attacks.length ? attacks[0].damage : '', range: attacks.length ? attacks[0].range : customRange, attacks, description, experience, motives_and_tactics: motives, ability: '', feature: features, type: customType || document.getElementById('customModal').getAttribute('data-edit-type') || 'Custom', tier: '' };
+    const enemyData = { name, difficulty: String(difficulty), hp: String(hp), stress: String(stress), thresholds, atk: attacks.length ? (attacks[0].name.match(/[+-]\d+/)?.[0] || '') : '', attack: attacks.length ? attacks[0].name : '', damage: attacks.length ? attacks[0].damage : '', range: attacks.length ? attacks[0].range : customRange, attacks, description, experience, motives_and_tactics: motives, ability: '', feature: features, type: customType || document.getElementById('customModal').getAttribute('data-edit-type') || 'Custom', tier: customTier };
 
     const editId = document.getElementById('customModal').getAttribute('data-edit-id');
     if (editId) {
@@ -424,7 +431,10 @@ export function addCustom() {
         if (creature) {
             if (hasNameConflict(name, editId)) { showAlert('Name already in use.'); return; }
             Object.assign(creature, { name, evasion: difficulty, hpMax: hp, hpFilled: Math.min(creature.hpFilled, hp), stressMax: stress, stressFilled: Math.min(creature.stressFilled, stress), enemyData });
-            autoCache(); renderCard(creature); closeCustomModal(); return;
+            autoCache();
+            if (vaultCreatures().includes(creature)) { import('./vault.js').then(m => { m.autoCacheVault(); m.renderVaultGrid(); }); }
+            else renderCard(creature);
+            closeCustomModal(); return;
         }
     }
     const toVault = isVaultActive();
@@ -509,7 +519,7 @@ function buildCardInner(creature, dead) {
         const [major, severe] = (ed.thresholds || '').split('/').map(s => s.trim());
         const features = ed.feature || [];
         enemyInfo = `<div class="mt-3 pt-3 border-t border-[#2a2418] space-y-2">
-            <div class="flex flex-wrap gap-1.5"><span class="text-[10px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${escHtml(ed.type || '')} • T${escHtml(ed.tier || '')}</span>${major ? `<span class="text-[10px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-amber-300">Major ${escHtml(major)}+</span>` : ''}${severe ? `<span class="text-[10px] bg-[#2a1a1a] border border-[#3d2a2a] rounded px-1.5 py-0.5 text-red-300">Severe ${escHtml(severe)}+</span>` : ''}</div>
+            <div class="flex flex-wrap gap-1.5"><span class="text-[10px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${escHtml(ed.type || '')}</span>${ed.tier ? `<span class="text-[10px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">Tier ${escHtml(ed.tier)}</span>` : ''}<span class="text-[10px] bg-[#1a2a3b] border border-[#2a3d5a] rounded px-1.5 py-0.5 text-blue-300">Difficulty ${escHtml(String(evasion))}</span>${major ? `<span class="text-[10px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-amber-300">Major ${escHtml(major)}+</span>` : ''}${severe ? `<span class="text-[10px] bg-[#2a1a1a] border border-[#3d2a2a] rounded px-1.5 py-0.5 text-red-300">Severe ${escHtml(severe)}+</span>` : ''}</div>
             <div class="text-xs text-[#e8e0d4]">${(ed.attacks && ed.attacks.length ? ed.attacks : (ed.attack ? [{name: ed.attack, damage: ed.damage, range: ed.range, atk: ed.atk}] : [])).map(a => `⚔️ <span class="font-bold">${escHtml(a.name || '')}</span>${(a.atk || ed.atk) ? ' • ' + escHtml(a.atk || ed.atk || '') : ''} • ${escHtml(a.damage || '')} • ${escHtml(a.range || '')}`).join('<br>')}</div>
             ${ed.experience ? `<div class="text-xs text-[#e8e0d4]">📋 ${escHtml(ed.experience)}</div>` : ''}
             ${ed.motives_and_tactics ? `<div class="text-xs text-[#e8e0d4]">🎯 ${escHtml(ed.motives_and_tactics)}</div>` : ''}
@@ -523,7 +533,7 @@ function buildCardInner(creature, dead) {
 
     return `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2">${typeIcon}<span class="font-black text-sm uppercase font-[Cinzel] ${dead ? 'text-zinc-600 line-through' : 'text-[#f5efe6]'}">${creature.name}</span></div>
         <div class="flex items-center gap-2"><button onclick="window._copyCreature('${creature.id}')" class="btn-icon" title="Duplicate">➕</button><button onclick="window._stashToVault('${creature.id}')" class="btn-icon" title="Stash to Vault">📦</button>${editBtn}<button onclick="window._flipCard('${creature.id}')" class="btn-icon" title="Notes">📝</button><button onclick="window._removeCreature('${creature.id}', event)" class="btn-remove" title="Remove">✕</button></div></div>
-        ${evasion > 0 ? `<div class="flex items-center gap-2 mb-3 pb-2.5 border-b border-[#2a2418]"><span class="text-[10px] font-bold text-blue-300 uppercase tracking-wide">${ed ? 'Difficulty' : 'Evasion'}</span>${adjBtn('evasion', -1)}<span class="text-sm font-bold text-blue-200">${evasion}</span>${adjBtn('evasion', 1)}</div>` : ''}
+        ${evasion > 0 && !ed ? `<div class="flex flex-wrap gap-1.5 mb-3 pb-2.5 border-b border-[#2a2418]"><span class="text-[10px] bg-[#1a2a3b] border border-[#2a3d5a] rounded px-1.5 py-0.5 text-blue-300">Evasion ${evasion}</span></div>` : ''}
         ${dotRow('hp', 'HP', 'text-red-400')}${dotRow('stress', 'Stress', 'text-purple-400')}${dotRow('hope', 'Hope', 'text-amber-400')}${dotRow('armor', 'Armor', 'text-blue-400')}${enemyInfo}`;
 }
 

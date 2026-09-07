@@ -246,7 +246,7 @@
             <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Name</label><input id="customName" type="text" placeholder="Custom adversary name..." class="w-full input-field text-center"></div>
             <div class="grid grid-cols-3 gap-3"><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Difficulty</label><input id="customDifficulty" type="number" value="10" min="0" max="30" class="w-full input-field text-center"></div><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">HP</label><input id="customHp" type="number" value="1" min="0" max="30" class="w-full input-field text-center"></div><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Stress</label><input id="customStress" type="number" value="0" min="0" max="30" class="w-full input-field text-center"></div></div>
             <div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Major Threshold</label><input id="customMajor" type="number" value="" min="0" max="99" placeholder="e.g. 8" class="w-full input-field text-center"></div><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Severe Threshold</label><input id="customSevere" type="number" value="" min="0" max="99" placeholder="e.g. 15" class="w-full input-field text-center"></div></div>
-            <div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Type</label><input id="customType" type="text" placeholder="e.g. Solo, Standard" class="w-full input-field text-center"></div><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Range</label><input id="customRange" type="text" placeholder="e.g. Melee, Close" class="w-full input-field text-center"></div></div>
+            <div class="grid grid-cols-3 gap-3"><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Type</label><input id="customType" type="text" placeholder="e.g. Solo, Standard" class="w-full input-field text-center"></div><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Tier</label><input id="customTier" type="number" placeholder="e.g. 1" min="1" max="4" class="w-full input-field text-center"></div><div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Range</label><input id="customRange" type="text" placeholder="e.g. Melee, Close" class="w-full input-field text-center"></div></div>
             <div id="customAttacksContainer"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Attacks</label><div id="customAttacksList" class="space-y-2"></div><button type="button" onclick="addCustomAttackRow()" class="mt-2 btn-outline">+ Attack</button></div>
             <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Motives & Tactics</label><input id="customMotives" type="text" placeholder="e.g. Defend lair, fly, freeze" class="w-full input-field text-center"></div>
             <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1 text-center">Experience</label><input id="customExperience" type="text" placeholder="e.g. Magical Knowledge +2" class="w-full input-field text-center"></div>
@@ -343,6 +343,29 @@
     <div class="modal-panel p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
         <button onclick="closeCharDetail()" class="btn-close absolute top-4 right-4 z-10">✕</button>
         <div id="charDetailBody"></div>
+    </div>
+</div>
+
+<!-- Share Adversary Modal -->
+<div id="shareAdvModal" class="fixed inset-0 modal-overlay hidden z-[60] p-4 overflow-y-auto flex items-center justify-center" onclick="if(event.target===this)closeShareAdv()">
+    <div class="modal-panel p-6 w-full max-w-md">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5">
+            <h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Share Adversary</h2>
+            <button onclick="closeShareAdv()" class="btn-close">✕</button>
+        </div>
+        <div class="space-y-4">
+            <div id="shareAdvPreview" class="panel-box"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Title</label><input id="shareAdvTitle" type="text" placeholder="Adversary name for the community..." maxlength="80" class="w-full input-field"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Description</label><textarea id="shareAdvDescription" rows="2" placeholder="Brief description of this adversary..." maxlength="300" class="w-full input-field resize-y"></textarea></div>
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="shareAdvConsent" class="accent-[#d4a017]">
+                <span class="text-[10px] text-zinc-400">I agree to the <a href="../terms.html#community-sharing" target="_blank" class="text-[#d4a017] hover:underline font-bold" onclick="event.stopPropagation()">Community Sharing Terms</a></span>
+            </label>
+        </div>
+        <div class="flex gap-3 mt-6">
+            <button id="shareAdvSubmitBtn" onclick="submitShareAdv()" disabled class="flex-1 btn-primary opacity-40 cursor-not-allowed">Share</button>
+            <button onclick="closeShareAdv()" class="flex-1 btn-secondary">Cancel</button>
+        </div>
     </div>
 </div>
 

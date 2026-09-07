@@ -31,6 +31,7 @@ export const CATEGORY_LABELS = {
     'communities.json': 'Community',
     'classes.json': 'Class',
     'subclasses.json': 'Subclass',
+    'homebrew.json': 'Homebrew',
 };
 
 export const DOMAIN_COLORS = {

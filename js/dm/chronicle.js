@@ -252,6 +252,7 @@ function validateShareForm() {
 
 function openShareModal(id) {
     if (!getUser()) { showAlert('Sign in to share chapters.'); return; }
+    if (!getProfile()?.nickname) { showAlert('Set a nickname in your Profile before sharing.'); return; }
     const ch = _chronicleEntries.find(c => c.id === id);
     if (!ch) return;
     if (_quillInstances[id]) ch.text = _quillInstances[id].root.innerHTML;
@@ -296,10 +297,9 @@ async function submitShare() {
         showAlert('You already shared a chapter with this title. Use a different title or edit it from Community \u2192 My Shares.');
         return;
     }
-    const profile = getProfile();
     const row = {
         author_id: getUser().id,
-        author_nickname: profile?.nickname || getUser().user_metadata?.full_name || getUser().email?.split('@')[0] || 'Unknown',
+        author_nickname: getProfile().nickname,
         title,
         content: { text: ch.text || '', npcs: ch.npcs || [], music: ch.music || [] },
         description,

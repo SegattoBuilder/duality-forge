@@ -196,6 +196,7 @@
             <div class="flex items-center gap-2">
                 <button class="info-btn" onclick="event.stopPropagation(); document.getElementById('info-domain').classList.toggle('open')">i</button>
                 <button class="btn-primary-pill" onclick="event.stopPropagation(); openDatabase()">+ Add</button>
+                <button class="btn-primary-pill" onclick="event.stopPropagation(); openCreateCard()" title="Create homebrew card">✦ Create</button>
                 <span class="text-zinc-500 text-xs toggle-icon" id="sec-domain-tog">▼</span>
             </div>
         </div>
@@ -344,6 +345,106 @@
             </select>
         </div>
         <div id="modalResults" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1"></div>
+    </div>
+</div>
+
+<!-- Edit Homebrew Card Modal -->
+<div id="editCardModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-start justify-center pt-8" onclick="if(event.target===this)closeEditCard()">
+    <div class="modal-panel p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5">
+            <h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Edit Card</h2>
+            <button onclick="closeEditCard()" class="btn-close">✕</button>
+        </div>
+        <div id="editCardFields" class="space-y-4"></div>
+        <div>
+            <div class="flex items-center justify-between mb-1.5 mt-4">
+                <label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold">Features</label>
+                <button onclick="addEditCardFeature()" class="btn-outline text-[9px] py-1 px-2">+ Feature</button>
+            </div>
+            <div id="editCardFeatureList" class="space-y-1"></div>
+        </div>
+        <div class="flex gap-3 mt-6">
+            <button onclick="saveEditCard()" class="flex-1 btn-primary">Save</button>
+            <button onclick="closeEditCard()" class="flex-1 btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Share Homebrew Card Modal -->
+<div id="shareCardModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-center justify-center" onclick="if(event.target===this)closeShareCard()">
+    <div class="modal-panel p-6 w-full max-w-sm">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5">
+            <h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Share to Community</h2>
+            <button onclick="closeShareCard()" class="btn-close">✕</button>
+        </div>
+        <div class="space-y-4">
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Title</label><input id="shareCardTitle" type="text" maxlength="80" class="w-full input-field" placeholder="Title shown in community browse"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Description (3+ words)</label><textarea id="shareCardDesc" rows="2" maxlength="300" class="w-full input-field resize-y" placeholder="Brief description..."></textarea></div>
+            <label class="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" id="shareCardConsent" class="accent-[#d4a017] mt-0.5">
+                <span class="text-[10px] text-zinc-500 leading-relaxed">I confirm this is my original creation and I agree to share it under the <a href="../terms.html#community-sharing" target="_blank" class="text-[#d4a017] hover:underline font-bold" onclick="event.stopPropagation()">Community Sharing Terms</a>.</span>
+            </label>
+        </div>
+        <div class="flex gap-3 mt-6">
+            <button onclick="submitShareCard()" id="shareCardBtn" class="flex-1 btn-primary" disabled>Share</button>
+            <button onclick="closeShareCard()" class="flex-1 btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Create Homebrew Card Modal -->
+<div id="createCardModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-start justify-center pt-8" onclick="if(event.target===this)closeCreateCard()">
+    <div class="modal-panel p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5">
+            <h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Create Homebrew Card</h2>
+            <button onclick="closeCreateCard()" class="btn-close">✕</button>
+        </div>
+        <div class="space-y-4">
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Card Type</label>
+                <select id="createCardType" onchange="onCreateCardTypeChange()" class="w-full select-field">
+                    <option value="">Select type...</option>
+                    <option value="domain-card">Domain Card</option>
+                    <option value="general">General (Ancestry, Community, Class, Subclass, Custom)</option>
+                </select>
+            </div>
+            <!-- Domain Card fields -->
+            <div id="createCardDomainFields" class="hidden space-y-4">
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Card Name</label><input id="createCardDomainName" type="text" maxlength="80" class="w-full input-field" placeholder="e.g. Arcane Surge"></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Domain</label>
+                        <select id="createCardDomain" class="w-full select-field"><option value="">Select...</option><option>ARCANA</option><option>BLADE</option><option>BONE</option><option>CODEX</option><option>GRACE</option><option>MIDNIGHT</option><option>SAGE</option><option>SPLENDOR</option><option>VALOR</option></select>
+                    </div>
+                    <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Type</label>
+                        <select id="createCardDomainType" class="w-full select-field"><option value="">Select...</option><option>ABILITY</option><option>SPELL</option></select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Level (1–10)</label><input id="createCardLevel" type="number" min="1" max="10" class="w-full input-field"></div>
+                    <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Recall Cost</label><input id="createCardRecall" type="number" min="0" max="10" class="w-full input-field"></div>
+                </div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Description</label><textarea id="createCardDomainDesc" rows="3" class="w-full input-field resize-y" placeholder="Card description..."></textarea></div>
+            </div>
+            <!-- General Card fields -->
+            <div id="createCardGeneralFields" class="hidden space-y-4">
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Category</label>
+                    <select id="createCardCategory" class="w-full select-field"><option value="">Select...</option><option value="ancestries">Ancestry</option><option value="communities">Community</option><option value="classes">Class</option><option value="subclasses">Subclass</option><option value="homebrew">Homebrew</option></select>
+                </div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Card Name</label><input id="createCardGeneralName" type="text" maxlength="80" class="w-full input-field" placeholder="e.g. Ironborn"></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Description</label><textarea id="createCardGeneralDesc" rows="3" class="w-full input-field resize-y" placeholder="Card description..."></textarea></div>
+            </div>
+            <!-- Features -->
+            <div id="createCardFeaturesWrap" class="hidden">
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold">Features</label>
+                    <button onclick="addCreateCardFeature()" class="btn-outline text-[9px] py-1 px-2">+ Feature</button>
+                </div>
+                <div id="createCardFeatureList" class="space-y-1"></div>
+            </div>
+        </div>
+        <div id="createCardActions" class="hidden flex gap-3 mt-6">
+            <button onclick="submitCreateCard()" id="createCardBtn" class="flex-1 btn-primary" disabled>Add to Sheet</button>
+            <button onclick="closeCreateCard()" class="flex-1 btn-secondary">Cancel</button>
+        </div>
     </div>
 </div>
 

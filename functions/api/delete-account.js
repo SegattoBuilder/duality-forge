@@ -65,14 +65,22 @@ export async function onRequestPost(context) {
         }
 
         // 3. Anonymize community shared content (keep content, remove author link)
-        await fetch(`${rest}/community_chapters?author_id=eq.${uid}`, {
-            method: 'PATCH', headers,
-            body: JSON.stringify({ author_id: null, author_nickname: 'Unknown' })
-        });
+        const anonymize = { author_id: null, author_nickname: 'Unknown' };
+        await Promise.all([
+            fetch(`${rest}/community_chapters?author_id=eq.${uid}`, { method: 'PATCH', headers, body: JSON.stringify(anonymize) }),
+            fetch(`${rest}/community_adversaries?author_id=eq.${uid}`, { method: 'PATCH', headers, body: JSON.stringify(anonymize) }),
+            fetch(`${rest}/community_homebrew?author_id=eq.${uid}`, { method: 'PATCH', headers, body: JSON.stringify(anonymize) })
+        ]);
 
         // 4. Delete all user data
-        await fetch(`${rest}/community_ratings?user_id=eq.${uid}`, { method: 'DELETE', headers });
-        await fetch(`${rest}/community_imports?user_id=eq.${uid}`, { method: 'DELETE', headers });
+        await Promise.all([
+            fetch(`${rest}/community_chapter_ratings?user_id=eq.${uid}`, { method: 'DELETE', headers }),
+            fetch(`${rest}/community_chapter_imports?user_id=eq.${uid}`, { method: 'DELETE', headers }),
+            fetch(`${rest}/community_adversary_ratings?user_id=eq.${uid}`, { method: 'DELETE', headers }),
+            fetch(`${rest}/community_adversary_imports?user_id=eq.${uid}`, { method: 'DELETE', headers }),
+            fetch(`${rest}/community_homebrew_ratings?user_id=eq.${uid}`, { method: 'DELETE', headers }),
+            fetch(`${rest}/community_homebrew_imports?user_id=eq.${uid}`, { method: 'DELETE', headers })
+        ]);
         await fetch(`${rest}/characters?user_id=eq.${uid}`, { method: 'DELETE', headers });
         await fetch(`${rest}/dm_tables?user_id=eq.${uid}`, { method: 'DELETE', headers });
         await fetch(`${rest}/profiles?id=eq.${uid}`, { method: 'DELETE', headers });

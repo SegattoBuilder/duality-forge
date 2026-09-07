@@ -1,5 +1,5 @@
 import SUPABASE_CONFIG from './config.js';
-import { PASSWORD_MIN_LENGTH, LS_CONSENT, TABLE_PROFILES } from './constants.js';
+import { PASSWORD_MIN_LENGTH, LS_CONSENT, TABLE_PROFILES, TABLE_COMMUNITY_CHAPTERS, TABLE_COMMUNITY_ADVERSARIES, TABLE_COMMUNITY_HOMEBREW } from './constants.js';
 
 let supabaseClient = null;
 let currentUser = null;
@@ -224,10 +224,17 @@ async function loadProfile() {
 
 export async function saveProfile(profile) {
     if (!currentUser) return false;
+    const oldNickname = currentProfile?.nickname;
     const row = { id: currentUser.id, ...profile };
     const { error } = await getSupabase().from(TABLE_PROFILES).upsert(row);
     if (error) { showAlert('Failed to save profile: ' + error.message); return false; }
     currentProfile = row;
+    if (profile.nickname && profile.nickname !== oldNickname) {
+        const sb = getSupabase();
+        sb.from(TABLE_COMMUNITY_CHAPTERS).update({ author_nickname: profile.nickname }).eq('author_id', currentUser.id).then(() => {});
+        sb.from(TABLE_COMMUNITY_ADVERSARIES).update({ author_nickname: profile.nickname }).eq('author_id', currentUser.id).then(() => {});
+        sb.from(TABLE_COMMUNITY_HOMEBREW).update({ author_nickname: profile.nickname }).eq('author_id', currentUser.id).then(() => {});
+    }
     onAuthChangeCallbacks.forEach(cb => cb(currentUser));
     return true;
 }
