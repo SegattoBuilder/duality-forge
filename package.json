@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "name": "duality-forge",
+  "description": "Dev tooling only — no production dependencies",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.1",
+    "husky": "^9.1.7"
+  }
+}

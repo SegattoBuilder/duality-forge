@@ -1,4 +1,5 @@
 import { autoCache } from './save.js';
+import { computeInsertPosition } from './sort-logic.js';
 
 let draggedEl = null;
 
@@ -56,7 +57,7 @@ function onDrop(e) {
     const dragIdx = items.indexOf(draggedEl);
     const dropIdx = items.indexOf(target);
 
-    if (dragIdx < dropIdx) {
+    if (computeInsertPosition(dragIdx, dropIdx) === 'after') {
         container.insertBefore(draggedEl, target.nextSibling);
     } else {
         container.insertBefore(draggedEl, target);

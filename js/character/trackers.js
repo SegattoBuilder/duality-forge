@@ -1,4 +1,5 @@
 import { autoCache } from './save.js';
+import { computeDotTarget, computeThreshold, resolveAttackBonus } from './trackers-logic.js';
 
 export function renderDots(type, count) {
     const container = document.getElementById(`${type}_dots`);
@@ -9,7 +10,7 @@ export function renderDots(type, count) {
         dot.className = `dot ${type}-dot`;
         dot.onclick = () => {
             const filled = Array.from(container.children).filter(d => d.classList.contains(`filled-${type}`)).length;
-            const target = i < filled ? i : i + 1;
+            const target = computeDotTarget(i, filled);
             Array.from(container.children).forEach((d, j) => {
                 d.classList.toggle(`filled-${type}`, j < target);
             });
@@ -26,15 +27,15 @@ export function updateThresholds() {
     const baseSevere = equipped ? (parseInt(equipped.querySelector('.arm-severe')?.value) || 0) : 0;
     const extraMajor = parseInt(document.getElementById('thresh_major_extra').value) || 0;
     const extraSevere = parseInt(document.getElementById('thresh_severe_extra').value) || 0;
-    document.getElementById('thresh_major').textContent = baseMajor + lvl + extraMajor;
-    document.getElementById('thresh_severe').textContent = baseSevere + lvl + extraSevere;
+    document.getElementById('thresh_major').textContent = computeThreshold(lvl, baseMajor, extraMajor);
+    document.getElementById('thresh_severe').textContent = computeThreshold(lvl, baseSevere, extraSevere);
 }
 
 export function updateAttackBonus() {
     document.querySelectorAll('#weaponList > div[id^="wep-"]').forEach(el => {
         const traitId = el.querySelector('.wep-trait').value;
         const atkEl = el.querySelector('.wep-atk');
-        atkEl.textContent = traitId ? (document.getElementById(traitId)?.value || '0') : '—';
+        atkEl.textContent = resolveAttackBonus(traitId ? (document.getElementById(traitId)?.value) : null);
     });
 }
 

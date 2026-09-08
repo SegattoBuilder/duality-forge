@@ -1,12 +1,11 @@
 import { autoCache } from './save.js';
+import { normalizeExperienceInput, toggleChevron } from './experience-logic.js';
 
 export function addExperience(name, value, desc) {
     const container = document.getElementById('experienceList');
     if (container.innerText.trim() === 'None') container.innerHTML = '';
     const id = 'exp-' + Math.random().toString(36).substr(2, 9);
-    const n = name || '';
-    const v = value || '';
-    const d = desc || '';
+    const { name: n, value: v, desc: d } = normalizeExperienceInput(name, value, desc);
     const html = `
     <div class="space-y-1" id="${id}">
         <div class="flex items-center gap-2">
@@ -28,7 +27,7 @@ function toggleExpDetails(id) {
     const textarea = el.querySelector('.exp-details');
     const chevron = el.querySelector('.exp-chevron');
     textarea.classList.toggle('hidden');
-    chevron.textContent = textarea.classList.contains('hidden') ? '▶' : '▼';
+    chevron.textContent = toggleChevron(textarea.classList.contains('hidden'));
 }
 
 export function removeExperience(id) {

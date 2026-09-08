@@ -2,8 +2,9 @@ import { escHtml, escHtmlAttr, getNextName, switchTab } from './app.js';
 import { creatures, autoCache, renderGrid, editCharacterCard, editCustomCard, editEnemyCard, renderCard, adversariesData } from './tracker.js';
 import { showConfirm, getUser, getProfile, getSupabase, showAlert } from '../core/auth.js';
 import { TABLE_COMMUNITY_ADVERSARIES } from '../core/constants.js';
-
 import { LS_DM_VAULT, LS_DM_VAULT_GROUPS, LS_DM_VAULT_COLLAPSED } from '../core/constants.js';
+import { computeDotToggle, adjustMaxValue, clampEvasion, isCreatureDead } from './tracker-logic.js';
+import { resetCreatureStats, migrateGroupEntry, validateShareAdvFields, getGroupMembers, buildShareAdversaryRow } from './vault-logic.js';
 
 const VAULT_KEY = LS_DM_VAULT;
 const VAULT_GROUPS_KEY = LS_DM_VAULT_GROUPS;
@@ -28,7 +29,7 @@ export function initVault() {
     try { _vaultCreatures = JSON.parse(localStorage.getItem(VAULT_KEY)) || []; } catch { _vaultCreatures = []; }
     try {
         const raw = JSON.parse(localStorage.getItem(VAULT_GROUPS_KEY)) || [];
-        _vaultGroups = raw.map(g => typeof g === 'string' ? { name: g, disposable: false } : g);
+        _vaultGroups = raw.map(migrateGroupEntry);
     } catch { _vaultGroups = []; }
     try { _collapsedGroups = JSON.parse(localStorage.getItem(VAULT_COLLAPSED_KEY)) || {}; } catch { _collapsedGroups = {}; }
 }
@@ -50,14 +51,13 @@ function deployToTracker(id, asIs) {
     const idx = _vaultCreatures.findIndex(c => c.id === id);
     if (idx === -1) return;
     const creature = _vaultCreatures.splice(idx, 1)[0];
-    if (!asIs) { creature.hpFilled = creature.hpMax; creature.stressFilled = creature.stressMax; creature.hopeFilled = creature.hopeMax; creature.armorFilled = creature.armorMax; }
+    if (!asIs) { Object.assign(creature, resetCreatureStats(creature)); }
     creatures().push(creature);
     autoCache(); autoCacheVault(); renderGrid(); renderVaultGrid();
 }
 
 function deployGroupToTracker(group) {
-    const groupNames = _vaultGroups.map(g => g.name);
-    const members = _vaultCreatures.filter(c => group === '__ungrouped' ? (!c.vaultGroup || !groupNames.includes(c.vaultGroup)) : c.vaultGroup === group);
+    const members = getGroupMembers(_vaultCreatures, _vaultGroups, group);
     if (!members.length) return;
     const label = group === '__ungrouped' ? 'all ungrouped creatures' : `all creatures from &quot;${escHtml(group)}&quot;`;
     const gObj = _vaultGroups.find(g => g.name === group);
@@ -65,7 +65,7 @@ function deployGroupToTracker(group) {
     showConfirm(`Deploy ${label} to tracker?${extra}`, () => {
         const deleteGroup = gObj?.disposable && document.getElementById('deployDeleteGroup')?.checked;
         members.forEach(c => {
-            c.hpFilled = c.hpMax; c.stressFilled = c.stressMax; c.hopeFilled = c.hopeMax; c.armorFilled = c.armorMax;
+            Object.assign(c, resetCreatureStats(c));
             creatures().push(c);
         });
         _vaultCreatures = _vaultCreatures.filter(c => !members.includes(c));
@@ -99,20 +99,18 @@ function copyVaultCreature(id) {
 function toggleVaultDot(creatureId, type, index) {
     const creature = _vaultCreatures.find(c => c.id === creatureId);
     if (!creature) return;
-    creature[type + 'Filled'] = index < creature[type + 'Filled'] ? index : index + 1;
+    creature[type + 'Filled'] = computeDotToggle(index, creature[type + 'Filled']);
     autoCacheVault(); renderVaultCard(creature);
 }
 
 function adjustVaultMax(creatureId, type, delta) {
     const creature = _vaultCreatures.find(c => c.id === creatureId);
     if (!creature) return;
-    if (type === 'evasion') { creature.evasion = Math.max(0, Math.min(30, (creature.evasion || 0) + delta)); autoCacheVault(); renderVaultCard(creature); return; }
-    const maxKey = type + 'Max', filledKey = type + 'Filled';
-    const newMax = (creature[maxKey] || 0) + delta;
-    if (newMax < 0 || newMax > 30) return;
-    creature[maxKey] = newMax;
-    if (creature[filledKey] > newMax) creature[filledKey] = newMax;
-    if (delta > 0) creature[filledKey] = Math.min((creature[filledKey] || 0) + 1, newMax);
+    if (type === 'evasion') { creature.evasion = clampEvasion(creature.evasion, delta); autoCacheVault(); renderVaultCard(creature); return; }
+    const result = adjustMaxValue(creature[type + 'Max'], creature[type + 'Filled'], delta);
+    if (!result) return;
+    creature[type + 'Max'] = result.max;
+    creature[type + 'Filled'] = result.filled;
     autoCacheVault(); renderVaultCard(creature);
 }
 
@@ -137,7 +135,7 @@ function updateVaultNotes(creatureId, value) { const c = _vaultCreatures.find(c 
 
 // ========== VAULT CARD RENDERING ==========
 function buildVaultCardInner(creature) {
-    const dead = creature.hpFilled <= 0;
+    const dead = isCreatureDead(creature);
     const adjBtn = (type, delta) => `<button onclick="window._adjustVaultMax('${creature.id}', '${type}', ${delta})" class="w-4 h-4 flex items-center justify-center rounded bg-[#2a2418] border border-[#3d362a] text-zinc-500 hover:text-white text-[10px] leading-none">${delta < 0 ? '−' : '+'}</button>`;
     const dotRow = (type, label, color) => {
         const max = creature[type + 'Max'] || 0;
@@ -178,7 +176,7 @@ function buildVaultCardInner(creature) {
 function renderVaultCard(creature) {
     const el = document.getElementById('v-' + creature.id);
     if (!el) return;
-    el.className = `creature-card ${creature.hpFilled <= 0 ? 'dead' : ''}`;
+    el.className = `creature-card ${isCreatureDead(creature) ? 'dead' : ''}`;
     el.innerHTML = buildVaultCardInner(creature);
 }
 
@@ -264,7 +262,7 @@ function renderVaultGroupCards(list, container) {
     list.forEach(creature => {
         const div = document.createElement('div');
         div.id = 'v-' + creature.id;
-        div.className = `creature-card ${creature.hpFilled <= 0 ? 'dead' : ''}`;
+        div.className = `creature-card ${isCreatureDead(creature) ? 'dead' : ''}`;
         div.draggable = true;
         div.ondragstart = (e) => onVaultDragStart(e, creature.id);
         div.ondragend = onVaultDragEnd;
@@ -363,7 +361,7 @@ function validateShareAdvForm() {
     const title = document.getElementById('shareAdvTitle').value.trim();
     const desc = document.getElementById('shareAdvDescription').value.trim();
     const consent = document.getElementById('shareAdvConsent').checked;
-    const valid = title && desc && desc.split(/\s+/).length >= 3 && consent;
+    const valid = validateShareAdvFields(title, desc, consent);
     const btn = document.getElementById('shareAdvSubmitBtn');
     btn.disabled = !valid;
     btn.classList.toggle('opacity-40', !valid);
@@ -420,34 +418,7 @@ async function submitShareAdv() {
         showAlert('You already shared an adversary with this title. Use a different title or edit it from Community → My Shares.');
         return;
     }
-    const row = {
-        author_id: getUser().id,
-        author_nickname: getProfile().nickname,
-        title,
-        description,
-        adversary_data: {
-            name: creature.name,
-            hp: ed.hp || String(creature.hpMax || 0),
-            stress: ed.stress || String(creature.stressMax || 0),
-            difficulty: ed.difficulty || String(creature.evasion || 0),
-            thresholds: ed.thresholds || '',
-            type: ed.type || '',
-            tier: ed.tier || '',
-            attack: ed.attack || '',
-            damage: ed.damage || '',
-            range: ed.range || '',
-            atk: ed.atk || '',
-            attacks: ed.attacks || [],
-            experience: ed.experience || '',
-            motives_and_tactics: ed.motives_and_tactics || '',
-            ability: ed.ability || '',
-            description: ed.description || '',
-            feature: ed.feature || []
-        },
-        adv_type: ed.type || '',
-        tier: ed.tier || '',
-        difficulty: ed.difficulty || String(creature.evasion || 0)
-    };
+    const row = buildShareAdversaryRow(getUser(), getProfile(), creature, ed, title, description);
     const { error } = await sb.from(TABLE_COMMUNITY_ADVERSARIES).insert(row);
     if (error) { showAlert('Share failed: ' + error.message); return; }
     closeShareAdv();

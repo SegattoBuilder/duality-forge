@@ -7,6 +7,7 @@ import { addGearItem, getGearData, addWeapon, getWeaponData, addArmor, getArmorD
 import { applyTheme } from './theme.js';
 
 import { showConfirm } from '../core/auth.js';
+import { buildExportFilename, getToastStyles, migrateWeapons, migrateArmor, DEFAULT_RESET } from './save-logic.js';
 
 export function autoCache() {
     if (_restoring) return;
@@ -71,20 +72,14 @@ export function applyData(data) {
         if (data.weapons && data.weapons.length) {
             data.weapons.forEach(w => addWeapon(w));
         } else if (data.fields) {
-            // Backward compat: migrate old fixed weapon slots
-            [1, 2].forEach(n => {
-                const name = data.fields[`wep${n}_name`];
-                if (name) addWeapon({ name, trait: data.fields[`wep${n}_trait`] || '', range: data.fields[`wep${n}_range`] || '', dmg: data.fields[`wep${n}_dmg`] || '', feature: data.fields[`wep${n}_feature`] || '', equipped: n === 1 });
-            });
+            migrateWeapons(data.fields).forEach(w => addWeapon(w));
         }
         // Dynamic armors
         document.getElementById('armorList').innerHTML = '<div class="text-center text-xs text-zinc-600 italic">None</div>';
         if (data.armors && data.armors.length) {
             data.armors.forEach(a => addArmor(a));
         } else if (data.fields) {
-            // Backward compat: migrate old fixed armor slot
-            const aName = data.fields['armor_name'];
-            if (aName) addArmor({ name: aName, major: data.fields['armor_thresh_major'] || '0', severe: data.fields['armor_thresh_severe'] || '0', score: data.fields['armor_score'] || '', feature: data.fields['armor_feature'] || '', equipped: true });
+            migrateArmor(data.fields).forEach(a => addArmor(a));
         }
         updateThresholds();
 
@@ -108,7 +103,7 @@ export function saveSheet() {
     a.href = url;
     const charName = data.fields.charName || 'character';
     const date = new Date().toISOString().slice(0, 10);
-    a.download = `${charName}_${date}.json`;
+    a.download = buildExportFilename(charName, date);
     a.click();
     URL.revokeObjectURL(url);
     localStorage.setItem(EXPORT_KEY, Date.now().toString());
@@ -147,12 +142,7 @@ export function loadSheet(silent) {
 export function resetSheet() {
     localStorage.removeItem(SAVE_KEY);
     FIELD_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.value = el.type === 'number' ? '0' : ''; });
-    document.getElementById('track_ev').value = '10';
-    document.getElementById('charLevel').value = '1';
-    document.getElementById('hp_max').value = '6';
-    document.getElementById('stress_max').value = '6';
-    document.getElementById('hope_max').value = '6';
-    document.getElementById('armor_max').value = '3';
+    Object.entries(DEFAULT_RESET).forEach(([id, val]) => { const el = document.getElementById(id); if (el) el.value = val; });
     TEXTAREA_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     ['hp','stress','hope','armor'].forEach(t => renderDots(t, document.getElementById(`${t}_max`)?.value || 0));
     document.getElementById('domainCards').innerHTML = '<div class="text-center text-[10px] text-zinc-600 italic">None</div>';
@@ -168,8 +158,8 @@ export function resetSheet() {
     document.getElementById('consumableList').innerHTML = '<div class="text-center text-xs text-zinc-600 italic">None</div>';
     document.getElementById('weaponList').innerHTML = '<div class="text-center text-xs text-zinc-600 italic">None</div>';
     document.getElementById('armorList').innerHTML = '<div class="text-center text-xs text-zinc-600 italic">None</div>';
-    document.getElementById('thresh_major_extra').value = '0';
-    document.getElementById('thresh_severe_extra').value = '0';
+    document.getElementById('thresh_major_extra').value = DEFAULT_RESET.thresh_major_extra;
+    document.getElementById('thresh_severe_extra').value = DEFAULT_RESET.thresh_severe_extra;
     updateThresholds();
     updateAttackBonus();
     autoCache();
@@ -186,11 +176,7 @@ export function updateExportIndicator() {}
 
 function showToast(msg) {
     const mode = document.body.getAttribute('data-mode') || 'dark';
-    const styles = mode === 'scifi'
-        ? 'background:#0d1220;color:#c8dce8;border:1px solid #1e3a5f;box-shadow:0 0 12px rgba(0,180,255,0.2);'
-        : mode === 'light'
-        ? 'background:#fff;color:#2a2418;border:1px solid #d4c9b8;'
-        : 'background:#2a2418;color:#f5efe6;border:1px solid #4a3f30;';
+    const styles = getToastStyles(mode);
     const toast = document.createElement('div');
     toast.textContent = msg;
     toast.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);${styles}padding:12px 24px;border-radius:10px;font-size:13px;font-weight:600;z-index:99999;opacity:0;transition:opacity 0.2s;`;

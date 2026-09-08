@@ -1,6 +1,7 @@
 import { escHtml, escHtmlAttr, SAVE_KEY, FEAR_KEY, COUNTERS_KEY, getNextName, hasNameConflict, isVaultActive } from './app.js';
 import { vaultCreatures, stashToVault } from './vault.js';
 import { showConfirm, showAlert } from '../core/auth.js';
+import { createCounter as _createCounter, clampCounterValue, computeFearToggle, searchEnemies as _searchEnemies, parseFeatures, buildThresholds, clampQty, isCreatureDead, computeDotToggle, adjustMaxValue, clampEvasion, enemyDataToAttacks, buildEnemyData, buildCharacterEnemyData, updateCreatureStats, featuresToText, parseThresholds } from './tracker-logic.js';
 
 // ========== STATE ==========
 let _creatures = [];
@@ -43,7 +44,7 @@ export function initTracker() {
 
 // ========== ACTION COUNTERS ==========
 export function addCounter() {
-    _actionCounters.push({ id: 'ac-' + Date.now(), label: 'Action Counter', value: 0 });
+    _actionCounters.push(_createCounter());
     autoCache();
     renderGrid();
 }
@@ -58,7 +59,7 @@ export function removeCounter(id) {
 export function stepCounter(id, delta) {
     const c = _actionCounters.find(c => c.id === id);
     if (!c) return;
-    c.value = Math.max(0, Math.min(100, c.value + delta));
+    c.value = clampCounterValue(c.value, delta);
     autoCache();
     renderCounterCard(c);
 }
@@ -105,7 +106,7 @@ export function renderFearDots() {
 }
 
 function toggleFear(index) {
-    _fearFilled = index < _fearFilled ? index : index + 1;
+    _fearFilled = computeFearToggle(index, _fearFilled);
     localStorage.setItem(FEAR_KEY, String(_fearFilled));
     renderFearDots();
 }
@@ -136,9 +137,7 @@ export async function loadAdversaries() {
 }
 
 function searchEnemies(query) {
-    if (!query || query.length < 2) return [];
-    const q = query.toLowerCase();
-    return adversariesData.filter(a => a.name.toLowerCase().includes(q)).slice(0, 10);
+    return _searchEnemies(query, adversariesData);
 }
 
 // ========== ADD TYPE MODAL ==========
@@ -172,8 +171,8 @@ export function editCharacterCard(creatureId, fromVault) {
     if (!creature) return;
     const ed = creature.enemyData;
     const thresholds = ed ? (ed.thresholds || '') : '';
-    const [major, severe] = thresholds ? thresholds.split('/').map(s => s.trim()) : ['', ''];
-    const featuresText = ed && ed.feature ? ed.feature.map(f => f.text ? `${f.name}: ${f.text}` : f.name).join('\n') : '';
+    const [major, severe] = parseThresholds(thresholds);
+    const featuresText = ed ? featuresToText(ed.feature) : '';
 
     document.getElementById('addModal').classList.remove('hidden');
     document.getElementById('addModal').setAttribute('data-edit-id', creatureId);
@@ -244,7 +243,7 @@ export function addCreatures() {
     const stress = parseInt(document.getElementById('modalStress').value) || 0;
     const hope = parseInt(document.getElementById('modalHope').value) || 0;
     const armor = parseInt(document.getElementById('modalArmor').value) || 0;
-    const qty = Math.max(1, Math.min(20, parseInt(document.getElementById('modalQty').value) || 1));
+    const qty = clampQty(document.getElementById('modalQty').value);
     const major = document.getElementById('modalMajor').value.trim();
     const severe = document.getElementById('modalSevere').value.trim();
     const atk = document.getElementById('modalAtk').value.trim();
@@ -254,12 +253,8 @@ export function addCreatures() {
     const hasExtra = major || severe || atk || featuresRaw;
     let enemyData = null;
     if (hasExtra) {
-        const thresholds = (major || severe) ? `${major || '?'}/${severe || '?'}` : '';
-        const features = featuresRaw ? featuresRaw.split('\n').filter(l => l.trim()).map(line => {
-            const ci = line.indexOf(':');
-            return ci > -1 ? { name: line.slice(0, ci).trim(), text: line.slice(ci + 1).trim() } : { name: line.trim(), text: '' };
-        }) : [];
-        enemyData = { name, difficulty: '', hp: String(hp), stress: String(stress), thresholds, atk: atk.match(/[+-]\d+/)?.[0] || '', attack: atk, damage: '', range: '', description: '', experience: '', motives_and_tactics: '', ability: '', feature: features, type: 'Character', tier: '' };
+        const features = parseFeatures(featuresRaw);
+        enemyData = buildCharacterEnemyData({ name, hp, stress, major, severe, atk, features });
     }
 
     const editId = document.getElementById('addModal').getAttribute('data-edit-id');
@@ -267,7 +262,7 @@ export function addCreatures() {
         const creature = _creatures.find(c => c.id === editId) || vaultCreatures().find(c => c.id === editId);
         if (creature) {
             if (hasNameConflict(name, editId)) { showAlert('Name already in use.'); return; }
-            Object.assign(creature, { name, evasion, hpMax: hp, hpFilled: Math.min(creature.hpFilled, hp), stressMax: stress, stressFilled: Math.min(creature.stressFilled, stress), hopeMax: hope, hopeFilled: Math.min(creature.hopeFilled, hope), armorMax: armor, armorFilled: Math.min(creature.armorFilled, armor), enemyData });
+            Object.assign(creature, updateCreatureStats(creature, { name, evasion, hpMax: hp, stressMax: stress, hopeMax: hope, armorMax: armor, enemyData }));
             autoCache();
             if (vaultCreatures().includes(creature)) { import('./vault.js').then(m => { m.autoCacheVault(); m.renderVaultGrid(); }); }
             else renderCard(creature);
@@ -290,7 +285,7 @@ export function addCreatures() {
 // ========== ADD ENEMY ==========
 export function addEnemy() {
     if (!selectedEnemy) return;
-    const qty = Math.max(1, Math.min(20, parseInt(document.getElementById('enemyQty').value) || 1));
+    const qty = clampQty(document.getElementById('enemyQty').value);
     const hp = parseInt(selectedEnemy.hp) || 1;
     const stress = parseInt(selectedEnemy.stress) || 0;
     const evasion = parseInt(selectedEnemy.difficulty) || 10;
@@ -336,10 +331,8 @@ function setCustomAttacks(attacks) {
     attacks.forEach(a => addCustomAttackRow(a.name || '', a.atk || '', a.damage || '', a.range || ''));
 }
 
-function enemyDataToAttacks(ed) {
-    if (ed.attacks && ed.attacks.length) return ed.attacks;
-    if (ed.attack || ed.damage) return [{ name: ed.attack || '', atk: ed.atk || '', damage: ed.damage || '', range: ed.range || '' }];
-    return [];
+function enemyDataToAttacksLocal(ed) {
+    return enemyDataToAttacks(ed);
 }
 
 // ========== CUSTOM MODAL ==========
@@ -369,8 +362,8 @@ export function editCustomCard(creatureId, fromVault) {
     const creature = (fromVault ? vaultCreatures() : _creatures).find(c => c.id === creatureId);
     if (!creature || !creature.enemyData) return;
     const ed = creature.enemyData;
-    const [major, severe] = (ed.thresholds || '').split('/').map(s => s.trim());
-    const featuresText = (ed.feature || []).map(f => f.text ? `${f.name}: ${f.text}` : f.name).join('\n');
+    const [major, severe] = parseThresholds(ed.thresholds);
+    const featuresText = featuresToText(ed.feature);
     document.getElementById('customModal').classList.remove('hidden');
     document.getElementById('customModal').setAttribute('data-edit-id', creatureId);
     document.getElementById('customModal').setAttribute('data-edit-type', ed.type || 'Custom');
@@ -385,7 +378,7 @@ export function editCustomCard(creatureId, fromVault) {
     document.getElementById('customType').value = ed.type || '';
     document.getElementById('customTier').value = ed.tier || '';
     document.getElementById('customRange').value = ed.range || '';
-    setCustomAttacks(enemyDataToAttacks(ed));
+    setCustomAttacks(enemyDataToAttacksLocal(ed));
     document.getElementById('customMotives').value = ed.motives_and_tactics || '';
     document.getElementById('customExperience').value = ed.experience || '';
     document.getElementById('customDescription').value = ed.description || '';
@@ -417,20 +410,17 @@ export function addCustom() {
     const experience = document.getElementById('customExperience').value.trim();
     const description = document.getElementById('customDescription').value.trim();
     const featuresRaw = document.getElementById('customFeatures').value.trim();
-    const qty = Math.max(1, Math.min(20, parseInt(document.getElementById('customQty').value) || 1));
-    const thresholds = (major || severe) ? `${major || '?'}/${severe || '?'}` : '';
-    const features = featuresRaw ? featuresRaw.split('\n').filter(l => l.trim()).map(line => {
-        const ci = line.indexOf(':');
-        return ci > -1 ? { name: line.slice(0, ci).trim(), text: line.slice(ci + 1).trim() } : { name: line.trim(), text: '' };
-    }) : [];
-    const enemyData = { name, difficulty: String(difficulty), hp: String(hp), stress: String(stress), thresholds, atk: attacks.length ? (attacks[0].name.match(/[+-]\d+/)?.[0] || '') : '', attack: attacks.length ? attacks[0].name : '', damage: attacks.length ? attacks[0].damage : '', range: attacks.length ? attacks[0].range : customRange, attacks, description, experience, motives_and_tactics: motives, ability: '', feature: features, type: customType || document.getElementById('customModal').getAttribute('data-edit-type') || 'Custom', tier: customTier };
+    const qty = clampQty(document.getElementById('customQty').value);
+    const thresholds = buildThresholds(major, severe);
+    const features = parseFeatures(featuresRaw);
+    const enemyData = buildEnemyData({ name, difficulty, hp, stress, major, severe, attacks, customRange, motives, experience, description, features, customType, editType: document.getElementById('customModal').getAttribute('data-edit-type'), tier: customTier });
 
     const editId = document.getElementById('customModal').getAttribute('data-edit-id');
     if (editId) {
         const creature = _creatures.find(c => c.id === editId) || vaultCreatures().find(c => c.id === editId);
         if (creature) {
             if (hasNameConflict(name, editId)) { showAlert('Name already in use.'); return; }
-            Object.assign(creature, { name, evasion: difficulty, hpMax: hp, hpFilled: Math.min(creature.hpFilled, hp), stressMax: stress, stressFilled: Math.min(creature.stressFilled, stress), enemyData });
+            Object.assign(creature, updateCreatureStats(creature, { name, evasion: difficulty, hpMax: hp, stressMax: stress, enemyData }));
             autoCache();
             if (vaultCreatures().includes(creature)) { import('./vault.js').then(m => { m.autoCacheVault(); m.renderVaultGrid(); }); }
             else renderCard(creature);
@@ -470,20 +460,18 @@ function toggleDot(creatureId, type, index) {
     const creature = _creatures.find(c => c.id === creatureId);
     if (!creature) return;
     const key = type + 'Filled';
-    creature[key] = index < creature[key] ? index : index + 1;
+    creature[key] = computeDotToggle(index, creature[key]);
     autoCache(); renderCard(creature);
 }
 
 function adjustMax(creatureId, type, delta) {
     const creature = _creatures.find(c => c.id === creatureId);
     if (!creature) return;
-    if (type === 'evasion') { creature.evasion = Math.max(0, Math.min(30, (creature.evasion || 0) + delta)); autoCache(); renderCard(creature); return; }
-    const maxKey = type + 'Max', filledKey = type + 'Filled';
-    const newMax = (creature[maxKey] || 0) + delta;
-    if (newMax < 0 || newMax > 30) return;
-    creature[maxKey] = newMax;
-    if (creature[filledKey] > newMax) creature[filledKey] = newMax;
-    if (delta > 0) creature[filledKey] = Math.min((creature[filledKey] || 0) + 1, newMax);
+    if (type === 'evasion') { creature.evasion = clampEvasion(creature.evasion, delta); autoCache(); renderCard(creature); return; }
+    const result = adjustMaxValue(creature[type + 'Max'], creature[type + 'Filled'], delta);
+    if (!result) return;
+    creature[type + 'Max'] = result.max;
+    creature[type + 'Filled'] = result.filled;
     autoCache(); renderCard(creature);
 }
 
@@ -494,12 +482,12 @@ function renderDots(creature, type) {
     return html;
 }
 
-function isCreatureDead(creature) { return creature.hpFilled <= 0; }
+function isCreatureDeadLocal(creature) { return isCreatureDead(creature); }
 
 export function renderCard(creature) {
     const el = document.getElementById(creature.id);
     if (!el) return;
-    const dead = isCreatureDead(creature);
+    const dead = isCreatureDeadLocal(creature);
     el.className = `creature-card ${dead ? 'dead' : ''}`;
     el.innerHTML = buildCardInner(creature, dead);
 }

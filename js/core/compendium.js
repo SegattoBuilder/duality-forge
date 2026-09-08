@@ -23,6 +23,21 @@ function getLocStr(obj) {
     return obj['en-US'] || obj['en'] || Object.values(obj)[0] || '';
 }
 
+function splitSubclassTiers(item, cat) {
+    if (cat !== 'subclasses') return [{ ...item, _category: cat }];
+    const name = getLocStr(item.name) || '';
+    const tiers = ['foundation', 'specialization', 'mastery'];
+    return tiers.filter(tier => item[tier] && Array.isArray(item[tier].features) && item[tier].features.length)
+        .map(tier => ({
+            ...item,
+            _category: cat,
+            _tier: tier,
+            name: { 'en-US': `${name} — ${tier.charAt(0).toUpperCase() + tier.slice(1)}` },
+            features: item[tier].features,
+            foundation: undefined, specialization: undefined, mastery: undefined
+        }));
+}
+
 export async function loadCompendium(opts = {}) {
     _characterMode = opts.characterMode || false;
     _onAddWeapon = opts.onAddWeapon || null;
@@ -40,7 +55,7 @@ export async function loadCompendium(opts = {}) {
     if (cached) { try { compendiumData = JSON.parse(cached); document.getElementById('compendiumStatus').textContent = `${compendiumData.length} entries loaded. Start typing to search.`; return; } catch {} }
     document.getElementById('compendiumStatus').textContent = 'Fetching compendium data...';
     try {
-        const results = await Promise.all(CATEGORIES.map(cat => fetch(GITHUB_RAW + cat + '.json').then(r => r.json()).then(data => { const items = Array.isArray(data) ? data : (data.items || data.entries || Object.values(data)); return items.map(item => ({ ...item, _category: cat })); }).catch(() => [])));
+        const results = await Promise.all(CATEGORIES.map(cat => fetch(GITHUB_RAW + cat + '.json').then(r => r.json()).then(data => { const items = Array.isArray(data) ? data : (data.items || data.entries || Object.values(data)); return items.flatMap(item => splitSubclassTiers(item, cat)); }).catch(() => [])));
         compendiumData = results.flat();
         localStorage.setItem(COMPENDIUM_CACHE_KEY, JSON.stringify(compendiumData));
         document.getElementById('compendiumStatus').textContent = `${compendiumData.length} entries loaded. Start typing to search.`;
@@ -242,7 +257,8 @@ function buildCardSheetData(item) {
     return {
         name, desc: skipDesc ? '' : descHtml, feature: featureHtml,
         category: cat + '.json', domain: item.domain || '', type: item.type || '',
-        level: item.level, recallCost: item.recallCost
+        level: item.level, recallCost: item.recallCost,
+        classInfo: item.domains && item.domains.length ? item.domains.join(' / ') : ''
     };
 }
 

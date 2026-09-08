@@ -1,11 +1,11 @@
 import { autoCache } from './save.js';
+import { normalizeInventoryInput } from './inventory-logic.js';
 
 export function addInventoryItem(text, qty) {
     const container = document.getElementById('inventoryList');
     if (container.innerText.trim() === 'None') container.innerHTML = '';
     const id = 'inv-' + Math.random().toString(36).substr(2, 9);
-    const val = text || '';
-    const q = qty || '1';
+    const { name: val, qty: q } = normalizeInventoryInput(text, qty);
     const html = `
     <div class="flex items-center gap-2" id="${id}">
         <input type="text" value="${val}" placeholder="Item..." class="flex-1 gear-input text-left px-3 text-sm" data-autocache>

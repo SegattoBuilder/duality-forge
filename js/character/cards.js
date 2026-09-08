@@ -3,6 +3,7 @@ import { autoCache } from './save.js';
 import { toggleCard } from './ui.js';
 import { showConfirm, showAlert, getSupabase, getUser, getProfile } from '../core/auth.js';
 import { TABLE_COMMUNITY_HOMEBREW } from '../core/constants.js';
+import { t, domainColor as _domainColor, parseItem, escAttr, buildFeatureHtml, validateShareFields, validateDomainCardFields, validateGeneralCardFields, cardSortComparator, flattenClasses, flattenSubclasses } from './cards-logic.js';
 
 export function openCardDetail(id) {
     const el = document.getElementById(id);
@@ -20,39 +21,8 @@ export function closeCardDetail() {
     document.getElementById('cardDetailModal').classList.add('hidden');
 }
 
-function t(val) {
-    if (!val) return '';
-    if (typeof val === 'string') return val;
-    if (val['en-US']) return val['en-US'];
-    return String(val);
-}
-
 function domainColor(domain) {
-    return DOMAIN_COLORS[domain] || { text: '#a1a1aa', border: '#3f3f46', bg: '#3f3f4620' };
-}
-
-function parseDesc(descArr) {
-    if (!Array.isArray(descArr)) return t(descArr) || '';
-    return descArr.map(d => {
-        if (d.paragraph) return `<p>${t(d.paragraph)}</p>`;
-        if (d.list) return d.list.map(li => `<p>• ${t(li)}</p>`).join('');
-        return t(d);
-    }).filter(Boolean).join('');
-}
-
-function parseItem(item) {
-    const name = t(item.name) || t(item.title) || 'Unnamed Card';
-    let desc = parseDesc(item.description) || t(item.text) || t(item.ability) || t(item.effect) || '';
-    let feature = '';
-    if (Array.isArray(item.features) && item.features.length) {
-        feature = item.features.map(f => {
-            const fn = t(f.name);
-            const fd = parseDesc(f.description);
-            if (fn) return `<div class="text-[11px] font-bold text-amber-400 mt-1">${fn}</div><div class="text-[11px] text-zinc-400 leading-relaxed">${fd}</div>`;
-            return `<div class="text-[11px] text-zinc-400 leading-relaxed">${fd}</div>`;
-        }).join('');
-    }
-    return { name, desc, feature };
+    return _domainColor(domain, DOMAIN_COLORS);
 }
 
 export function openDatabase() {
@@ -105,38 +75,8 @@ export async function fetchData() {
             data.sort((a, b) => (a.level || 0) - (b.level || 0));
         }
 
-        if (file === 'classes.json') {
-            const flat = [];
-            data.forEach(cls => {
-                const clsName = cls.name || t(cls.name);
-                const domains = (cls.domains || []).join(' / ');
-                if (cls.hopeFeature) {
-                    flat.push({ _display: `${clsName} — Hope Feature`, name: cls.hopeFeature.name, features: [cls.hopeFeature], _classInfo: domains });
-                }
-                if (Array.isArray(cls.classFeatures)) {
-                    cls.classFeatures.forEach(f => {
-                        flat.push({ _display: `${clsName} — Class Feature`, name: f.name, features: [f], _classInfo: domains });
-                    });
-                }
-            });
-            data = flat;
-        }
-
-        if (file === 'subclasses.json') {
-            const flat = [];
-            data.forEach(sc => {
-                const scName = t(sc.name);
-                const cls = sc.class || '';
-                ['foundation', 'specialization', 'mastery'].forEach(tier => {
-                    if (sc[tier] && Array.isArray(sc[tier].features)) {
-                        sc[tier].features.forEach(f => {
-                            flat.push({ _display: `${scName} — ${tier.charAt(0).toUpperCase() + tier.slice(1)}`, name: f.name, features: [f], _tier: tier, _class: cls });
-                        });
-                    }
-                });
-            });
-            data = flat;
-        }
+        if (file === 'classes.json') data = flattenClasses(data);
+        if (file === 'subclasses.json') data = flattenSubclasses(data);
 
         setCurrentData(data);
         displayResults(data);
@@ -203,7 +143,8 @@ function displayResults(data) {
                     domain: item.domain || '',
                     type: item.type || '',
                     level: item.level,
-                    recallCost: item.recallCost
+                    recallCost: item.recallCost,
+                    classInfo: item._classInfo || ''
                 });
                 closeDatabase();
             };
@@ -267,6 +208,7 @@ export function addCardToSheet(opts) {
             </div>
         </div>
         <div id="${id}-body" class="mt-2" ${collapsed ? 'style="display:none"' : ''}>
+            ${opts.classInfo ? `<div class="flex flex-wrap gap-1.5 mb-2">${opts.classInfo.split(' / ').map(d => `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-400">${d}</span>`).join('')}</div>` : ''}
             ${desc ? `<div class="text-xs text-zinc-500 leading-relaxed">${desc}</div>` : ''}
             ${feature ? `<div class="leading-relaxed mb-1 text-xs">${feature.replace(/text-zinc-200/g, 'text-amber-400')}</div>` : ''}
         </div>
@@ -355,19 +297,16 @@ export function toggleDomainSelect(id) {
 export function reorderDomainCards() {
     const container = document.getElementById('domainCards');
     const cards = Array.from(container.querySelectorAll('[data-card-name]'));
-    cards.sort((a, b) => {
-        const aSelected = selectedDomainCards.has(a.getAttribute('data-card-name')) ? 0 : 1;
-        const bSelected = selectedDomainCards.has(b.getAttribute('data-card-name')) ? 0 : 1;
-        if (aSelected !== bSelected) return aSelected - bSelected;
-        return (parseInt(a.getAttribute('data-level')) || 0) - (parseInt(b.getAttribute('data-level')) || 0);
-    });
+    cards.sort((a, b) => cardSortComparator(
+        selectedDomainCards,
+        { name: a.getAttribute('data-card-name'), level: parseInt(a.getAttribute('data-level')) || 0 },
+        { name: b.getAttribute('data-card-name'), level: parseInt(b.getAttribute('data-level')) || 0 }
+    ));
     cards.forEach(c => container.appendChild(c));
 }
 
 // ========== CREATE HOMEBREW CARD ==========
 let createCardFeatures = [];
-
-function escAttr(str) { return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 export function openCreateCard() {
     createCardFeatures = [];
@@ -436,27 +375,25 @@ export function validateCreateCard() {
     if (!type) return;
     let valid = false;
     if (type === 'domain-card') {
-        valid = !!(
-            document.getElementById('createCardDomainName').value.trim() &&
-            document.getElementById('createCardDomain').value &&
-            document.getElementById('createCardDomainType').value &&
-            document.getElementById('createCardLevel').value &&
-            document.getElementById('createCardRecall').value
-        );
+        valid = validateDomainCardFields({
+            name: document.getElementById('createCardDomainName').value.trim(),
+            domain: document.getElementById('createCardDomain').value,
+            type: document.getElementById('createCardDomainType').value,
+            level: document.getElementById('createCardLevel').value,
+            recall: document.getElementById('createCardRecall').value
+        });
     } else {
-        valid = !!(
-            document.getElementById('createCardCategory').value &&
-            document.getElementById('createCardGeneralName').value.trim()
-        );
+        valid = validateGeneralCardFields({
+            category: document.getElementById('createCardCategory').value,
+            name: document.getElementById('createCardGeneralName').value.trim()
+        });
     }
     document.getElementById('createCardBtn').disabled = !valid;
 }
 
 export function submitCreateCard() {
     const type = document.getElementById('createCardType').value;
-    const featureHtml = createCardFeatures.filter(f => f.name || f.text).map(f =>
-        `<div class="text-[11px] font-bold text-amber-400 mt-1">${escAttr(f.name)}</div><div class="text-[11px] text-zinc-400 leading-relaxed">${escAttr(f.text)}</div>`
-    ).join('');
+    const featureHtml = buildFeatureHtml(createCardFeatures);
 
     let cardData;
     if (type === 'domain-card') {
@@ -574,9 +511,7 @@ export function saveEditCard() {
     if (!cd) return;
 
     const isDomain = cd.category === 'domain-cards.json';
-    const featureHtml = editCardFeatures.filter(f => f.name || f.text).map(f =>
-        `<div class="text-[11px] font-bold text-amber-400 mt-1">${escAttr(f.name)}</div><div class="text-[11px] text-zinc-400 leading-relaxed">${escAttr(f.text)}</div>`
-    ).join('');
+    const featureHtml = buildFeatureHtml(editCardFeatures);
 
     const newName = document.getElementById('editCardName').value.trim();
     if (!newName) { showAlert('Card name is required.'); return; }
@@ -637,8 +572,7 @@ export function validateShareCard() {
     const title = document.getElementById('shareCardTitle').value.trim();
     const desc = document.getElementById('shareCardDesc').value.trim();
     const consent = document.getElementById('shareCardConsent').checked;
-    const descOk = desc.split(/\s+/).filter(Boolean).length >= 3;
-    document.getElementById('shareCardBtn').disabled = !(title && descOk && consent);
+    document.getElementById('shareCardBtn').disabled = !validateShareFields(title, desc, consent);
 }
 
 export async function submitShareCard() {
