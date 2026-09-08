@@ -6,7 +6,7 @@ import { renderDots, updateThresholds, updateAttackBonus } from './trackers.js';
 import { openDatabase, closeDatabase, fetchData, filterCards, closeCardDetail, addCardToSheet, openCreateCard, closeCreateCard, onCreateCardTypeChange, addCreateCardFeature, updateCreateCardFeature, removeCreateCardFeature, validateCreateCard, submitCreateCard, openShareCard, closeShareCard, validateShareCard, submitShareCard, openEditCard, closeEditCard, addEditCardFeature, removeEditCardFeature, updateEditCardFeature, saveEditCard } from './cards.js';
 import { addInventoryItem } from './inventory.js';
 import { addExperience } from './experience.js';
-import { addGearItem, addWeapon, addArmor, addItem, addConsumable } from './gear.js';
+import { addGearItem, addWeapon, addArmor, addItem, addConsumable, resizePendingTextareas } from './gear.js';
 import { autoCache, saveSheet, loadSheet, clearSheet, resetSheet, updateExportIndicator } from './save.js';
 import { initCharAuth } from './char-auth.js';
 import { initAuth } from '../core/auth.js';
@@ -74,6 +74,7 @@ window.switchModernTab = function(tabId) {
     const cloak = document.getElementById('tab-cloak');
     if (cloak) cloak.remove();
     localStorage.setItem(LS_CHAR_ACTIVE_TAB, tabId);
+    if (tabId === 'tab-combat') resizePendingTextareas();
 };
 
 // Load saved data immediately (module runs after DOM is ready)

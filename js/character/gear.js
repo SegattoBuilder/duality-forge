@@ -31,8 +31,18 @@ function toggleCollapse(id) {
 function autoResizeTextareas(container) {
     container.querySelectorAll('textarea.overflow-hidden').forEach(ta => {
         const resize = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
-        resize();
+        if (ta.offsetParent) resize();
+        else ta.dataset.needsResize = 'true';
         ta.addEventListener('input', resize);
+    });
+}
+
+export function resizePendingTextareas() {
+    document.querySelectorAll('textarea[data-needs-resize="true"]').forEach(ta => {
+        if (!ta.offsetParent) return;
+        ta.style.height = 'auto';
+        ta.style.height = ta.scrollHeight + 'px';
+        delete ta.dataset.needsResize;
     });
 }
 
