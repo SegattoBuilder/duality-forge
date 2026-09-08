@@ -31,29 +31,52 @@ const QUILL_TOOLBAR = [
     ['clean']
 ];
 
-// ========== AUTH ==========
-async function initAuth() {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) { currentUser = session.user; renderAuthBtn(); await loadUserData(); }
-    sb.auth.onAuthStateChange((_, session) => {
-        currentUser = session?.user || null;
-        renderAuthBtn();
-        if (currentUser) loadUserData();
+const SIGN_IN_GATE = '<div class="text-center py-16"><div class="text-3xl mb-4">🔒</div><p class="text-sm text-zinc-500 mb-4">Sign in to browse community content.</p><button onclick="openAuthModal()" class="btn-primary px-8 py-3 text-xs">Sign In</button></div>';
+
+function showSignInGate() {
+    ['panelChapters','panelAdversaries','panelHomebrew','panelMyshares'].forEach(id => {
+        const panel = document.getElementById(id);
+        if (!panel) return;
+        Array.from(panel.children).forEach(c => c.style.display = 'none');
+        let gate = panel.querySelector('.sign-in-gate');
+        if (!gate) {
+            gate = document.createElement('div');
+            gate.className = 'sign-in-gate';
+            gate.innerHTML = SIGN_IN_GATE;
+            panel.appendChild(gate);
+        }
+        gate.style.display = '';
     });
 }
 
-function renderAuthBtn() {
-    const btn = document.getElementById('authBtn');
-    if (currentUser) {
-        btn.innerHTML = '';
-        btn.onclick = null;
-        btn.className = 'hidden';
-    } else {
-        btn.innerHTML = '<span class="text-[10px] text-zinc-400">Sign In</span>';
-        btn.onclick = openAuthModal;
-        btn.className = 'btn-nav px-3 w-auto cursor-pointer';
-    }
+function hideSignInGate() {
+    ['panelChapters','panelAdversaries','panelHomebrew','panelMyshares'].forEach(id => {
+        const panel = document.getElementById(id);
+        if (!panel) return;
+        Array.from(panel.children).forEach(c => c.style.display = '');
+        const gate = panel.querySelector('.sign-in-gate');
+        if (gate) gate.style.display = 'none';
+    });
 }
+
+function loadAllContent() {
+    loadChapters();
+    loadAdversaries();
+    loadHomebrew();
+}
+
+// ========== AUTH ==========
+async function initAuth() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) { currentUser = session.user; hideSignInGate(); await loadUserData(); loadAllContent(); }
+    else showSignInGate();
+    sb.auth.onAuthStateChange((_, session) => {
+        currentUser = session?.user || null;
+        if (currentUser) { hideSignInGate(); loadUserData(); loadAllContent(); }
+        else showSignInGate();
+    });
+}
+
 
 // ========== TABS ==========
 function switchTab(tab) {
@@ -65,7 +88,7 @@ function switchTab(tab) {
         if (panel) panel.classList.toggle('hidden', tab !== t);
     });
     if (tab === 'myshares') {
-        if (!currentUser) { openAuthModal(); switchTab('chapters'); return; }
+        if (!currentUser) return;
         loadMyShares();
     } else if (tab === 'chapters') {
         renderResults();
@@ -1279,9 +1302,6 @@ document.addEventListener('keydown', (e) => {
 initMode();
 applyTheme(localStorage.getItem(LS_THEME) || 'gold');
 initAuth();
-loadChapters();
-loadAdversaries();
-loadHomebrew();
 
 document.getElementById('advSearchInput').oninput = renderAdvResults;
 document.getElementById('advFilterType').onchange = renderAdvResults;
