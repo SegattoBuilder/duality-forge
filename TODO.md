@@ -142,6 +142,12 @@
 **Community UX**
 - [x] Replaced all browser `alert()` / `confirm()` with themed toasts and confirm modal
 - [x] Stripped UTF-8 BOM from `js/community/app.js`
+- [x] Sign-in gate — all community tabs show lock screen when logged out, no data loaded
+- [x] Removed nav Sign In button (gate handles auth flow)
+
+**Branding — Forge Theme**
+- [x] Landing page tool cards renamed: DM Tools → The Anvil, Character Sheet → The Crucible, Community → The Fireside
+- [x] Forge-themed descriptions and icons (⚒️ 🗡️ 🔥)
 
 ---
 
