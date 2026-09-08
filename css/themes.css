@@ -193,6 +193,13 @@
 [data-mode="light"] .vitals-hope { background: #faf8f0; border-color: rgba(200,160,20,0.15); }
 [data-mode="light"] .vitals-armor { background: #f0f5fa; border-color: rgba(41,128,185,0.15); }
 
+/* Gear slots & inputs — light mode */
+[data-mode="light"] .gear-slot { background: rgba(0,0,0,0.03); border-color: #d4c9b8; }
+[data-mode="light"] .gear-input { background: rgba(0,0,0,0.03); border-color: #d4c9b8; }
+[data-mode="light"] select.gear-input { background-color: #fff; }
+[data-mode="light"] .bg-gray-800 { background-color: #e8e4f0 !important; }
+[data-mode="light"] .border-gray-700 { border-color: #c8c0d8 !important; }
+
 /* Gear & auth menus — light mode */
 [data-mode="light"] #gearMenu,
 [data-mode="light"] #authMenu {
@@ -470,6 +477,12 @@
 [data-mode="scifi"] .vitals-hope { background: #0e1a1a; border-color: rgba(180,140,20,0.3); }
 [data-mode="scifi"] .vitals-armor { background: #0a1420; border-color: rgba(41,128,185,0.3); }
 
+/* Gear slots & inputs — scifi mode */
+[data-mode="scifi"] .gear-slot { background: rgba(0,10,20,0.4); border-color: #1e3a5f; border-radius: 0 !important; }
+[data-mode="scifi"] .gear-input { background: rgba(0,10,20,0.3); border-color: #1e3a5f; border-radius: 0 !important; }
+[data-mode="scifi"] .bg-gray-800 { background-color: #0a0e1a !important; }
+[data-mode="scifi"] .border-gray-700 { border-color: #1e3a5f !important; }
+
 /* Gear & auth menus */
 [data-mode="scifi"] #gearMenu,
 [data-mode="scifi"] #authMenu {
@@ -696,6 +709,12 @@
 [data-mode="fantasy"] .vitals-stress { background: #1e1410; border-color: rgba(100,40,120,0.3); }
 [data-mode="fantasy"] .vitals-hope { background: #2a2010; border-color: rgba(160,120,20,0.3); }
 [data-mode="fantasy"] .vitals-armor { background: #141a14; border-color: rgba(41,100,150,0.3); }
+
+/* Gear slots & inputs — fantasy mode */
+[data-mode="fantasy"] .gear-slot { background: rgba(10,5,0,0.3); border-color: #4a3518; }
+[data-mode="fantasy"] .gear-input { background: rgba(10,5,0,0.3); border-color: #4a3518; }
+[data-mode="fantasy"] .bg-gray-800 { background-color: #1a1410 !important; }
+[data-mode="fantasy"] .border-gray-700 { border-color: #4a3518 !important; }
 
 /* Gear & auth menus */
 [data-mode="fantasy"] #gearMenu,

@@ -76,8 +76,30 @@ window.switchModernTab = function(tabId) {
     localStorage.setItem(LS_CHAR_ACTIVE_TAB, tabId);
 };
 
+// Load saved data immediately (module runs after DOM is ready)
+setRestoring(true);
+{
+    // Migrate old key
+    if (!localStorage.getItem(SAVE_KEY) && localStorage.getItem(LS_CHAR_SAVE_V1)) {
+        localStorage.setItem(SAVE_KEY, localStorage.getItem(LS_CHAR_SAVE_V1));
+        localStorage.removeItem(LS_CHAR_SAVE_V1);
+    }
+    ['hp', 'stress', 'hope', 'armor'].forEach(t => {
+        const input = document.getElementById(`${t}_max`);
+        if (input) {
+            renderDots(t, input.value);
+            input.onchange = (e) => renderDots(t, e.target.value);
+        }
+    });
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (raw) loadSheet(true);
+    updateThresholds();
+    updateAttackBonus();
+    updateExportIndicator();
+    setRestoring(false);
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
-    setRestoring(true);
     initMode();
     renderThemePicker();
     applyTheme(localStorage.getItem(THEME_KEY) || 'gold');
@@ -87,27 +109,6 @@ window.addEventListener('DOMContentLoaded', async () => {
             document.querySelectorAll('.modal-overlay:not(.hidden):not(#characterPickerModal)').forEach(m => m.classList.add('hidden'));
         }
     });
-
-    ['hp', 'stress', 'hope', 'armor'].forEach(t => {
-        const input = document.getElementById(`${t}_max`);
-        if (input) {
-            renderDots(t, input.value);
-            input.onchange = (e) => renderDots(t, e.target.value);
-        }
-    });
-
-    // Migrate old key
-    if (!localStorage.getItem(SAVE_KEY) && localStorage.getItem(LS_CHAR_SAVE_V1)) {
-        localStorage.setItem(SAVE_KEY, localStorage.getItem(LS_CHAR_SAVE_V1));
-        localStorage.removeItem(LS_CHAR_SAVE_V1);
-    }
-
-    const raw = localStorage.getItem(SAVE_KEY);
-    if (raw) loadSheet(true);
-    updateThresholds();
-    updateAttackBonus();
-    updateExportIndicator();
-    setRestoring(false);
 
     document.addEventListener('input', () => { updateThresholds(); updateAttackBonus(); autoCache(); });
     document.addEventListener('change', () => { updateThresholds(); updateAttackBonus(); autoCache(); });
