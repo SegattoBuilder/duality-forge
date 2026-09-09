@@ -179,6 +179,7 @@ function toggleGear(e) {
     if (e) e.stopPropagation();
     const menu = document.getElementById('gearMenu');
     const wasHidden = menu.classList.contains('hidden');
+    document.getElementById('authMenu').classList.add('hidden');
     menu.classList.toggle('hidden');
     if (gearMenuHandler) { document.removeEventListener('click', gearMenuHandler); gearMenuHandler = null; }
     if (wasHidden) {
@@ -193,6 +194,7 @@ function toggleAuthMenu(e) {
     if (e) e.stopPropagation();
     const menu = document.getElementById('authMenu');
     const wasHidden = menu.classList.contains('hidden');
+    document.getElementById('gearMenu').classList.add('hidden');
     menu.classList.toggle('hidden');
     if (authMenuHandler) { document.removeEventListener('click', authMenuHandler); authMenuHandler = null; }
     if (wasHidden) {
