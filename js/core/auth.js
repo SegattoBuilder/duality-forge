@@ -302,6 +302,20 @@ export function showAlert(message) {
     document.getElementById('customAlertOk').onclick = () => modal.classList.add('hidden');
 }
 
+export function showPrompt(message, defaultValue, onConfirm) {
+    const modal = ensureModal('customPromptModal', `<div class="modal-panel p-6 w-full max-w-sm"><p id="customPromptMsg" class="text-sm text-[#f5efe6] mb-4 font-[Cinzel] text-center"></p><input id="customPromptInput" type="text" class="w-full input-field mb-5"><div class="flex gap-3"><button id="customPromptOk" class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">OK</button><button id="customPromptCancel" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880]">Cancel</button></div></div>`);
+    document.getElementById('customPromptMsg').textContent = message;
+    const input = document.getElementById('customPromptInput');
+    input.value = defaultValue || '';
+    modal.classList.remove('hidden');
+    input.focus();
+    input.select();
+    const cleanup = () => modal.classList.add('hidden');
+    document.getElementById('customPromptOk').onclick = () => { cleanup(); if (onConfirm) onConfirm(input.value); };
+    document.getElementById('customPromptCancel').onclick = cleanup;
+    input.onkeydown = (e) => { if (e.key === 'Enter') { cleanup(); if (onConfirm) onConfirm(input.value); } else if (e.key === 'Escape') cleanup(); };
+}
+
 // ========== UTILITIES ==========
 export function escHtml(str) {
     if (!str) return '';
