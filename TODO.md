@@ -156,6 +156,20 @@
 **Table Board** ← _next_
 - [ ] Shared board per DM table — DM and players can post notes, schedule, table rules, session recaps
 
+**Character Tier Track (Story tab)**
+- [ ] Tier 2 box in Story tab — title "Tier 2: LEVELS 2–4"
+- [ ] Static description: "At level 2, gain an additional Experience at +2 and gain a +1 bonus to your Proficiency."
+- [ ] Instruction text: "Choose two options from the list below and mark them."
+- [ ] 6 checkbox options (true/false toggles, persisted in character state):
+  - [ ] (2 checkboxes) Gain a +1 bonus to two unmarked character traits and mark them.
+  - [ ] (2 checkboxes) Permanently gain one Hit Point slot.
+  - [ ] (2 checkboxes) Permanently gain one Stress slot.
+  - [ ] (1 checkbox) Permanently gain a +1 bonus to two Experiences.
+  - [ ] (1 checkbox) Choose an additional domain card of your level or lower from a domain you have access to (up to level 4).
+  - [ ] (1 checkbox) Permanently gain a +1 bonus to your Evasion.
+- [ ] Footer note: "Update your level and adjust your damage thresholds accordingly. Take an additional domain card of your level or lower from a domain you have access to."
+- [ ] Checkboxes wired to `autoCache()` via `data-autocache`, state saved/restored via `gatherData()` / `applyData()`
+
 ---
 
 ## 💡 Ideas / Someday

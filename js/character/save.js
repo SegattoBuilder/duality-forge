@@ -1,4 +1,4 @@
-import { SAVE_KEY, EXPORT_KEY, THEME_KEY, FIELD_IDS, TEXTAREA_IDS, _restoring, setRestoring, addedCards, selectedDomainCards, savedCardsData, setSavedCardsData } from './state.js';
+import { SAVE_KEY, EXPORT_KEY, THEME_KEY, FIELD_IDS, TEXTAREA_IDS, TIER2_CHECKBOX_IDS, TIER3_CHECKBOX_IDS, TIER4_CHECKBOX_IDS, _restoring, setRestoring, addedCards, selectedDomainCards, savedCardsData, setSavedCardsData } from './state.js';
 import { getDotStates, setDotStates, renderDots, updateThresholds, updateAttackBonus } from './trackers.js';
 import { addCardToSheet, updateDomainSelection, reorderDomainCards } from './cards.js';
 import { addExperience, getExperienceData } from './experience.js';
@@ -20,6 +20,9 @@ export function gatherData() {
         inventory: getInventoryData(), gear: getGearData(),
         weapons: getWeaponData(), armors: getArmorData(),
         items: getItemData(), consumables: getConsumableData(),
+        tier2: Object.fromEntries(TIER2_CHECKBOX_IDS.map(id => [id, document.getElementById(id)?.checked ?? false])),
+        tier3: Object.fromEntries(TIER3_CHECKBOX_IDS.map(id => [id, document.getElementById(id)?.checked ?? false])),
+        tier4: Object.fromEntries(TIER4_CHECKBOX_IDS.map(id => [id, document.getElementById(id)?.checked ?? false])),
         selectedDomain: Array.from(selectedDomainCards),
         theme: localStorage.getItem(THEME_KEY) || 'gold',
         lastExport: localStorage.getItem(EXPORT_KEY) || null
@@ -87,6 +90,9 @@ export function applyData(data) {
             if (aName) addArmor({ name: aName, major: data.fields['armor_thresh_major'] || '0', severe: data.fields['armor_thresh_severe'] || '0', score: data.fields['armor_score'] || '', feature: data.fields['armor_feature'] || '', equipped: true });
         }
         updateThresholds();
+        TIER2_CHECKBOX_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.checked = data.tier2?.[id] ?? false; });
+        TIER3_CHECKBOX_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.checked = data.tier3?.[id] ?? false; });
+        TIER4_CHECKBOX_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.checked = data.tier4?.[id] ?? false; });
 
         selectedDomainCards.clear();
         if (data.selectedDomain && data.selectedDomain.length) {
@@ -154,6 +160,9 @@ export function resetSheet() {
     document.getElementById('hope_max').value = '6';
     document.getElementById('armor_max').value = '3';
     TEXTAREA_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    TIER2_CHECKBOX_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.checked = false; });
+    TIER3_CHECKBOX_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.checked = false; });
+    TIER4_CHECKBOX_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.checked = false; });
     ['hp','stress','hope','armor'].forEach(t => renderDots(t, document.getElementById(`${t}_max`)?.value || 0));
     document.getElementById('domainCards').innerHTML = '<div class="text-center text-[10px] text-zinc-600 italic">None</div>';
     document.getElementById('generalCards').innerHTML = '<div class="text-center text-[10px] text-zinc-600 italic">None</div>';
