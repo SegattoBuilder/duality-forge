@@ -36,9 +36,7 @@ export function isCreatureDead(creature) {
     return creature.hpFilled <= 0;
 }
 
-export function computeDotToggle(index, currentFilled) {
-    return index < currentFilled ? index : index + 1;
-}
+export { computeDotToggle } from '../core/utils.js';
 
 export function adjustMaxValue(currentMax, currentFilled, delta) {
     const newMax = (currentMax || 0) + delta;

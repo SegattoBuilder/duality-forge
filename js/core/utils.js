@@ -1,3 +1,7 @@
+export function computeDotToggle(index, currentFilled) {
+    return index < currentFilled ? index : index + 1;
+}
+
 export function escHtml(str) {
     if (!str) return '';
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
