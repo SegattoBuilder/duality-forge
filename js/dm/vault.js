@@ -1,4 +1,5 @@
-import { escHtml, escHtmlAttr, getNextName, switchTab } from './app.js';
+import { escHtml, escHtmlAttr } from '../core/utils.js';
+import { getNextName, switchTab } from './app.js';
 import { creatures, autoCache, renderGrid, editCharacterCard, editCustomCard, editEnemyCard, renderCard, adversariesData } from './tracker.js';
 import { showConfirm, getUser, getProfile, getSupabase, showAlert, showPrompt } from '../core/auth.js';
 import { TABLE_COMMUNITY_ADVERSARIES } from '../core/constants.js';

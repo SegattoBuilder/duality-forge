@@ -1,4 +1,4 @@
-import { escHtml, escHtmlAttr } from './app.js';
+import { escHtml, escHtmlAttr } from '../core/utils.js';
 import { showConfirm, getUser, getProfile, getSupabase, showAlert } from '../core/auth.js';
 import { LS_DM_CHRONICLE, TABLE_COMMUNITY_CHAPTERS } from '../core/constants.js';
 const CHRONICLE_KEY = LS_DM_CHRONICLE;

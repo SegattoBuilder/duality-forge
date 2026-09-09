@@ -1,4 +1,5 @@
-import { escHtml, escHtmlAttr, SAVE_KEY, FEAR_KEY, COUNTERS_KEY, getNextName, hasNameConflict, isVaultActive } from './app.js';
+import { escHtml, escHtmlAttr } from '../core/utils.js';
+import { SAVE_KEY, FEAR_KEY, COUNTERS_KEY, getNextName, hasNameConflict, isVaultActive } from './app.js';
 import { vaultCreatures, stashToVault } from './vault.js';
 import { showConfirm, showAlert } from '../core/auth.js';
 import { createCounter as _createCounter, clampCounterValue, computeFearToggle, searchEnemies as _searchEnemies, parseFeatures, buildThresholds, clampQty, isCreatureDead, computeDotToggle, adjustMaxValue, clampEvasion, enemyDataToAttacks, buildEnemyData, buildCharacterEnemyData, updateCreatureStats, featuresToText, parseThresholds } from './tracker-logic.js';

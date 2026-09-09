@@ -1,4 +1,5 @@
-import { escHtml, getNextName } from './app.js';
+import { escHtml } from '../core/utils.js';
+import { getNextName } from './app.js';
 import { adversariesData, loadAdversaries, creatures, autoCache, renderGrid } from './tracker.js';
 
 let advSearchTimeout = null;

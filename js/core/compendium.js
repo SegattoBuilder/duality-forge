@@ -1,4 +1,4 @@
-import { escHtml } from './auth.js';
+import { escHtml } from './utils.js';
 
 const GITHUB_RAW = "https://raw.githubusercontent.com/daggersearch/daggerheart-data/main/core/";
 const CATEGORIES = ['ancestries','armors','classes','communities','consumables','domain-cards','items','rules','subclasses','weapons'];
