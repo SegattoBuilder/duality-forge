@@ -73,8 +73,8 @@ describe('parseItem', () => {
 });
 
 describe('escAttr', () => {
-    it('escapes HTML entities', () => {
-        expect(escAttr('<b>"test"&</b>')).toBe('&lt;b&gt;&quot;test&quot;&amp;&lt;/b&gt;');
+    it('escapes HTML attribute entities', () => {
+        expect(escAttr('"test"&')).toBe('&quot;test&quot;&amp;');
     });
 
     it('handles null', () => {

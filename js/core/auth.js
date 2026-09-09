@@ -1,5 +1,6 @@
 import SUPABASE_CONFIG from './config.js';
 import { PASSWORD_MIN_LENGTH, LS_CONSENT, TABLE_PROFILES, TABLE_COMMUNITY_CHAPTERS, TABLE_COMMUNITY_ADVERSARIES, TABLE_COMMUNITY_HOMEBREW } from './constants.js';
+import { escHtml, escHtmlAttr } from './utils.js';
 
 let supabaseClient = null;
 let currentUser = null;
@@ -316,13 +317,5 @@ export function showPrompt(message, defaultValue, onConfirm) {
     input.onkeydown = (e) => { if (e.key === 'Enter') { cleanup(); if (onConfirm) onConfirm(input.value); } else if (e.key === 'Escape') cleanup(); };
 }
 
-// ========== UTILITIES ==========
-export function escHtml(str) {
-    if (!str) return '';
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-}
-
-export function escHtmlAttr(str) {
-    if (!str) return '';
-    return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-}
+// ========== UTILITIES (re-exported from core/utils.js) ==========
+export { escHtml, escHtmlAttr };

@@ -1,4 +1,5 @@
-import { cloudLoadRows, cloudDeleteRow, escHtml, showConfirm, showAlert } from './auth.js';
+import { cloudLoadRows, cloudDeleteRow, showConfirm, showAlert } from './auth.js';
+import { escHtml } from './utils.js';
 
 /**
  * Shared cloud picker — renders grouped (manual + autosave) rows into a modal.

@@ -1,4 +1,5 @@
-import { escHtml, escHtmlAttr, SAVE_KEY, FEAR_KEY, COUNTERS_KEY, getNextName, hasNameConflict, isVaultActive } from './app.js';
+import { escHtml, escHtmlAttr, generateId } from '../core/utils.js';
+import { SAVE_KEY, FEAR_KEY, COUNTERS_KEY, getNextName, hasNameConflict, isVaultActive } from './app.js';
 import { vaultCreatures, stashToVault } from './vault.js';
 import { showConfirm, showAlert } from '../core/auth.js';
 import { createCounter as _createCounter, clampCounterValue, computeFearToggle, searchEnemies as _searchEnemies, parseFeatures, buildThresholds, clampQty, isCreatureDead, computeDotToggle, adjustMaxValue, clampEvasion, enemyDataToAttacks, buildEnemyData, buildCharacterEnemyData, updateCreatureStats, featuresToText, parseThresholds } from './tracker-logic.js';
@@ -80,7 +81,7 @@ function buildCounterCard(c) {
         </div>
         <div class="flex items-center justify-center gap-3">
             <button onclick="window._stepCounter('${c.id}', -1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#3d362a] text-zinc-300 hover:text-white text-sm font-bold">−</button>
-            <span class="text-2xl font-black font-[Cinzel] min-w-[2rem] text-center" style="color: ${atZero ? 'var(--accent-1)' : '#f5efe6'}">${c.value}</span>
+            <span class="text-2xl font-black font-[Cinzel] min-w-[2rem] text-center ${atZero ? '' : 'text-[#f5efe6]'}" style="${atZero ? 'color: var(--accent-1)' : ''}">${c.value}</span>
             <button onclick="window._stepCounter('${c.id}', 1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#3d362a] text-zinc-300 hover:text-white text-sm font-bold">+</button>
         </div>
     </div>`;
@@ -273,7 +274,7 @@ export function addCreatures() {
     const toVault = isVaultActive();
     for (let i = 1; i <= qty; i++) {
         const cName = qty > 1 ? `${name} ${i}` : getNextName(name);
-        const c = { id: 'c-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6), name: cName, evasion, hpMax: hp, hpFilled: hp, stressMax: stress, stressFilled: stress, hopeMax: hope, hopeFilled: hope, armorMax: armor, armorFilled: armor };
+        const c = { id: generateId('c'), name: cName, evasion, hpMax: hp, hpFilled: hp, stressMax: stress, stressFilled: stress, hopeMax: hope, hopeFilled: hope, armorMax: armor, armorFilled: armor };
         if (enemyData) c.enemyData = enemyData;
         if (toVault) { const vc = vaultCreatures(); vc.push(c); } else _creatures.push(c);
     }
@@ -292,7 +293,7 @@ export function addEnemy() {
     const toVault = isVaultActive();
     for (let i = 1; i <= qty; i++) {
         const name = qty > 1 ? `${selectedEnemy.name} ${i}` : getNextName(selectedEnemy.name);
-        const c = { id: 'c-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6), name, evasion, hpMax: hp, hpFilled: hp, stressMax: stress, stressFilled: stress, hopeMax: 0, hopeFilled: 0, armorMax: 0, armorFilled: 0, enemyData: selectedEnemy };
+        const c = { id: generateId('c'), name, evasion, hpMax: hp, hpFilled: hp, stressMax: stress, stressFilled: stress, hopeMax: 0, hopeFilled: 0, armorMax: 0, armorFilled: 0, enemyData: selectedEnemy };
         if (toVault) { const vc = vaultCreatures(); vc.push(c); } else _creatures.push(c);
     }
     if (toVault) { import('./vault.js').then(m => { m.autoCacheVault(); m.renderVaultGrid(); }); }
@@ -430,7 +431,7 @@ export function addCustom() {
     const toVault = isVaultActive();
     for (let i = 1; i <= qty; i++) {
         const cName = qty > 1 ? `${name} ${i}` : getNextName(name);
-        const c = { id: 'c-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6), name: cName, evasion: difficulty, hpMax: hp, hpFilled: hp, stressMax: stress, stressFilled: stress, hopeMax: 0, hopeFilled: 0, armorMax: 0, armorFilled: 0, enemyData };
+        const c = { id: generateId('c'), name: cName, evasion: difficulty, hpMax: hp, hpFilled: hp, stressMax: stress, stressFilled: stress, hopeMax: 0, hopeFilled: 0, armorMax: 0, armorFilled: 0, enemyData };
         if (toVault) { vaultCreatures().push(c); } else _creatures.push(c);
     }
     if (toVault) { import('./vault.js').then(m => { m.autoCacheVault(); m.renderVaultGrid(); }); }
@@ -442,7 +443,7 @@ export function addCustom() {
 export function copyCreature(id) {
     const source = _creatures.find(c => c.id === id);
     if (!source) return;
-    const copy = { ...JSON.parse(JSON.stringify(source)), id: 'c-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6), name: getNextName(source.name.replace(/ \d+$/, '')), notes: '' };
+    const copy = { ...JSON.parse(JSON.stringify(source)), id: generateId('c'), name: getNextName(source.name.replace(/ \d+$/, '')), notes: '' };
     _creatures.splice(_creatures.indexOf(source) + 1, 0, copy);
     autoCache(); renderGrid();
 }

@@ -1,4 +1,5 @@
-import { initAuth, getUser, getProfile, getSupabase, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, changeEmail, isEmailUser, signOut as coreSignOut, signOutAll as coreSignOutAll, deleteAccount as coreDeleteAccount, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
+import { initAuth, getUser, getProfile, getSupabase, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, changeEmail, isEmailUser, signOut as coreSignOut, signOutAll as coreSignOutAll, deleteAccount as coreDeleteAccount, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, showConfirm, showAlert } from '../core/auth.js';
+import { escHtml, escHtmlAttr } from '../core/utils.js';
 import { showCloudPicker } from '../core/cloud-picker.js';
 import { TOAST_DURATION, SYNC_STATUS_DURATION, AUTOSAVE_INTERVAL, TABLE_CHARACTERS, TABLE_DM_TABLES, LS_CHAR_SAVE } from '../core/constants.js';
 import { gatherData, applyData, autoCache, resetSheet } from './save.js';

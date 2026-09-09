@@ -6,9 +6,7 @@ export function migrateGroupEntry(g) {
     return typeof g === 'string' ? { name: g, disposable: false } : g;
 }
 
-export function validateShareAdvFields(title, desc, consent) {
-    return !!(title && desc && desc.split(/\s+/).length >= 3 && consent);
-}
+export { validateShareFields as validateShareAdvFields } from '../core/utils.js';
 
 export function getGroupMembers(creatures, groups, group) {
     const groupNames = groups.map(g => g.name);

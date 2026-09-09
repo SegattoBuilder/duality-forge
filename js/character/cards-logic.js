@@ -1,3 +1,5 @@
+import { escHtmlAttr, escHtml } from '../core/utils.js';
+
 export function t(val) {
     if (!val) return '';
     if (typeof val === 'string') return val;
@@ -33,20 +35,15 @@ export function parseItem(item) {
     return { name, desc, feature };
 }
 
-export function escAttr(str) {
-    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+export { escHtmlAttr as escAttr } from '../core/utils.js';
 
 export function buildFeatureHtml(features) {
     return features.filter(f => f.name || f.text).map(f =>
-        `<div class="text-[11px] font-bold text-amber-400 mt-1">${escAttr(f.name)}</div><div class="text-[11px] text-zinc-400 leading-relaxed">${escAttr(f.text)}</div>`
+        `<div class="text-[11px] font-bold text-amber-400 mt-1">${escHtml(f.name)}</div><div class="text-[11px] text-zinc-400 leading-relaxed">${escHtml(f.text)}</div>`
     ).join('');
 }
 
-export function validateShareFields(title, desc, consent) {
-    const descOk = desc.split(/\s+/).filter(Boolean).length >= 3;
-    return !!(title && descOk && consent);
-}
+export { validateShareFields } from '../core/utils.js';
 
 export function validateDomainCardFields(fields) {
     return !!(fields.name && fields.domain && fields.type && fields.level && fields.recall);

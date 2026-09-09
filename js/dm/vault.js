@@ -1,4 +1,5 @@
-import { escHtml, escHtmlAttr, getNextName, switchTab } from './app.js';
+import { escHtml, escHtmlAttr, generateId } from '../core/utils.js';
+import { getNextName, switchTab } from './app.js';
 import { creatures, autoCache, renderGrid, editCharacterCard, editCustomCard, editEnemyCard, renderCard, adversariesData } from './tracker.js';
 import { showConfirm, getUser, getProfile, getSupabase, showAlert, showPrompt } from '../core/auth.js';
 import { TABLE_COMMUNITY_ADVERSARIES } from '../core/constants.js';
@@ -91,7 +92,7 @@ function removeVaultCreature(id, event) {
 function copyVaultCreature(id) {
     const source = _vaultCreatures.find(c => c.id === id);
     if (!source) return;
-    const copy = { ...JSON.parse(JSON.stringify(source)), id: 'c-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6), name: getNextName(source.name.replace(/ \d+$/, '')), notes: '' };
+    const copy = { ...JSON.parse(JSON.stringify(source)), id: generateId('c'), name: getNextName(source.name.replace(/ \d+$/, '')), notes: '' };
     _vaultCreatures.splice(_vaultCreatures.indexOf(source) + 1, 0, copy);
     autoCacheVault(); renderVaultGrid();
 }

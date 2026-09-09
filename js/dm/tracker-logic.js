@@ -1,5 +1,7 @@
+import { generateId } from '../core/utils.js';
+
 export function createCounter() {
-    return { id: 'ac-' + Date.now(), label: 'Action Counter', value: 0 };
+    return { id: generateId('ac'), label: 'Action Counter', value: 0 };
 }
 
 export function clampCounterValue(current, delta) {
@@ -36,9 +38,7 @@ export function isCreatureDead(creature) {
     return creature.hpFilled <= 0;
 }
 
-export function computeDotToggle(index, currentFilled) {
-    return index < currentFilled ? index : index + 1;
-}
+export { computeDotToggle } from '../core/utils.js';
 
 export function adjustMaxValue(currentMax, currentFilled, delta) {
     const newMax = (currentMax || 0) + delta;

@@ -2,12 +2,6 @@ export function buildExportFilename(charName, date) {
     return `${charName || 'character'}_${date}.json`;
 }
 
-export function getToastStyles(mode) {
-    if (mode === 'scifi') return 'background:#0d1220;color:#c8dce8;border:1px solid #1e3a5f;box-shadow:0 0 12px rgba(0,180,255,0.2);';
-    if (mode === 'light') return 'background:#fff;color:#2a2418;border:1px solid #d4c9b8;';
-    return 'background:#2a2418;color:#f5efe6;border:1px solid #4a3f30;';
-}
-
 export function migrateWeapons(fields) {
     const weapons = [];
     [1, 2].forEach(n => {

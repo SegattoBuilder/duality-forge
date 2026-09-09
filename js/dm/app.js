@@ -1,4 +1,5 @@
-import { initAuth, onAuthChange, getUser, getSupabase, escHtml, escHtmlAttr, showAlert, showConfirm } from '../core/auth.js';
+import { initAuth, onAuthChange, getUser, getSupabase, showAlert, showConfirm } from '../core/auth.js';
+import { escHtml, escHtmlAttr } from '../core/utils.js';
 import { LS_DM_CREATURES, LS_DM_FEAR, LS_DM_COUNTERS, LS_DM_CAMPAIGN, LS_DM_ACTIONBAR, LS_DM_FEARPOOL, LS_DM_TITLE, LS_DM_ACTIVE_TAB, LS_THEME, TABLE_DM_TABLES } from '../core/constants.js';
 import { initMode, setMode, toggleMode, applyTheme, renderThemePicker } from '../core/theme.js';
 import { initTracker, renderGrid, renderFearDots, autoCache, creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled } from './tracker.js';
@@ -16,7 +17,7 @@ export const COUNTERS_KEY = LS_DM_COUNTERS;
 export const CAMPAIGN_KEY = LS_DM_CAMPAIGN;
 
 // ========== RE-EXPORT UTILITIES ==========
-export { escHtml, escHtmlAttr };
+export { escHtml, escHtmlAttr } from '../core/utils.js';
 
 // ========== HELPERS ==========
 export function getLocStr(obj) { return _getLocStr(obj); }

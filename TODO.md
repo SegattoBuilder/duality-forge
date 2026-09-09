@@ -155,6 +155,15 @@
 - [x] Collapsible toggle on all Story tab cards (tiers, description, connections, level up notes, backstory)
 - [x] Dynamic nav spacer — `ResizeObserver` syncs spacer height to nav, replaces hardcoded top margins
 
+### Code Refactoring
+- [x] Extract `escHtml` / `escHtmlAttr` to `js/core/utils.js` — single source of truth, removed re-export chains through `auth.js` → `app.js` → everywhere (13 files updated)
+- [x] Deduplicate `computeDotToggle` / `computeDotTarget` — identical function in `tracker-logic.js` and `trackers-logic.js`, consolidated into `utils.js`
+- [x] Deduplicate `validateShareFields` / `validateShareAdvFields` — same logic in `cards-logic.js` and `vault-logic.js`, consolidated into `utils.js`
+- [x] Extract `generateId(prefix)` — the `'c-' + Date.now() + '-' + Math.random()…` pattern repeated in 8 places, consolidated into `utils.js`
+- [x] Add tests for `escHtml` / `escHtmlAttr` in `utils.js` — 24 tests covering `escHtml` bold regex, `escHtmlAttr`, `generateId`, `computeDotToggle`, `validateShareFields`
+- [x] Split `community/app.js` into `app.js` + `community-logic.js` — extracted `renderStars`, `parseFeatureText`; replaced inline `esc()` with `escHtml` from `utils.js`
+- [x] Move `getToastStyles` from `save-logic.js` to `theme.js` — UI/theme concern, not save logic
+
 ---
 
 ## 🔜 Planned

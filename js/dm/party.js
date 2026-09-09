@@ -1,4 +1,5 @@
-import { getUser, getSupabase, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
+import { getUser, getSupabase, showConfirm, showAlert } from '../core/auth.js';
+import { escHtml, escHtmlAttr } from '../core/utils.js';
 import { TABLE_DM_TABLES, TABLE_CHARACTERS, LS_DM_TABLE_ID } from '../core/constants.js';
 
 let currentTable = null;

@@ -1,4 +1,5 @@
-import { escHtml, getNextName } from './app.js';
+import { escHtml, generateId } from '../core/utils.js';
+import { getNextName } from './app.js';
 import { adversariesData, loadAdversaries, creatures, autoCache, renderGrid } from './tracker.js';
 
 let advSearchTimeout = null;
@@ -71,7 +72,7 @@ function renderAdvCard(a) {
 function addAdvToTracker(index, event) {
     const a = adversariesData[index]; if (!a) return;
     creatures().push({
-        id: 'c-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
+        id: generateId('c'),
         name: getNextName(a.name),
         evasion: parseInt(a.difficulty) || 10,
         hpMax: parseInt(a.hp) || 1, hpFilled: parseInt(a.hp) || 1,

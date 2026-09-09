@@ -1,6 +1,8 @@
 import SUPABASE_CONFIG from '../core/config.js';
 import { TABLE_COMMUNITY_CHAPTERS, TABLE_COMMUNITY_CHAPTER_RATINGS, TABLE_COMMUNITY_CHAPTER_IMPORTS, TABLE_COMMUNITY_ADVERSARIES, TABLE_COMMUNITY_ADVERSARY_RATINGS, TABLE_COMMUNITY_ADVERSARY_IMPORTS, TABLE_COMMUNITY_HOMEBREW, TABLE_COMMUNITY_HOMEBREW_RATINGS, TABLE_COMMUNITY_HOMEBREW_IMPORTS, LS_THEME } from '../core/constants.js';
 import { initMode, applyTheme } from '../core/theme.js';
+import { generateId, escHtml as esc } from '../core/utils.js';
+import { renderStars, parseFeatureText, filterChapters, filterAdversaries, filterHomebrew } from './community-logic.js';
 
 const sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
 let chapters = [];
@@ -147,22 +149,13 @@ async function loadMyShares() {
 
 // ========== FILTER & RENDER ==========
 function getFiltered() {
-    let filtered = [...chapters];
-    const search = document.getElementById('searchInput').value.trim().toLowerCase();
-    const env = document.getElementById('filterEnv').value;
-    const diff = document.getElementById('filterDiff').value;
-    const dur = document.getElementById('filterDuration').value;
-    const sort = document.getElementById('sortBy').value;
-
-    if (search) filtered = filtered.filter(c => c.title.toLowerCase().includes(search) || (c.author_nickname || '').toLowerCase().includes(search) || (c.description || '').toLowerCase().includes(search));
-    if (env) filtered = filtered.filter(c => c.environment === env);
-    if (diff) filtered = filtered.filter(c => c.difficulty === diff);
-    if (dur) filtered = filtered.filter(c => c.duration === dur);
-
-    if (sort === 'rating') filtered.sort((a, b) => (b.avg_rating || 0) - (a.avg_rating || 0));
-    else if (sort === 'popular') filtered.sort((a, b) => (b.import_count || 0) - (a.import_count || 0));
-
-    return filtered;
+    return filterChapters(chapters, {
+        search: document.getElementById('searchInput').value.trim().toLowerCase(),
+        env: document.getElementById('filterEnv').value,
+        diff: document.getElementById('filterDiff').value,
+        dur: document.getElementById('filterDuration').value,
+        sort: document.getElementById('sortBy').value
+    });
 }
 
 function renderResults() {
@@ -299,11 +292,6 @@ function renderMyShares() {
     container.innerHTML = html;
 }
 
-function renderStars(avg) {
-    let s = '';
-    for (let i = 1; i <= 5; i++) s += i <= Math.round(avg) ? '★' : '☆';
-    return `<span class="text-[#d4a017]">${s}</span>`;
-}
 
 function renderInteractiveStars(chapterId, current) {
     let s = '';
@@ -522,7 +510,7 @@ async function importChapter(id) {
         const content = ch.content || {};
         const title = ch.version > 1 ? ch.title + ' (v' + ch.version + ')' : ch.title;
         existing.unshift({
-            id: 'ch-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
+            id: generateId('ch'),
             title,
             text: content.text || '',
             npcs: content.npcs || [],
@@ -575,23 +563,15 @@ function populateAdvTypeFilter() {
 }
 
 function getFilteredAdv() {
-    let filtered = [...adversaries];
-    const search = document.getElementById('advSearchInput').value.trim().toLowerCase();
-    const type = document.getElementById('advFilterType').value;
-    const tierMin = document.getElementById('advFilterTierMin').value ? parseInt(document.getElementById('advFilterTierMin').value) : null;
-    const tierMax = document.getElementById('advFilterTierMax').value ? parseInt(document.getElementById('advFilterTierMax').value) : null;
-    const diffMin = document.getElementById('advFilterDiffMin').value ? parseInt(document.getElementById('advFilterDiffMin').value) : null;
-    const diffMax = document.getElementById('advFilterDiffMax').value ? parseInt(document.getElementById('advFilterDiffMax').value) : null;
-    const sort = document.getElementById('advSortBy').value;
-    if (search) filtered = filtered.filter(a => a.title.toLowerCase().includes(search) || (a.author_nickname || '').toLowerCase().includes(search) || (a.description || '').toLowerCase().includes(search));
-    if (type) filtered = filtered.filter(a => (a.adv_type || '') === type);
-    if (tierMin !== null) filtered = filtered.filter(a => (parseInt(a.tier) || 0) >= tierMin);
-    if (tierMax !== null) filtered = filtered.filter(a => (parseInt(a.tier) || 0) <= tierMax);
-    if (diffMin !== null) filtered = filtered.filter(a => (parseInt(a.difficulty) || 0) >= diffMin);
-    if (diffMax !== null) filtered = filtered.filter(a => (parseInt(a.difficulty) || 0) <= diffMax);
-    if (sort === 'rating') filtered.sort((a, b) => (b.avg_rating || 0) - (a.avg_rating || 0));
-    else if (sort === 'popular') filtered.sort((a, b) => (b.import_count || 0) - (a.import_count || 0));
-    return filtered;
+    return filterAdversaries(adversaries, {
+        search: document.getElementById('advSearchInput').value.trim().toLowerCase(),
+        type: document.getElementById('advFilterType').value,
+        tierMin: document.getElementById('advFilterTierMin').value ? parseInt(document.getElementById('advFilterTierMin').value) : null,
+        tierMax: document.getElementById('advFilterTierMax').value ? parseInt(document.getElementById('advFilterTierMax').value) : null,
+        diffMin: document.getElementById('advFilterDiffMin').value ? parseInt(document.getElementById('advFilterDiffMin').value) : null,
+        diffMax: document.getElementById('advFilterDiffMax').value ? parseInt(document.getElementById('advFilterDiffMax').value) : null,
+        sort: document.getElementById('advSortBy').value
+    });
 }
 
 function renderAdvResults() {
@@ -727,7 +707,7 @@ async function addAdvToVault(id) {
         const key = 'dh_dm_vault';
         const vault = JSON.parse(localStorage.getItem(key) || '[]');
         vault.push({
-            id: 'c-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
+            id: generateId('c'),
             name: ad.name || adv.title,
             evasion: parseInt(ad.difficulty) || 10,
             hpMax: parseInt(ad.hp) || 1, hpFilled: parseInt(ad.hp) || 1,
@@ -806,10 +786,7 @@ async function saveEditAdv() {
     const severe = document.getElementById('editAdvSevere').value.trim();
     const thresholds = (major || severe) ? `${major || '?'}/${severe || '?'}` : '';
     const featuresRaw = document.getElementById('editAdvFeatures').value.trim();
-    const features = featuresRaw ? featuresRaw.split('\n').filter(l => l.trim()).map(line => {
-        const ci = line.indexOf(':');
-        return ci > 0 ? { name: line.slice(0, ci).trim(), text: line.slice(ci + 1).trim() } : { name: line.trim(), text: '' };
-    }) : [];
+    const features = parseFeatureText(featuresRaw);
     const advType = document.getElementById('editAdvType').value.trim();
     const tier = document.getElementById('editAdvTier').value.trim();
     const difficulty = document.getElementById('editAdvDifficulty').value.trim();
@@ -1090,19 +1067,13 @@ async function importHomebrew(id) {
 
 // ========== HOMEBREW: FILTER & RENDER ==========
 function getFilteredHb() {
-    let filtered = [...homebrews];
-    const search = document.getElementById('hbSearchInput').value.trim().toLowerCase();
-    const type = document.getElementById('hbFilterType').value;
-    const cat = document.getElementById('hbFilterCategory').value;
-    const domain = document.getElementById('hbFilterDomain').value;
-    const sort = document.getElementById('hbSortBy').value;
-    if (search) filtered = filtered.filter(h => h.title.toLowerCase().includes(search) || (h.author_nickname || '').toLowerCase().includes(search) || (h.description || '').toLowerCase().includes(search));
-    if (type) filtered = filtered.filter(h => h.card_type === type);
-    if (cat) filtered = filtered.filter(h => h.card_category === cat);
-    if (domain) filtered = filtered.filter(h => h.card_type === 'domain-card' && (h.card_data || {}).domain === domain);
-    if (sort === 'rating') filtered.sort((a, b) => (b.avg_rating || 0) - (a.avg_rating || 0));
-    else if (sort === 'popular') filtered.sort((a, b) => (b.import_count || 0) - (a.import_count || 0));
-    return filtered;
+    return filterHomebrew(homebrews, {
+        search: document.getElementById('hbSearchInput').value.trim().toLowerCase(),
+        type: document.getElementById('hbFilterType').value,
+        cat: document.getElementById('hbFilterCategory').value,
+        domain: document.getElementById('hbFilterDomain').value,
+        sort: document.getElementById('hbSortBy').value
+    });
 }
 
 function renderHbResults() {
@@ -1199,7 +1170,6 @@ async function signInWithGoogle() {
 }
 
 // ========== UTILS ==========
-function esc(str) { if (!str) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
 function showToast(msg, type = 'success') {
     const colors = { success: 'var(--accent-1)', error: '#ef4444', info: '#71717a' };

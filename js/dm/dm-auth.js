@@ -1,4 +1,5 @@
-import { getUser, getProfile, getSupabase, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, changeEmail, isEmailUser, signOut as coreSignOut, signOutAll as coreSignOutAll, deleteAccount as coreDeleteAccount, saveProfile as coreSaveProfile, escHtml, escHtmlAttr, showConfirm, showAlert } from '../core/auth.js';
+import { getUser, getProfile, getSupabase, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, changeEmail, isEmailUser, signOut as coreSignOut, signOutAll as coreSignOutAll, deleteAccount as coreDeleteAccount, saveProfile as coreSaveProfile, showConfirm, showAlert } from '../core/auth.js';
+import { escHtml, escHtmlAttr } from '../core/utils.js';
 import { showCloudPicker } from '../core/cloud-picker.js';
 import { TOAST_DURATION, SYNC_STATUS_DURATION, AUTOSAVE_INTERVAL, TABLE_DM_TABLES, TABLE_CHARACTERS, LS_DM_CREATURES, LS_DM_VAULT, LS_DM_CHRONICLE, LS_DM_COUNTERS, LS_DM_CAMPAIGN } from '../core/constants.js';
 import { creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled, autoCache, renderGrid, renderFearDots } from './tracker.js';
@@ -191,6 +192,7 @@ function toggleGear(e) {
     const menu = document.getElementById('gearMenu');
     const wasHidden = menu.classList.contains('hidden');
     menu.classList.toggle('hidden');
+    document.getElementById('authMenu').classList.add('hidden');
     if (gearMenuHandler) { document.removeEventListener('click', gearMenuHandler); gearMenuHandler = null; }
     if (wasHidden) {
         gearMenuHandler = (ev) => { if (!menu.contains(ev.target) && !document.getElementById('gearBtn').contains(ev.target)) { menu.classList.add('hidden'); document.removeEventListener('click', gearMenuHandler); gearMenuHandler = null; } };
@@ -205,6 +207,7 @@ function toggleAuthMenu(e) {
     const menu = document.getElementById('authMenu');
     const wasHidden = menu.classList.contains('hidden');
     menu.classList.toggle('hidden');
+    document.getElementById('gearMenu').classList.add('hidden');
     if (authMenuHandler) { document.removeEventListener('click', authMenuHandler); authMenuHandler = null; }
     if (wasHidden) {
         authMenuHandler = (ev) => { if (!menu.contains(ev.target) && !document.getElementById('authBtn').contains(ev.target)) { menu.classList.add('hidden'); document.removeEventListener('click', authMenuHandler); authMenuHandler = null; } };
