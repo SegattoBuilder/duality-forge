@@ -1,6 +1,6 @@
 import { escHtml, escHtmlAttr, getNextName, switchTab } from './app.js';
 import { creatures, autoCache, renderGrid, editCharacterCard, editCustomCard, editEnemyCard, renderCard, adversariesData } from './tracker.js';
-import { showConfirm, getUser, getProfile, getSupabase, showAlert } from '../core/auth.js';
+import { showConfirm, getUser, getProfile, getSupabase, showAlert, showPrompt } from '../core/auth.js';
 import { TABLE_COMMUNITY_ADVERSARIES } from '../core/constants.js';
 import { LS_DM_VAULT, LS_DM_VAULT_GROUPS, LS_DM_VAULT_COLLAPSED } from '../core/constants.js';
 import { computeDotToggle, adjustMaxValue, clampEvasion, isCreatureDead } from './tracker-logic.js';
@@ -182,8 +182,33 @@ function renderVaultCard(creature) {
 
 // ========== VAULT DRAG & DROP ==========
 let vaultDraggedId = null;
-function onVaultDragStart(e, id) { vaultDraggedId = id; e.dataTransfer.effectAllowed = 'move'; e.target.style.opacity = '0.4'; }
-function onVaultDragEnd(e) { e.target.style.opacity = ''; vaultDraggedId = null; document.querySelectorAll('.vault-group-drop-over').forEach(el => el.classList.remove('vault-group-drop-over')); }
+let _scrollInterval = null;
+
+function _startDragScroll(e) {
+    const zone = 120;
+    const speed = 12;
+    const y = e.clientY;
+    const vh = window.innerHeight;
+    clearInterval(_scrollInterval);
+    if (y < zone) _scrollInterval = setInterval(() => window.scrollBy(0, -speed), 16);
+    else if (y > vh - zone) _scrollInterval = setInterval(() => window.scrollBy(0, speed), 16);
+}
+
+function onVaultDragStart(e, id) {
+    vaultDraggedId = id;
+    e.dataTransfer.effectAllowed = 'move';
+    e.target.style.opacity = '0.4';
+    document.addEventListener('dragover', _startDragScroll);
+}
+
+function onVaultDragEnd(e) {
+    e.target.style.opacity = '';
+    vaultDraggedId = null;
+    clearInterval(_scrollInterval);
+    _scrollInterval = null;
+    document.removeEventListener('dragover', _startDragScroll);
+    document.querySelectorAll('.vault-group-drop-over').forEach(el => el.classList.remove('vault-group-drop-over'));
+}
 function onVaultDrop(e, targetId) {
     e.preventDefault();
     if (!vaultDraggedId || vaultDraggedId === targetId) return;
@@ -229,20 +254,26 @@ function hideVaultGroupForm() {
 }
 
 function renameVaultGroup(oldName) {
-    const newName = prompt('Rename group:', oldName);
-    if (!newName || newName.trim() === oldName || _vaultGroups.some(g => g.name === newName.trim())) return;
-    const trimmed = newName.trim();
-    const gObj = _vaultGroups.find(g => g.name === oldName);
-    if (gObj) gObj.name = trimmed;
-    _vaultCreatures.forEach(c => { if (c.vaultGroup === oldName) c.vaultGroup = trimmed; });
-    autoCacheVault(); renderVaultGrid();
+    showPrompt('Rename group:', oldName, (newName) => {
+        if (!newName || newName.trim() === oldName || _vaultGroups.some(g => g.name === newName.trim())) return;
+        const trimmed = newName.trim();
+        const gObj = _vaultGroups.find(g => g.name === oldName);
+        if (gObj) gObj.name = trimmed;
+        _vaultCreatures.forEach(c => { if (c.vaultGroup === oldName) c.vaultGroup = trimmed; });
+        autoCacheVault(); renderVaultGrid();
+    });
 }
 
 function removeVaultGroup(name) {
-    _vaultGroups = _vaultGroups.filter(g => g.name !== name);
-    _vaultCreatures.forEach(c => { if (c.vaultGroup === name) delete c.vaultGroup; });
-    delete _collapsedGroups[name];
-    autoCacheVault(); renderVaultGrid();
+    const members = _vaultCreatures.filter(c => c.vaultGroup === name);
+    const doDelete = () => {
+        _vaultGroups = _vaultGroups.filter(g => g.name !== name);
+        _vaultCreatures.forEach(c => { if (c.vaultGroup === name) delete c.vaultGroup; });
+        delete _collapsedGroups[name];
+        autoCacheVault(); renderVaultGrid();
+    };
+    if (members.length === 0) { doDelete(); return; }
+    showConfirm(`Remove group "${name}"? Creatures will become ungrouped.`, doDelete);
 }
 
 function toggleVaultGroupCollapse(name) {

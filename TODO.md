@@ -149,6 +149,12 @@
 - [x] Landing page tool cards renamed: DM Tools → The Anvil, Character Sheet → The Crucible, Community → The Fireside
 - [x] Forge-themed descriptions and icons (⚒️ 🗡️ 🔥)
 
+**Character Sheet — Story Tab**
+- [x] Tier 2/3/4 level-up cards with checkbox options, wired to `autoCache()`
+- [x] Tier cards moved to top row in 3-column responsive grid
+- [x] Collapsible toggle on all Story tab cards (tiers, description, connections, level up notes, backstory)
+- [x] Dynamic nav spacer — `ResizeObserver` syncs spacer height to nav, replaces hardcoded top margins
+
 ---
 
 ## 🔜 Planned

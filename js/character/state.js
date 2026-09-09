@@ -26,6 +26,39 @@ export const FIELD_IDS = ['charName','charPronouns','charLevel','charHeritage','
 
 export const TEXTAREA_IDS = ['levelupNotes','backstory','connections'];
 
+export const TIER2_CHECKBOX_IDS = [
+    'tier2_trait_1','tier2_trait_2','tier2_trait_3',
+    'tier2_hp_1','tier2_hp_2',
+    'tier2_stress_1','tier2_stress_2',
+    'tier2_exp',
+    'tier2_domain',
+    'tier2_evasion'
+];
+
+export const TIER3_CHECKBOX_IDS = [
+    'tier3_trait_1','tier3_trait_2','tier3_trait_3',
+    'tier3_hp_1','tier3_hp_2',
+    'tier3_stress_1','tier3_stress_2',
+    'tier3_exp',
+    'tier3_domain',
+    'tier3_evasion',
+    'tier3_subclass',
+    'tier3_prof_1','tier3_prof_2',
+    'tier3_multiclass_1','tier3_multiclass_2'
+];
+
+export const TIER4_CHECKBOX_IDS = [
+    'tier4_trait_1','tier4_trait_2','tier4_trait_3',
+    'tier4_hp_1','tier4_hp_2',
+    'tier4_stress_1','tier4_stress_2',
+    'tier4_exp',
+    'tier4_domain',
+    'tier4_evasion',
+    'tier4_subclass',
+    'tier4_prof_1','tier4_prof_2',
+    'tier4_multiclass_1','tier4_multiclass_2'
+];
+
 export const CATEGORY_LABELS = {
     'ancestries.json': 'Ancestry',
     'communities.json': 'Community',

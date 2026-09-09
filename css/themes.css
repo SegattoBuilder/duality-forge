@@ -209,9 +209,11 @@
 }
 [data-mode="light"] #gearMenu button,
 [data-mode="light"] #gearMenu label,
+[data-mode="light"] #gearMenu a,
 [data-mode="light"] #authMenu button { color: #2a2418 !important; }
 [data-mode="light"] #gearMenu button:hover,
 [data-mode="light"] #gearMenu label:hover,
+[data-mode="light"] #gearMenu a:hover,
 [data-mode="light"] #authMenu button:hover { background: #f5f0e8 !important; }
 
 /* Nav bar light */
