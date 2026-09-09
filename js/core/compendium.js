@@ -2,6 +2,7 @@ import { escHtml } from './utils.js';
 
 const GITHUB_RAW = "https://raw.githubusercontent.com/daggersearch/daggerheart-data/main/core/";
 const CATEGORIES = ['ancestries','armors','classes','communities','consumables','domain-cards','items','rules','subclasses','weapons'];
+
 const COMPENDIUM_CACHE_KEY = 'dh_compendium_cache';
 let compendiumData = [];
 let activeCategory = 'all';
@@ -51,15 +52,16 @@ export async function loadCompendium(opts = {}) {
 
     document.getElementById('compendiumSearch').addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(runSearch, 200); });
 
-    const cached = localStorage.getItem(COMPENDIUM_CACHE_KEY);
-    if (cached) { try { compendiumData = JSON.parse(cached); document.getElementById('compendiumStatus').textContent = `${compendiumData.length} entries loaded. Start typing to search.`; return; } catch {} }
     document.getElementById('compendiumStatus').textContent = 'Fetching compendium data...';
     try {
         const results = await Promise.all(CATEGORIES.map(cat => fetch(GITHUB_RAW + cat + '.json').then(r => r.json()).then(data => { const items = Array.isArray(data) ? data : (data.items || data.entries || Object.values(data)); return items.flatMap(item => splitSubclassTiers(item, cat)); }).catch(() => [])));
         compendiumData = results.flat();
-        localStorage.setItem(COMPENDIUM_CACHE_KEY, JSON.stringify(compendiumData));
-        document.getElementById('compendiumStatus').textContent = `${compendiumData.length} entries loaded. Start typing to search.`;
-    } catch { document.getElementById('compendiumStatus').textContent = 'Failed to load compendium data.'; }
+        if (compendiumData.length) localStorage.setItem(COMPENDIUM_CACHE_KEY, JSON.stringify(compendiumData));
+    } catch {
+        const cached = localStorage.getItem(COMPENDIUM_CACHE_KEY);
+        if (cached) { try { compendiumData = JSON.parse(cached); } catch {} }
+    }
+    document.getElementById('compendiumStatus').textContent = compendiumData.length ? `${compendiumData.length} entries loaded. Start typing to search.` : 'Failed to load compendium data.';
 }
 
 const CATEGORY_FILTERS = {
