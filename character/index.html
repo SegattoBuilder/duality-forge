@@ -242,7 +242,11 @@
     <!-- Tier Cards - top row -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
             <div class="card accent-levelup">
-                <div class="flex items-center gap-2 border-b border-[#363026] pb-3 mb-3"><div class="w-2 h-2 rounded-full" style="background-color:#d4a017"></div><h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest" style="color:#d4a017">Tier 2: Levels 2–4</h2></div>
+                <div class="flex justify-between items-center cursor-pointer border-b border-[#363026] pb-3 mb-3" onclick="toggleSection('sec-tier2')">
+                    <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full" style="background-color:#d4a017"></div><h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest" style="color:#d4a017">Tier 2: Levels 2–4</h2></div>
+                    <span class="text-zinc-500 text-xs toggle-icon" id="sec-tier2-tog">▼</span>
+                </div>
+                <div id="sec-tier2">
                 <p class="text-[11px] text-zinc-400 mb-2">At level 2, gain an additional Experience at +2 and gain a +1 bonus to your Proficiency.</p>
                 <p class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-3">Choose two options from the list below and mark them.</p>
                 <div class="space-y-2 mb-4">
@@ -254,9 +258,14 @@
                     <label class="flex items-start gap-2 cursor-pointer"><input type="checkbox" id="tier2_evasion" class="accent-[#d4a017] mt-0.5 shrink-0" onchange="autoCache()"><span class="text-[11px] text-zinc-400">Permanently gain a +1 bonus to your Evasion.</span></label>
                 </div>
                 <p class="text-[10px] text-zinc-600 italic border-t border-[#363026] pt-3">Update your level and adjust your damage thresholds accordingly. Take an additional domain card of your level or lower from a domain you have access to.</p>
+                </div>
             </div>
             <div class="card accent-levelup">
-                <div class="flex items-center gap-2 border-b border-[#363026] pb-3 mb-3"><div class="w-2 h-2 rounded-full" style="background-color:#b8860b"></div><h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest" style="color:#b8860b">Tier 3: Levels 5–7</h2></div>
+                <div class="flex justify-between items-center cursor-pointer border-b border-[#363026] pb-3 mb-3" onclick="toggleSection('sec-tier3')">
+                    <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full" style="background-color:#b8860b"></div><h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest" style="color:#b8860b">Tier 3: Levels 5–7</h2></div>
+                    <span class="text-zinc-500 text-xs toggle-icon" id="sec-tier3-tog">▼</span>
+                </div>
+                <div id="sec-tier3">
                 <p class="text-[11px] text-zinc-400 mb-2">At level 5, gain an additional Experience at +2 and clear all marks on character traits. Then gain a +1 bonus to your Proficiency.</p>
                 <p class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-3">Choose two options from the list below or any from the previous tier and mark them.</p>
                 <div class="space-y-2">
@@ -272,9 +281,14 @@
                     <div class="flex items-center gap-2"><input type="checkbox" id="tier3_multiclass_1" class="accent-[#d4a017] shrink-0" style="box-shadow:0 0 0 1px #1a1714,0 2px 4px #000" onchange="autoCache()"><input type="checkbox" id="tier3_multiclass_2" class="accent-[#d4a017] shrink-0" style="box-shadow:0 0 0 1px #1a1714,0 2px 4px #000" onchange="autoCache()"><span class="text-[11px] text-zinc-400">Multiclass: Choose an additional class for your character, then cross out an unused “Take an upgraded subclass card” and the other multiclass option on this sheet.</span></div>
                 </div>
                 <p class="text-[10px] text-zinc-600 italic border-t border-[#363026] pt-3">Update your level and adjust your damage thresholds accordingly. Take an additional domain card of your level or lower from a domain you have access to.</p>
+                </div>
             </div>
             <div class="card accent-levelup">
-                <div class="flex items-center gap-2 border-b border-[#363026] pb-3 mb-3"><div class="w-2 h-2 rounded-full" style="background-color:#9a7209"></div><h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest" style="color:#9a7209">Tier 4: Levels 8–10</h2></div>
+                <div class="flex justify-between items-center cursor-pointer border-b border-[#363026] pb-3 mb-3" onclick="toggleSection('sec-tier4')">
+                    <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full" style="background-color:#9a7209"></div><h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest" style="color:#9a7209">Tier 4: Levels 8–10</h2></div>
+                    <span class="text-zinc-500 text-xs toggle-icon" id="sec-tier4-tog">▼</span>
+                </div>
+                <div id="sec-tier4">
                 <p class="text-[11px] text-zinc-400 mb-2">At level 8, gain an additional Experience at +2 and clear all marks on character traits. Then gain a +1 bonus to your Proficiency.</p>
                 <p class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-3">Choose two options from the list below or any from the previous tier and mark them.</p>
                 <div class="space-y-2 mb-4">
@@ -290,6 +304,7 @@
                     <div class="flex items-center gap-2"><input type="checkbox" id="tier4_multiclass_1" class="accent-[#d4a017] shrink-0" style="box-shadow:0 0 0 1px #1a1714,0 2px 4px #000" onchange="autoCache()"><input type="checkbox" id="tier4_multiclass_2" class="accent-[#d4a017] shrink-0" style="box-shadow:0 0 0 1px #1a1714,0 2px 4px #000" onchange="autoCache()"><span class="text-[11px] text-zinc-400">Multiclass: Choose an additional class for your character, then cross out an unused “Take an upgraded subclass card” and the other multiclass option on this sheet.</span></div>
                 </div>
                 <p class="text-[10px] text-zinc-600 italic border-t border-[#363026] pt-3">Update your level and adjust your damage thresholds accordingly. Take an additional domain card of your level or lower from a domain you have access to.</p>
+                </div>
             </div>
     </div>
 
