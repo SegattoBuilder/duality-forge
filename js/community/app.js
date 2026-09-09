@@ -1,7 +1,8 @@
 import SUPABASE_CONFIG from '../core/config.js';
 import { TABLE_COMMUNITY_CHAPTERS, TABLE_COMMUNITY_CHAPTER_RATINGS, TABLE_COMMUNITY_CHAPTER_IMPORTS, TABLE_COMMUNITY_ADVERSARIES, TABLE_COMMUNITY_ADVERSARY_RATINGS, TABLE_COMMUNITY_ADVERSARY_IMPORTS, TABLE_COMMUNITY_HOMEBREW, TABLE_COMMUNITY_HOMEBREW_RATINGS, TABLE_COMMUNITY_HOMEBREW_IMPORTS, LS_THEME } from '../core/constants.js';
 import { initMode, applyTheme } from '../core/theme.js';
-import { generateId } from '../core/utils.js';
+import { generateId, escHtml as esc } from '../core/utils.js';
+import { renderStars, parseFeatureText } from './community-logic.js';
 
 const sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
 let chapters = [];
@@ -300,11 +301,6 @@ function renderMyShares() {
     container.innerHTML = html;
 }
 
-function renderStars(avg) {
-    let s = '';
-    for (let i = 1; i <= 5; i++) s += i <= Math.round(avg) ? '★' : '☆';
-    return `<span class="text-[#d4a017]">${s}</span>`;
-}
 
 function renderInteractiveStars(chapterId, current) {
     let s = '';
@@ -807,10 +803,7 @@ async function saveEditAdv() {
     const severe = document.getElementById('editAdvSevere').value.trim();
     const thresholds = (major || severe) ? `${major || '?'}/${severe || '?'}` : '';
     const featuresRaw = document.getElementById('editAdvFeatures').value.trim();
-    const features = featuresRaw ? featuresRaw.split('\n').filter(l => l.trim()).map(line => {
-        const ci = line.indexOf(':');
-        return ci > 0 ? { name: line.slice(0, ci).trim(), text: line.slice(ci + 1).trim() } : { name: line.trim(), text: '' };
-    }) : [];
+    const features = parseFeatureText(featuresRaw);
     const advType = document.getElementById('editAdvType').value.trim();
     const tier = document.getElementById('editAdvTier').value.trim();
     const difficulty = document.getElementById('editAdvDifficulty').value.trim();
@@ -1200,7 +1193,6 @@ async function signInWithGoogle() {
 }
 
 // ========== UTILS ==========
-function esc(str) { if (!str) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
 function showToast(msg, type = 'success') {
     const colors = { success: 'var(--accent-1)', error: '#ef4444', info: '#71717a' };

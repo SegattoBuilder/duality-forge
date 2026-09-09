@@ -161,7 +161,7 @@
 - [x] Deduplicate `validateShareFields` / `validateShareAdvFields` — same logic in `cards-logic.js` and `vault-logic.js`, consolidated into `utils.js`
 - [x] Extract `generateId(prefix)` — the `'c-' + Date.now() + '-' + Math.random()…` pattern repeated in 8 places, consolidated into `utils.js`
 - [x] Add tests for `escHtml` / `escHtmlAttr` in `utils.js` — 24 tests covering `escHtml` bold regex, `escHtmlAttr`, `generateId`, `computeDotToggle`, `validateShareFields`
-- [ ] Split `community/app.js` into `app.js` + `community-logic.js` — only module not following the `-logic.js` split pattern
+- [x] Split `community/app.js` into `app.js` + `community-logic.js` — extracted `renderStars`, `parseFeatureText`; replaced inline `esc()` with `escHtml` from `utils.js`
 - [ ] Move `getToastStyles` from `save-logic.js` to `theme.js` — UI/theme concern, not save logic
 
 ---
