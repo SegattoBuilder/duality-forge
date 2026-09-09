@@ -81,7 +81,7 @@ function buildCounterCard(c) {
         </div>
         <div class="flex items-center justify-center gap-3">
             <button onclick="window._stepCounter('${c.id}', -1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#3d362a] text-zinc-300 hover:text-white text-sm font-bold">−</button>
-            <span class="text-2xl font-black font-[Cinzel] min-w-[2rem] text-center" style="color: ${atZero ? 'var(--accent-1)' : '#f5efe6'}">${c.value}</span>
+            <span class="text-2xl font-black font-[Cinzel] min-w-[2rem] text-center ${atZero ? '' : 'text-[#f5efe6]'}" style="${atZero ? 'color: var(--accent-1)' : ''}">${c.value}</span>
             <button onclick="window._stepCounter('${c.id}', 1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#3d362a] text-zinc-300 hover:text-white text-sm font-bold">+</button>
         </div>
     </div>`;
