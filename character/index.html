@@ -312,7 +312,11 @@
     <div class="modern-grid-2col">
         <div>
             <div class="card accent-description mb-4">
-                <div class="flex items-center gap-2 border-b border-[#363026] pb-3 mb-4"><div class="w-2 h-2 rounded-full theme-dot-el" data-theme-level="3" style="background-color:#9a7209"></div><h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest" data-theme-level="3" style="color:#9a7209">Character Description</h2></div>
+                <div class="flex justify-between items-center cursor-pointer border-b border-[#363026] pb-3 mb-4" onclick="toggleSection('sec-desc')">
+                    <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full theme-dot-el" data-theme-level="3" style="background-color:#9a7209"></div><h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest" data-theme-level="3" style="color:#9a7209">Character Description</h2></div>
+                    <span class="text-zinc-500 text-xs toggle-icon" id="sec-desc-tog">▼</span>
+                </div>
+                <div id="sec-desc">
                 <div class="space-y-3">
                     <div><div class="text-[10px] text-zinc-600 mb-1 uppercase tracking-wide">CLOTHES</div><input id="desc_clothes" type="text" placeholder="extravagant, fancy, loud, oversized, ragged, sleek, wild..." class="w-full input-story"></div>
                     <div><div class="text-[10px] text-zinc-600 mb-1 uppercase tracking-wide">EYES</div><input id="desc_eyes" type="text" placeholder="carnations, earth, endless ocean, fire, ivy, lilacs, night..." class="w-full input-story"></div>
@@ -320,20 +324,36 @@
                     <div><div class="text-[10px] text-zinc-600 mb-1 uppercase tracking-wide">SKIN</div><input id="desc_skin" type="text" placeholder="ashes, clover, falling snow, fine sand, obsidian, rose..." class="w-full input-story"></div>
                     <div><div class="text-[10px] text-zinc-600 mb-1 uppercase tracking-wide">ATTITUDE</div><input id="desc_attitude" type="text" placeholder="a barkeep, a magician, a ringmaster, a rock star..." class="w-full input-story"></div>
                 </div>
+                </div>
             </div>
             <div class="card accent-connections">
-                <div class="flex items-center gap-2 border-b border-[#363026] pb-3 mb-4"><div class="w-2 h-2 rounded-full theme-dot-el" data-theme-level="4" style="background-color:#7d5c07"></div><h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest" data-theme-level="4" style="color:#7d5c07">Background & Connections</h2></div>
+                <div class="flex justify-between items-center cursor-pointer border-b border-[#363026] pb-3 mb-4" onclick="toggleSection('sec-connections')">
+                    <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full theme-dot-el" data-theme-level="4" style="background-color:#7d5c07"></div><h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest" data-theme-level="4" style="color:#7d5c07">Background & Connections</h2></div>
+                    <span class="text-zinc-500 text-xs toggle-icon" id="sec-connections-tog">▼</span>
+                </div>
+                <div id="sec-connections">
                 <textarea id="connections" placeholder="Background questions, connections to other characters, bonds, motivations..." class="w-full input-story h-44 text-zinc-300"></textarea>
+                </div>
             </div>
         </div>
         <div>
             <div class="card accent-levelup mb-4">
-                <div class="flex items-center gap-2 border-b border-[#363026] pb-3 mb-4"><div class="w-2 h-2 rounded-full theme-dot-el" data-theme-level="1" style="background-color:#d4a017"></div><h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest" data-theme-level="1" style="color:#d4a017">Level Up Notes</h2></div>
+                <div class="flex justify-between items-center cursor-pointer border-b border-[#363026] pb-3 mb-4" onclick="toggleSection('sec-levelup')">
+                    <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full theme-dot-el" data-theme-level="1" style="background-color:#d4a017"></div><h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest" data-theme-level="1" style="color:#d4a017">Level Up Notes</h2></div>
+                    <span class="text-zinc-500 text-xs toggle-icon" id="sec-levelup-tog">▼</span>
+                </div>
+                <div id="sec-levelup">
                 <textarea id="levelupNotes" placeholder="Track level-up choices, stat increases, new abilities..." class="w-full input-story h-32 text-zinc-300"></textarea>
+                </div>
             </div>
             <div class="card accent-backstory">
-                <div class="flex items-center gap-2 border-b border-[#363026] pb-3 mb-4"><div class="w-2 h-2 rounded-full theme-dot-el" data-theme-level="2" style="background-color:#b8860b"></div><h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest" data-theme-level="2" style="color:#b8860b">Backstory</h2></div>
+                <div class="flex justify-between items-center cursor-pointer border-b border-[#363026] pb-3 mb-4" onclick="toggleSection('sec-backstory')">
+                    <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full theme-dot-el" data-theme-level="2" style="background-color:#b8860b"></div><h2 class="text-xs font-bold uppercase font-[Cinzel] tracking-widest" data-theme-level="2" style="color:#b8860b">Backstory</h2></div>
+                    <span class="text-zinc-500 text-xs toggle-icon" id="sec-backstory-tog">▼</span>
+                </div>
+                <div id="sec-backstory">
                 <textarea id="backstory" placeholder="Your character's history, motivations, connections..." class="w-full input-story h-40 text-zinc-300"></textarea>
+                </div>
             </div>
         </div>
     </div>
