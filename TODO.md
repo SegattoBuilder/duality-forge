@@ -162,7 +162,7 @@
 - [x] Extract `generateId(prefix)` — the `'c-' + Date.now() + '-' + Math.random()…` pattern repeated in 8 places, consolidated into `utils.js`
 - [x] Add tests for `escHtml` / `escHtmlAttr` in `utils.js` — 24 tests covering `escHtml` bold regex, `escHtmlAttr`, `generateId`, `computeDotToggle`, `validateShareFields`
 - [x] Split `community/app.js` into `app.js` + `community-logic.js` — extracted `renderStars`, `parseFeatureText`; replaced inline `esc()` with `escHtml` from `utils.js`
-- [ ] Move `getToastStyles` from `save-logic.js` to `theme.js` — UI/theme concern, not save logic
+- [x] Move `getToastStyles` from `save-logic.js` to `theme.js` — UI/theme concern, not save logic
 
 ---
 

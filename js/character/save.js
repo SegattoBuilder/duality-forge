@@ -7,7 +7,8 @@ import { addGearItem, getGearData, addWeapon, getWeaponData, addArmor, getArmorD
 import { applyTheme } from './theme.js';
 
 import { showConfirm } from '../core/auth.js';
-import { buildExportFilename, getToastStyles, migrateWeapons, migrateArmor, DEFAULT_RESET } from './save-logic.js';
+import { buildExportFilename, migrateWeapons, migrateArmor, DEFAULT_RESET } from './save-logic.js';
+import { getToastStyles } from '../core/theme.js';
 
 export function autoCache() {
     if (_restoring) return;

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { buildExportFilename, getToastStyles, migrateWeapons, migrateArmor, DEFAULT_RESET } from '../js/character/save-logic.js';
+import { buildExportFilename, migrateWeapons, migrateArmor, DEFAULT_RESET } from '../js/character/save-logic.js';
+import { getToastStyles } from '../js/core/theme.js';
 
 describe('buildExportFilename', () => {
     it('builds filename with name and date', () => {
