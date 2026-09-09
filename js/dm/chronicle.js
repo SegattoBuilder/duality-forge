@@ -1,4 +1,4 @@
-import { escHtml, escHtmlAttr } from '../core/utils.js';
+import { escHtml, escHtmlAttr, generateId } from '../core/utils.js';
 import { showConfirm, getUser, getProfile, getSupabase, showAlert } from '../core/auth.js';
 import { LS_DM_CHRONICLE, TABLE_COMMUNITY_CHAPTERS } from '../core/constants.js';
 const CHRONICLE_KEY = LS_DM_CHRONICLE;
@@ -23,7 +23,7 @@ export function initChronicle() {
 }
 
 export function addEntry() {
-    _chronicleEntries.unshift({ id: 'ch-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6), title: 'New Chapter', text: '', npcs: [], music: [], open: true });
+    _chronicleEntries.unshift({ id: generateId('ch'), title: 'New Chapter', text: '', npcs: [], music: [], open: true });
     autoCacheChronicle(); renderChronicle();
 }
 

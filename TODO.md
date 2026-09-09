@@ -159,7 +159,7 @@
 - [x] Extract `escHtml` / `escHtmlAttr` to `js/core/utils.js` — single source of truth, removed re-export chains through `auth.js` → `app.js` → everywhere (13 files updated)
 - [x] Deduplicate `computeDotToggle` / `computeDotTarget` — identical function in `tracker-logic.js` and `trackers-logic.js`, consolidated into `utils.js`
 - [x] Deduplicate `validateShareFields` / `validateShareAdvFields` — same logic in `cards-logic.js` and `vault-logic.js`, consolidated into `utils.js`
-- [ ] Extract `generateId(prefix)` — the `'c-' + Date.now() + '-' + Math.random()…` pattern repeated in 4 places, consolidate into `utils.js`
+- [x] Extract `generateId(prefix)` — the `'c-' + Date.now() + '-' + Math.random()…` pattern repeated in 8 places, consolidated into `utils.js`
 - [ ] Add tests for `escHtml` / `escHtmlAttr` in `utils.js` — `escHtml` has hidden `**bold**` → `<strong>` regex, currently untested
 - [ ] Split `community/app.js` into `app.js` + `community-logic.js` — only module not following the `-logic.js` split pattern
 - [ ] Move `getToastStyles` from `save-logic.js` to `theme.js` — UI/theme concern, not save logic

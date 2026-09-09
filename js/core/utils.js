@@ -1,3 +1,7 @@
+export function generateId(prefix = 'c') {
+    return prefix + '-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+}
+
 export function computeDotToggle(index, currentFilled) {
     return index < currentFilled ? index : index + 1;
 }

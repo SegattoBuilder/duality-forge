@@ -1,5 +1,7 @@
+import { generateId } from '../core/utils.js';
+
 export function createCounter() {
-    return { id: 'ac-' + Date.now(), label: 'Action Counter', value: 0 };
+    return { id: generateId('ac'), label: 'Action Counter', value: 0 };
 }
 
 export function clampCounterValue(current, delta) {

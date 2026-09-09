@@ -1,6 +1,7 @@
 import SUPABASE_CONFIG from '../core/config.js';
 import { TABLE_COMMUNITY_CHAPTERS, TABLE_COMMUNITY_CHAPTER_RATINGS, TABLE_COMMUNITY_CHAPTER_IMPORTS, TABLE_COMMUNITY_ADVERSARIES, TABLE_COMMUNITY_ADVERSARY_RATINGS, TABLE_COMMUNITY_ADVERSARY_IMPORTS, TABLE_COMMUNITY_HOMEBREW, TABLE_COMMUNITY_HOMEBREW_RATINGS, TABLE_COMMUNITY_HOMEBREW_IMPORTS, LS_THEME } from '../core/constants.js';
 import { initMode, applyTheme } from '../core/theme.js';
+import { generateId } from '../core/utils.js';
 
 const sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
 let chapters = [];
@@ -522,7 +523,7 @@ async function importChapter(id) {
         const content = ch.content || {};
         const title = ch.version > 1 ? ch.title + ' (v' + ch.version + ')' : ch.title;
         existing.unshift({
-            id: 'ch-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
+            id: generateId('ch'),
             title,
             text: content.text || '',
             npcs: content.npcs || [],
@@ -727,7 +728,7 @@ async function addAdvToVault(id) {
         const key = 'dh_dm_vault';
         const vault = JSON.parse(localStorage.getItem(key) || '[]');
         vault.push({
-            id: 'c-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
+            id: generateId('c'),
             name: ad.name || adv.title,
             evasion: parseInt(ad.difficulty) || 10,
             hpMax: parseInt(ad.hp) || 1, hpFilled: parseInt(ad.hp) || 1,
