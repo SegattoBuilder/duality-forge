@@ -43,10 +43,7 @@ export function buildFeatureHtml(features) {
     ).join('');
 }
 
-export function validateShareFields(title, desc, consent) {
-    const descOk = desc.split(/\s+/).filter(Boolean).length >= 3;
-    return !!(title && descOk && consent);
-}
+export { validateShareFields } from '../core/utils.js';
 
 export function validateDomainCardFields(fields) {
     return !!(fields.name && fields.domain && fields.type && fields.level && fields.recall);
