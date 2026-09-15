@@ -181,3 +181,5 @@ _Brainstorm space — no commitment, just possibilities._
 - **Community Discovery** — contextual "Browse Community" links from Compendium/Adversary tabs; optional toggle to show community homebrew alongside SRD data
 - **Table Scheduling** — DM sets a session schedule, players and DM receive email reminders _(high effort — requires email infrastructure)_
 - **Companion/Pet Tracker** — HP, abilities, notes on character sheet
+- **Admin Metrics Dashboard** — `/admin/` page showing accounts, profiles, characters, DM tables counts + per-account breakdown (protected by ADMIN_KEY)
+- **User Statistics Page** — user-facing stats on their own data: "You have X tables, Y characters" with table→character mapping

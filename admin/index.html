@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Duality Forge — Metrics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;800&display=optional" rel="stylesheet">
+    <link rel="icon" href="../images/logo/favicon.ico" sizes="32x32">
+    <link rel="stylesheet" href="../css/base.css">
+    <style>
+        .stat-card { background: linear-gradient(145deg, #221f1a, #1e1b16); border: 1px solid #3d362a; border-radius: 12px; padding: 20px; text-align: center; }
+        .stat-value { font-family: 'Cinzel', serif; font-size: 2rem; font-weight: 900; color: var(--accent-1); }
+        .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #a89880; font-weight: 700; }
+        .user-row { background: #1e1b16; border: 1px solid #2a2418; border-radius: 8px; padding: 12px 16px; }
+        .user-row:hover { border-color: #3d362a; }
+        .badge { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+        .badge-google { background: #1a2a1a; color: #34A853; }
+        .badge-email { background: #1a1a2a; color: #4285F4; }
+        .badge-count { background: #2a2418; color: #d4a017; }
+    </style>
+</head>
+<body class="min-h-screen p-6">
+    <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-8">
+            <h1 class="font-[Cinzel] text-xl font-bold tracking-wide" style="color: var(--accent-1)">📊 Forge Metrics</h1>
+            <p class="text-xs text-zinc-500 mt-1">App utilization overview</p>
+        </div>
+
+        <!-- Key input -->
+        <div id="authGate" class="text-center mb-8">
+            <input id="adminKey" type="password" placeholder="Admin key" class="bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-2 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600 w-64">
+            <button onclick="loadMetrics()" class="ml-2 px-4 py-2 rounded-lg text-xs font-bold uppercase" style="background: var(--accent-1); color: #1a1714;">Load</button>
+        </div>
+
+        <!-- Totals -->
+        <div id="totals" class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8 hidden"></div>
+
+        <!-- Per-user breakdown -->
+        <div id="users" class="space-y-3 hidden"></div>
+
+        <!-- Error -->
+        <p id="error" class="text-center text-red-400 text-sm hidden"></p>
+
+        <div class="text-center mt-10">
+            <a href="../" class="text-xs text-zinc-500 hover:text-[#d4a017] transition-colors">← Back to Forge</a>
+        </div>
+    </div>
+
+    <script>
+        async function loadMetrics() {
+            const key = document.getElementById('adminKey').value.trim();
+            if (!key) return;
+
+            const errEl = document.getElementById('error');
+            const totalsEl = document.getElementById('totals');
+            const usersEl = document.getElementById('users');
+            errEl.classList.add('hidden');
+            totalsEl.classList.add('hidden');
+            usersEl.classList.add('hidden');
+
+            try {
+                const res = await fetch(`/api/metrics?key=${encodeURIComponent(key)}`);
+                if (!res.ok) { errEl.textContent = 'Unauthorized or server error.'; errEl.classList.remove('hidden'); return; }
+                const data = await res.json();
+
+                document.getElementById('authGate').classList.add('hidden');
+                renderTotals(data.totals);
+                renderUsers(data.users);
+            } catch (e) {
+                errEl.textContent = 'Failed to fetch metrics.';
+                errEl.classList.remove('hidden');
+            }
+        }
+
+        function renderTotals(t) {
+            const el = document.getElementById('totals');
+            el.innerHTML = [
+                stat('Accounts', t.accounts),
+                stat('Profiles', t.profiles),
+                stat('Characters', t.characters),
+                stat('DM Tables', t.dm_tables)
+            ].join('');
+            el.classList.remove('hidden');
+        }
+
+        function stat(label, value) {
+            return `<div class="stat-card"><div class="stat-value">${value}</div><div class="stat-label">${label}</div></div>`;
+        }
+
+        function renderUsers(users) {
+            const el = document.getElementById('users');
+            users.sort((a, b) => (b.characters.length + b.tables.length) - (a.characters.length + a.tables.length));
+
+            el.innerHTML = `<h2 class="font-[Cinzel] text-sm font-bold tracking-wide uppercase" style="color: var(--accent-1)">Per-Account Breakdown</h2>` +
+                users.map(u => {
+                    const provBadge = u.provider === 'google'
+                        ? '<span class="badge badge-google">Google</span>'
+                        : '<span class="badge badge-email">Email</span>';
+                    const nick = u.nickname ? esc(u.nickname) : '<span class="text-zinc-600">no nickname</span>';
+                    const chars = u.characters.length
+                        ? u.characters.map(c => esc(c.name) + (c.is_autosave ? ' <span class="text-zinc-600">(auto)</span>' : '')).join(', ')
+                        : '<span class="text-zinc-600">none</span>';
+                    const tbls = u.tables.length
+                        ? u.tables.map(t => esc(t.name) + (t.is_autosave ? ' <span class="text-zinc-600">(auto)</span>' : '')).join(', ')
+                        : '<span class="text-zinc-600">none</span>';
+
+                    return `<div class="user-row">
+                        <div class="flex flex-wrap items-center gap-2 mb-2">
+                            <span class="text-sm font-bold text-[#f5efe6]">${nick}</span>
+                            ${provBadge}
+                            <span class="badge badge-count">${u.characters.length} char</span>
+                            <span class="badge badge-count">${u.tables.length} tbl</span>
+                            <span class="text-[10px] text-zinc-600 ml-auto">${u.has_profile ? '✅ profile' : '❌ no profile'}</span>
+                        </div>
+                        <div class="text-xs text-zinc-500">
+                            <span class="text-zinc-600 font-bold">Characters:</span> ${chars}
+                        </div>
+                        <div class="text-xs text-zinc-500">
+                            <span class="text-zinc-600 font-bold">Tables:</span> ${tbls}
+                        </div>
+                        <div class="text-[10px] text-zinc-600 mt-1">
+                            Last sign-in: ${u.last_sign_in ? new Date(u.last_sign_in).toLocaleDateString() : 'never'}
+                            · Created: ${new Date(u.created_at).toLocaleDateString()}
+                        </div>
+                    </div>`;
+                }).join('');
+            el.classList.remove('hidden');
+        }
+
+        function esc(s) {
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        document.getElementById('adminKey').addEventListener('keydown', e => { if (e.key === 'Enter') loadMetrics(); });
+    </script>
+</body>
+</html>
