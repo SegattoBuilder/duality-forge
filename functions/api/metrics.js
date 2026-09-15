@@ -1,8 +1,10 @@
 export async function onRequestGet(context) {
     const { env, request } = context;
     const url = new URL(request.url);
-    if (url.searchParams.get('key') !== env.ADMIN_KEY) {
-        return json({ error: 'Unauthorized' }, 401);
+    const provided = (url.searchParams.get('key') || '').trim();
+    const expected = (env.ADMIN_KEY || '').trim();
+    if (!provided || provided !== expected) {
+        return json({ error: 'Unauthorized', debug: { providedLen: provided.length, expectedLen: expected.length, hasKey: !!env.ADMIN_KEY } }, 401);
     }
 
     const supabaseUrl = env.SUPABASE_URL;
