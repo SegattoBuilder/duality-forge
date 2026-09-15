@@ -70,13 +70,14 @@ function stopCloudAutoSave() {
 }
 
 async function cloudAutoSaveNow() {
+    if (!currentCharacterRowId) return;
+    const sb = getSupabase();
     const data = gatherData();
     const charName = data.fields?.charName?.trim() || 'My Character';
-    const { error, id } = await cloudSaveRow(TABLE_CHARACTERS, { character_name: charName }, data, { isAutosave: true });
-    if (!error) {
-        if (id && !currentCharacterRowId) currentCharacterRowId = id;
-        showSyncStatus('☁️ Auto-saved');
-    }
+    const { error } = await sb.from(TABLE_CHARACTERS)
+        .update({ autosave_data: data, autosave_at: new Date().toISOString(), character_name: charName })
+        .eq('id', currentCharacterRowId);
+    if (!error) showSyncStatus('☁️ Auto-saved');
     await refreshTableApproval();
 }
 
@@ -103,16 +104,25 @@ async function refreshTableApproval() {
 // ========== CLOUD SAVE / LOAD ==========
 async function cloudSave() {
     if (!getUser()) { openAuthModal(); return; }
+    const sb = getSupabase();
     const data = gatherData();
     const charName = data.fields?.charName?.trim() || 'My Character';
-    const { error, id } = await cloudSaveRow(TABLE_CHARACTERS, { character_name: charName }, data);
-    if (error) showAlert('Cloud save failed: ' + error);
-    else {
-        lastSavedSnapshot = JSON.stringify(data);
-        if (id) currentCharacterRowId = id;
-        renderTableLink();
-        showSyncStatus('☁️ Saved');
+
+    if (currentCharacterRowId) {
+        const { error } = await sb.from(TABLE_CHARACTERS)
+            .update({ data, character_name: charName, updated_at: new Date().toISOString() })
+            .eq('id', currentCharacterRowId);
+        if (error) { showAlert('Cloud save failed: ' + error.message); return; }
+    } else {
+        const { data: row, error } = await sb.from(TABLE_CHARACTERS)
+            .insert({ user_id: getUser().id, character_name: charName, data, is_autosave: false })
+            .select('id').single();
+        if (error) { showAlert('Cloud save failed: ' + error.message); return; }
+        currentCharacterRowId = row.id;
     }
+    lastSavedSnapshot = JSON.stringify(data);
+    renderTableLink();
+    showSyncStatus('☁️ Saved');
 }
 
 async function cloudLoad() {
@@ -391,9 +401,12 @@ async function submitTableLink() {
     if (!currentCharacterRowId) {
         const data = gatherData();
         const charName = data.fields?.charName?.trim() || 'My Character';
-        const { error: saveErr, id } = await cloudSaveRow(TABLE_CHARACTERS, { character_name: charName }, data);
-        if (saveErr) { showAlert('Failed to save character: ' + saveErr); return; }
-        if (id) currentCharacterRowId = id;
+        const sb2 = getSupabase();
+        const { data: row, error: saveErr } = await sb2.from(TABLE_CHARACTERS)
+            .insert({ user_id: getUser().id, character_name: charName, data, is_autosave: false })
+            .select('id').single();
+        if (saveErr) { showAlert('Failed to save character: ' + saveErr.message); return; }
+        currentCharacterRowId = row.id;
     }
     const { error } = await sb.from(TABLE_CHARACTERS).update({ table_id: table.id, table_approved: false }).eq('id', currentCharacterRowId);
     if (error) { showAlert('Link failed: ' + error.message); return; }

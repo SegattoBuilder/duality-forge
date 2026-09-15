@@ -1,20 +1,8 @@
 import { cloudLoadRows, cloudDeleteRow, showConfirm, showAlert } from './auth.js';
 import { escHtml } from './utils.js';
 
-/**
- * Shared cloud picker — renders grouped (manual + autosave) rows into a modal.
- * @param {Object} opts
- * @param {string} opts.table        - Supabase table ('sessions' | 'characters')
- * @param {string} opts.nameColumn   - Column used for grouping ('campaign_name' | 'character_name')
- * @param {string} opts.modalId      - ID of the modal element to show
- * @param {string} opts.listId       - ID of the list container inside the modal
- * @param {function} opts.onPick     - Called with the full row when user picks a save
- * @param {function} [opts.onNew]    - Called when user clicks "New". If absent, "New" button hidden.
- * @param {string} [opts.newLabel]   - Label for new button (default "New")
- * @param {string} [opts.emptyText]  - Text when no saves found
- */
 export async function showCloudPicker(opts) {
-    const { table, nameColumn, modalId, listId, onPick, onNew, newLabel = 'New', emptyText = 'No cloud saves found.' } = opts;
+    const { table, nameColumn, modalId, listId, onPick, emptyText = 'No cloud saves found.' } = opts;
     const modal = document.getElementById(modalId);
     const list = document.getElementById(listId);
     modal.classList.remove('hidden');
@@ -27,67 +15,61 @@ export async function showCloudPicker(opts) {
         return;
     }
 
-    // Group by name: manual save + autosave
-    const grouped = {};
-    rows.forEach(r => {
-        const key = r[nameColumn] || 'Unnamed';
-        if (!grouped[key]) grouped[key] = {};
-        if (r.is_autosave) grouped[key].autosave = r;
-        else grouped[key].manual = r;
-    });
+    const manualRows = rows.filter(r => !r.is_autosave);
 
     const close = () => modal.classList.add('hidden');
 
-    // Build HTML
-    list.innerHTML = Object.entries(grouped).map(([name, g]) => {
-        const safeName = escHtml(name);
-        const manualDate = g.manual ? new Date(g.manual.updated_at).toLocaleString() : null;
-        const autoDate = g.autosave ? new Date(g.autosave.updated_at).toLocaleString() : null;
+    list.innerHTML = manualRows.map(r => {
+        const safeName = escHtml(r[nameColumn] || 'Unnamed');
+        const manualDate = new Date(r.updated_at).toLocaleString();
 
-        const manualBtn = g.manual ? `<button data-pick-id="${g.manual.id}" class="cp-pick picker-card">
+        const manualBtn = `<button data-pick-id="${r.id}" data-pick-type="save" class="cp-pick picker-card">
             <div class="text-[10px] font-bold uppercase mb-1" style="color:var(--accent-1)">Save</div>
             <div class="text-[10px] text-zinc-500">${manualDate}</div>
-        </button>` : '';
+        </button>`;
 
-        const autoBtn = g.autosave ? `<button data-pick-id="${g.autosave.id}" class="cp-pick picker-card picker-card-auto">
-            <div class="text-[10px] font-bold text-green-400 uppercase mb-1">Autosave</div>
-            <div class="text-[10px] text-zinc-500">${autoDate}</div>
-        </button>` : '';
-
-        // Single delete button — stores both IDs
-        const delIds = [g.manual?.id, g.autosave?.id].filter(Boolean).join(',');
+        let autoBtn = '';
+        if (r.autosave_data && r.autosave_at) {
+            const autoDate = new Date(r.autosave_at).toLocaleString();
+            autoBtn = `<button data-pick-id="${r.id}" data-pick-type="autosave" class="cp-pick picker-card picker-card-auto">
+                <div class="text-[10px] font-bold text-green-400 uppercase mb-1">Autosave</div>
+                <div class="text-[10px] text-zinc-500">${autoDate}</div>
+            </button>`;
+        }
 
         return `<div class="col-span-2 p-4 rounded-xl panel-box">
             <div class="flex items-center justify-between mb-3">
                 <div class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">${safeName}</div>
-                <button data-del-ids="${delIds}" class="cp-del text-red-400/60 hover:text-red-400 text-base" title="Delete">🗑</button>
+                <button data-del-id="${r.id}" class="cp-del text-red-400/60 hover:text-red-400 text-base" title="Delete">🗑</button>
             </div>
             <div class="flex gap-2">${manualBtn}${autoBtn}</div>
         </div>`;
     }).join('');
 
-    // Wire up pick buttons
     list.querySelectorAll('.cp-pick').forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', () => {
             const id = btn.dataset.pickId;
-            const row = rows.find(r => r.id === id);
+            const pickType = btn.dataset.pickType;
+            const row = manualRows.find(r => r.id === id);
             if (!row) { showAlert('Failed to load save.'); return; }
             close();
-            onPick(row);
+            if (pickType === 'autosave' && row.autosave_data) {
+                const autosaveRow = { ...row, data: row.autosave_data };
+                onPick(autosaveRow);
+            } else {
+                onPick(row);
+            }
         });
     });
 
-    // Wire up delete buttons — deletes both manual + autosave
     list.querySelectorAll('.cp-del').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const ids = btn.dataset.delIds.split(',');
+            const id = btn.dataset.delId;
             showConfirm('Delete this save and its autosave?', async () => {
-                if (opts.onBeforeDelete) await opts.onBeforeDelete(ids);
-                for (const id of ids) {
-                    const { error: delErr } = await cloudDeleteRow(table, id);
-                    if (delErr) { showAlert('Delete failed: ' + delErr); return; }
-                }
+                if (opts.onBeforeDelete) await opts.onBeforeDelete([id]);
+                const { error: delErr } = await cloudDeleteRow(table, id);
+                if (delErr) { showAlert('Delete failed: ' + delErr); return; }
                 showCloudPicker(opts);
             });
         });

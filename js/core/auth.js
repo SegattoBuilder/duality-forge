@@ -277,6 +277,7 @@ export async function cloudLoadRows(table, orderBy = 'updated_at') {
         .from(table)
         .select('*')
         .eq('user_id', currentUser.id)
+        .eq('is_autosave', false)
         .order(orderBy, { ascending: false });
     return { rows: rows || [], error: error?.message || null };
 }
