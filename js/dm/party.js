@@ -114,7 +114,7 @@ export async function renderParty() {
 
     if (!user) {
         panel.innerHTML = `<div class="text-center py-20 max-w-sm mx-auto">
-            <img src="../images/logo/party_64.png" alt="" class="w-20 h-20 mx-auto mb-4">
+            <img src="../images/logo/party-64.png" alt="" class="w-20 h-20 mx-auto mb-4">
             <div class="text-sm text-[#f5efe6] font-[Cinzel] font-bold mb-2">Party Requires an Account</div>
             <div class="text-xs text-zinc-500 mb-6 leading-relaxed">Sign in or create an account to manage your party. Share a table code with your players so they can join, and view their character sheets in real time.</div>
             <div class="flex gap-3 justify-center">
@@ -130,7 +130,7 @@ export async function renderParty() {
 
     if (!currentTable) {
         panel.innerHTML = `<div class="text-center py-20">
-            <img src="../images/logo/party_64.png" alt="" class="w-20 h-20 mx-auto mb-4">
+            <img src="../images/logo/party-64.png" alt="" class="w-20 h-20 mx-auto mb-4">
             <div class="text-sm text-[#f5efe6] font-[Cinzel] font-bold mb-2">Party Not Set Up Yet</div>
             <div class="text-xs text-zinc-500 max-w-xs mx-auto">Save your campaign to the cloud and your unique table code will be generated for players to join.</div>
         </div>`;
