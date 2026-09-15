@@ -19,6 +19,13 @@
     <style>
         .choice-card { background: linear-gradient(145deg, #221f1a, #1e1b16); border: 1px solid #3d362a; border-radius: 16px; padding: 32px; cursor: pointer; transition: all 0.2s; }
         .choice-card:hover { border-color: #d4a017; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        #authModal input:-webkit-autofill,
+        #authModal input:-webkit-autofill:hover,
+        #authModal input:-webkit-autofill:focus {
+            -webkit-text-fill-color: #f5efe6 !important;
+            -webkit-box-shadow: 0 0 0 1000px #1a1714 inset !important;
+            transition: background-color 9999s ease-in-out 0s;
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
@@ -149,7 +156,33 @@
         }
         function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
 
-        function showAlert(msg) { alert(msg); }
+        let cooldownInterval = null;
+        function showCooldown(msg) {
+            const match = msg.match(/(\d+)\s*seconds/);
+            let secs = match ? parseInt(match[1]) : 60;
+            if (cooldownInterval) clearInterval(cooldownInterval);
+            showAlert(`⏳ Please wait <span id="cooldownTimer" style="color:var(--accent-1)">${secs}s</span> before trying again.`);
+            cooldownInterval = setInterval(() => {
+                secs--;
+                const el = document.getElementById('cooldownTimer');
+                if (!el || secs <= 0) { clearInterval(cooldownInterval); cooldownInterval = null; if (el) el.textContent = 'now!'; return; }
+                el.textContent = secs + 's';
+            }, 1000);
+        }
+
+        function showAlert(msg) {
+            let modal = document.getElementById('customAlertModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'customAlertModal';
+                modal.className = 'fixed inset-0 modal-overlay z-[9999] p-4 flex items-center justify-center';
+                modal.innerHTML = `<div class="modal-panel p-6 w-full max-w-sm text-center"><p id="customAlertMsg" class="text-sm text-[#f5efe6] mb-5 font-[Cinzel]"></p><button id="customAlertOk" class="w-full btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">OK</button></div>`;
+                document.body.appendChild(modal);
+            }
+            document.getElementById('customAlertMsg').innerHTML = msg;
+            modal.classList.remove('hidden');
+            document.getElementById('customAlertOk').onclick = () => modal.classList.add('hidden');
+        }
 
         async function doSignIn() {
             const email = document.getElementById('authEmail').value.trim();
@@ -166,8 +199,10 @@
             if (!email || !pw) { showAlert('Please enter email and password.'); return; }
             if (pw.length < 6) { showAlert('Password must be at least 6 characters.'); return; }
             const { error } = await sb.auth.signUp({ email, password: pw });
-            if (error) showAlert('Sign-up failed: ' + error.message);
-            else showAlert('Check your email for a confirmation link!');
+            if (error) {
+                if (error.message.includes('security purposes')) showCooldown(error.message);
+                else showAlert('Sign-up failed: ' + error.message);
+            } else showAlert('📧 Confirmation email sent!<br><span class="text-xs text-zinc-500 font-[Inter] font-normal">Check your inbox (and spam/junk folder) for a confirmation link.</span>');
         }
 
         async function signInWithGoogle() {
@@ -229,8 +264,10 @@
             const email = document.getElementById('authEmail').value.trim();
             if (!email) { showAlert('Enter your email address.'); return; }
             const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/' });
-            if (error) showAlert('Reset failed: ' + error.message);
-            else showAlert('Check your email for a password reset link!');
+            if (error) {
+                if (error.message.includes('security purposes')) showCooldown(error.message);
+                else showAlert('Reset failed: ' + error.message);
+            } else showAlert('📧 Reset email sent!<br><span class="text-xs text-zinc-500 font-[Inter] font-normal">Check your inbox (and spam/junk folder) for a password reset link.</span>');
         };
     </script>
     <script type="module" src="js/core/analytics.js"></script>

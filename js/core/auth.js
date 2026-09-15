@@ -125,8 +125,10 @@ export function signUpWithEmail(email, password) {
     if (password.length < PASSWORD_MIN_LENGTH) { showAlert(`Password must be at least ${PASSWORD_MIN_LENGTH} characters.`); return; }
     requireConsent(async () => {
         const { error } = await getSupabase().auth.signUp({ email, password });
-        if (error) showAlert('Sign-up failed: ' + error.message);
-        else showAlert('Check your email for a confirmation link!');
+        if (error) {
+            if (error.message.includes('security purposes')) showCooldown(error.message);
+            else showAlert('Sign-up failed: ' + error.message);
+        } else showAlert('📧 Confirmation email sent! Check your inbox (and spam/junk folder) for a confirmation link.');
     });
 }
 
@@ -135,15 +137,19 @@ export async function resetPassword(email) {
     const { error } = await getSupabase().auth.resetPasswordForEmail(email, {
         redirectTo: window.location.origin + '/'
     });
-    if (error) showAlert('Reset failed: ' + error.message);
-    else showAlert('Check your email for a password reset link!');
+    if (error) {
+        if (error.message.includes('security purposes')) showCooldown(error.message);
+        else showAlert('Reset failed: ' + error.message);
+    } else showAlert('📧 Reset email sent! Check your inbox (and spam/junk folder) for a password reset link.');
 }
 
 export async function changeEmail(newEmail) {
     if (!newEmail) { showAlert('Enter a new email address.'); return; }
     const { error } = await getSupabase().auth.updateUser({ email: newEmail });
-    if (error) showAlert('Change email failed: ' + error.message);
-    else showAlert('Check your new email for a confirmation link!');
+    if (error) {
+        if (error.message.includes('security purposes')) showCooldown(error.message);
+        else showAlert('Change email failed: ' + error.message);
+    } else showAlert('📧 Confirmation email sent! Check your inbox (and spam/junk folder) for a confirmation link.');
 }
 
 function showPasswordUpdatePrompt() {
@@ -294,6 +300,20 @@ export function showConfirm(message, onYes, onNo) {
     const cleanup = () => { modal.classList.add('hidden'); };
     document.getElementById('customConfirmYes').onclick = () => { cleanup(); if (onYes) onYes(); };
     document.getElementById('customConfirmNo').onclick = () => { cleanup(); if (onNo) onNo(); };
+}
+
+let cooldownInterval = null;
+function showCooldown(msg) {
+    const match = msg.match(/(\d+)\s*seconds/);
+    let secs = match ? parseInt(match[1]) : 60;
+    if (cooldownInterval) clearInterval(cooldownInterval);
+    showAlert(`⏳ Please wait <span id="cooldownTimer" style="color:var(--accent-1)">${secs}s</span> before trying again.`);
+    cooldownInterval = setInterval(() => {
+        secs--;
+        const el = document.getElementById('cooldownTimer');
+        if (!el || secs <= 0) { clearInterval(cooldownInterval); cooldownInterval = null; if (el) el.textContent = 'now!'; return; }
+        el.textContent = secs + 's';
+    }, 1000);
 }
 
 export function showAlert(message) {
