@@ -1,5 +1,5 @@
 import { TABLE_DM_TABLES, TABLE_CHARACTERS, TABLE_PROFILES } from './constants.js';
-import { formatRelativeDate } from './dashboard-logic.js';
+import { formatRelativeDate, detectJsonType } from './dashboard-logic.js';
 import { escHtml } from './utils.js';
 
 let supabase = null;
@@ -33,7 +33,10 @@ export async function renderDashboard(container) {
 
     let html = `<div class="flex items-center justify-between mb-6">
         <button id="dashProfileBtn" class="btn-primary-pill px-4 py-2">👤 Profile</button>
-        <button id="dashNewBtn" class="btn-primary-pill px-4 py-2">+ New</button>
+        <div class="flex gap-2">
+            <button id="dashUploadBtn" class="btn-primary-pill px-4 py-2">⬆ Upload</button>
+            <button id="dashNewBtn" class="btn-primary-pill px-4 py-2">+ New</button>
+        </div>
     </div>`;
 
     if (sortedTables.length) html += sectionHtml('⚒️ Tables', sortedTables, 'dm', tableMap);
@@ -42,6 +45,7 @@ export async function renderDashboard(container) {
     container.innerHTML = html;
     wireNewButton(container);
     wireProfileButton(container);
+    wireUploadButton(container);
     wireCards(container, sortedTables, sortedChars);
 }
 
@@ -279,6 +283,55 @@ async function showProfileModal() {
         if (error) { alert('Failed to save profile: ' + error.message); return; }
         close();
     });
+}
+
+function wireUploadButton(container) {
+    const btn = container.querySelector('#dashUploadBtn');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.addEventListener('change', async () => {
+            const file = input.files[0];
+            if (!file) return;
+            try {
+                const text = await file.text();
+                const json = JSON.parse(text);
+                const data = json.data || json;
+                const type = detectJsonType(data);
+                if (!type) { showUploadAlert('Could not detect file type. Expected a character or table JSON.'); return; }
+                if (type === 'character') {
+                    const name = data.fields?.charName?.trim() || file.name.replace('.json', '');
+                    const { error } = await supabase.from(TABLE_CHARACTERS)
+                        .insert({ user_id: userId, character_name: name, data });
+                    if (error) { showUploadAlert('Upload failed: ' + error.message); return; }
+                } else {
+                    const name = data.campaign || file.name.replace('.json', '');
+                    const { error } = await supabase.from(TABLE_DM_TABLES)
+                        .insert({ user_id: userId, campaign_name: name, data });
+                    if (error) { showUploadAlert('Upload failed: ' + error.message); return; }
+                }
+                renderDashboard(container);
+            } catch { showUploadAlert('Invalid JSON file.'); }
+        });
+        input.click();
+    });
+}
+
+function showUploadAlert(msg) {
+    let modal = document.getElementById('dashUploadAlert');
+    if (modal) modal.remove();
+    modal = document.createElement('div');
+    modal.id = 'dashUploadAlert';
+    modal.className = 'fixed inset-0 modal-overlay z-[60] p-4 flex items-center justify-center';
+    modal.innerHTML = `<div class="modal-panel p-6 w-full max-w-xs text-center">
+        <p class="text-sm text-[#f5efe6] mb-5 font-[Cinzel]">${escHtml(msg)}</p>
+        <button data-ok class="w-full btn-primary text-xs py-3 rounded-xl font-bold uppercase">OK</button>
+    </div>`;
+    modal.querySelector('[data-ok]').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
 }
 
 function showNewMenu() {
