@@ -26,8 +26,8 @@ export async function onRequestGet(context) {
                 headers: { 'apikey': serviceRoleKey, 'Authorization': `Bearer ${serviceRoleKey}` }
             }),
             fetch(`${rest}/profiles?select=id,nickname`, { headers }),
-            fetch(`${rest}/characters?select=id,user_id,name,is_autosave`, { headers }),
-            fetch(`${rest}/dm_tables?select=id,user_id,name,is_autosave`, { headers })
+            fetch(`${rest}/characters?select=id,user_id,character_name,is_autosave`, { headers }),
+            fetch(`${rest}/dm_tables?select=id,user_id,campaign_name,is_autosave`, { headers })
         ]);
 
         const usersBody = await usersRes.json();
@@ -56,14 +56,14 @@ export async function onRequestGet(context) {
         for (const c of characters) {
             if (perUser[c.user_id]) {
                 perUser[c.user_id].characters.push({
-                    id: c.id, name: c.name || 'Unnamed', is_autosave: c.is_autosave
+                    id: c.id, name: c.character_name || 'Unnamed', is_autosave: c.is_autosave
                 });
             }
         }
         for (const t of tables) {
             if (perUser[t.user_id]) {
                 perUser[t.user_id].tables.push({
-                    id: t.id, name: t.name || 'Unnamed', is_autosave: t.is_autosave
+                    id: t.id, name: t.campaign_name || 'Unnamed', is_autosave: t.is_autosave
                 });
             }
         }
