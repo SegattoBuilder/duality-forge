@@ -10,6 +10,7 @@ let syncStatusTimer = null;
 let characterPickerShown = false;
 let linkedTable = null;
 let currentCharacterRowId = localStorage.getItem(LS_CHAR_ROW_ID) || null;
+const isNewFromDashboard = sessionStorage.getItem('dh_dashboard_new') === 'character';
 
 function setCharacterRowId(id) {
     currentCharacterRowId = id;
@@ -20,10 +21,12 @@ function setCharacterRowId(id) {
 export function initCharAuth() {
     onAuthChange(renderAuthUI);
     onAuthChange(user => { if (user) startCloudAutoSave(); else stopCloudAutoSave(); });
-    onAuthChange(user => {
+    onAuthChange(async user => {
         renderTableLink();
         if (user && !characterPickerShown) {
             characterPickerShown = true;
+            if (await tryDashboardPick()) return;
+            if (isNewFromDashboard) return;
             const localRaw = localStorage.getItem(LS_CHAR_SAVE);
             let hasLocal = false;
             try { const d = JSON.parse(localRaw); hasLocal = d && (d.fields?.charName || (d.cards && d.cards.length)); } catch {}
@@ -39,6 +42,25 @@ export function initCharAuth() {
             if (!hasLocal) showCharacterPicker();
         }
     };
+}
+
+async function tryDashboardPick() {
+    const raw = sessionStorage.getItem('dh_dashboard_pick');
+    if (!raw) return false;
+    sessionStorage.removeItem('dh_dashboard_pick');
+    try {
+        const pick = JSON.parse(raw);
+        if (pick.type !== 'character' || !pick.id) return false;
+        const sb = getSupabase();
+        const { data: row } = await sb.from(TABLE_CHARACTERS).select('*').eq('id', pick.id).single();
+        if (!row) return false;
+        if (pick.autosave && row.autosave_data) {
+            applyCharacterRow({ ...row, data: row.autosave_data });
+        } else {
+            applyCharacterRow(row);
+        }
+        return true;
+    } catch { return false; }
 }
 
 function showSyncStatus(text) {
@@ -159,12 +181,14 @@ async function importLocalToCloud() {
 }
 
 async function doSignOut() {
+    setCharacterRowId(null);
     await coreSignOut();
     window.location.href = '/';
 }
 
 async function doSignOutAll() {
     showConfirm('Sign out from all devices?', async () => {
+        setCharacterRowId(null);
         await coreSignOutAll();
         window.location.href = '/';
     });

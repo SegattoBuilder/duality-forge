@@ -55,11 +55,6 @@
             <button onclick="goBack()" class="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-[#d4a017] transition-colors">← Back</button>
         </div>
 
-        <!-- View toggle (shown when signed in, always same spot) -->
-        <div id="viewToggleRow" class="hidden text-center mb-4">
-            <button id="viewToggleBtn" class="inline-flex items-center gap-1.5 text-xs font-bold text-zinc-400 hover:text-[#d4a017] transition-colors border border-[#3d362a] rounded-full px-4 py-2 hover:border-[#d4a017]"></button>
-        </div>
-
         <!-- Dashboard view (hidden by default) -->
         <div id="dashboardView" class="hidden mb-8"></div>
 
@@ -103,16 +98,12 @@
     <script type="module">
         import SUPABASE_CONFIG from './js/core/config.js';
         import { hasConsent } from './js/core/auth.js';
-        import { LS_DASHBOARD_VIEW } from './js/core/constants.js';
         import { initDashboard, renderDashboard } from './js/core/dashboard.js';
 
         const sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
         const grid = document.getElementById('choiceGrid');
         const backRow = document.getElementById('backRow');
         const dashboardView = document.getElementById('dashboardView');
-        const viewToggleRow = document.getElementById('viewToggleRow');
-        const viewToggleBtn = document.getElementById('viewToggleBtn');
-        let isDashboard = localStorage.getItem(LS_DASHBOARD_VIEW) === '1';
 
         const authCards = `
             <div class="choice-card" onclick="chooseMode('online')">
@@ -208,9 +199,7 @@
                 closeAuthModal();
                 initDashboard(sb, data.user.id);
                 document.getElementById('signOutRow').classList.remove('hidden');
-                viewToggleRow.classList.remove('hidden');
-                if (isDashboard) showView(true);
-                else showTools();
+                showDashboard();
             }
         }
 
@@ -234,35 +223,20 @@
             if (error) showAlert('Google sign-in failed: ' + error.message);
         }
 
-        function showView(dashboard) {
-            isDashboard = dashboard;
-            localStorage.setItem(LS_DASHBOARD_VIEW, dashboard ? '1' : '0');
+        function showDashboard() {
+            grid.classList.add('hidden');
             backRow.classList.add('hidden');
-            if (dashboard) {
-                grid.classList.add('hidden');
-                dashboardView.classList.remove('hidden');
-                viewToggleBtn.textContent = '📋 Classic View';
-                document.getElementById('landingSubtitle').textContent = 'Your saves at a glance.';
-                renderDashboard(dashboardView);
-            } else {
-                dashboardView.classList.add('hidden');
-                grid.classList.remove('hidden');
-                viewToggleBtn.textContent = '📊 Dashboard View';
-                document.getElementById('landingSubtitle').textContent = 'Your toolkit for the table. Pick a tool to get started.';
-                showTools();
-            }
+            dashboardView.classList.remove('hidden');
+            document.getElementById('landingSubtitle').textContent = 'Your saves at a glance.';
+            renderDashboard(dashboardView);
         }
-
-        viewToggleBtn.addEventListener('click', () => showView(!isDashboard));
 
         // Check if user is already signed in (e.g. returning from Google OAuth)
         const { data: { session } } = await sb.auth.getSession();
         if (session) {
             initDashboard(sb, session.user.id);
             document.getElementById('signOutRow').classList.remove('hidden');
-            viewToggleRow.classList.remove('hidden');
-            if (isDashboard) showView(true);
-            else { showTools(); backRow.classList.add('hidden'); }
+            showDashboard();
         }
         else showAuthChoice();
 
@@ -303,10 +277,10 @@
         window.go = (tool) => { window.location.href = tool + '/'; };
         window.chooseMode = (mode) => {
             if (mode === 'online') openAuthModal();
-            else { showTools(); viewToggleRow.classList.add('hidden'); }
+            else showTools();
         };
-        window.goBack = () => { showAuthChoice(); document.getElementById('signOutRow').classList.add('hidden'); viewToggleRow.classList.add('hidden'); dashboardView.classList.add('hidden'); grid.classList.remove('hidden'); };
-        window.doSignOut = async () => { await sb.auth.signOut({ scope: 'local' }); showAuthChoice(); document.getElementById('signOutRow').classList.add('hidden'); viewToggleRow.classList.add('hidden'); dashboardView.classList.add('hidden'); grid.classList.remove('hidden'); };
+        window.goBack = () => { showAuthChoice(); document.getElementById('signOutRow').classList.add('hidden'); dashboardView.classList.add('hidden'); grid.classList.remove('hidden'); };
+        window.doSignOut = async () => { await sb.auth.signOut({ scope: 'local' }); showAuthChoice(); document.getElementById('signOutRow').classList.add('hidden'); dashboardView.classList.add('hidden'); grid.classList.remove('hidden'); };
         window.doSignIn = doSignIn;
         window.doSignUp = doSignUp;
         window.signInWithGoogle = signInWithGoogle;

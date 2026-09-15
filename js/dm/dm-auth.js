@@ -12,6 +12,7 @@ let cloudAutoSaveInterval = null;
 let lastSavedSnapshot = null;
 let syncStatusTimer = null;
 let campaignPickerShown = false;
+const isNewFromDashboard = sessionStorage.getItem('dh_dashboard_new') === 'dm';
 
 function gatherDmData() {
     const campaign = document.getElementById('campaignName').value.trim() || 'My Campaign';
@@ -25,6 +26,8 @@ export function initDmAuth() {
         if (user) await restoreCurrentTable();
         if (user && !campaignPickerShown) {
             campaignPickerShown = true;
+            if (await tryDashboardPick()) return;
+            if (isNewFromDashboard) return;
             if (!hasLocalDmData()) showCampaignPicker();
         }
     });
@@ -34,6 +37,25 @@ export function initDmAuth() {
             if (!hasLocalDmData()) showCampaignPicker();
         }
     };
+}
+
+async function tryDashboardPick() {
+    const raw = sessionStorage.getItem('dh_dashboard_pick');
+    if (!raw) return false;
+    sessionStorage.removeItem('dh_dashboard_pick');
+    try {
+        const pick = JSON.parse(raw);
+        if (pick.type !== 'dm' || !pick.id) return false;
+        const sb = getSupabase();
+        const { data: row } = await sb.from(TABLE_DM_TABLES).select('*').eq('id', pick.id).single();
+        if (!row) return false;
+        if (pick.autosave && row.autosave_data) {
+            applyCampaignRow({ ...row, data: row.autosave_data });
+        } else {
+            applyCampaignRow(row);
+        }
+        return true;
+    } catch { return false; }
 }
 
 function showSyncStatus(text) {
