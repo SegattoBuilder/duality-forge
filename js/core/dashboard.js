@@ -219,8 +219,16 @@ function showNewMenu() {
     menu.addEventListener('click', (e) => { if (e.target === menu) menu.classList.add('hidden'); });
     document.body.appendChild(menu);
 
-    menu.querySelector('[data-new="dm"]').addEventListener('click', () => { menu.classList.add('hidden'); window.location.href = 'dm/'; });
-    menu.querySelector('[data-new="character"]').addEventListener('click', () => { menu.classList.add('hidden'); window.location.href = 'character/'; });
+    menu.querySelector('[data-new="dm"]').addEventListener('click', () => {
+        menu.classList.add('hidden');
+        sessionStorage.setItem('dh_dashboard_new', 'dm');
+        window.location.href = 'dm/';
+    });
+    menu.querySelector('[data-new="character"]').addEventListener('click', () => {
+        menu.classList.add('hidden');
+        sessionStorage.setItem('dh_dashboard_new', 'character');
+        window.location.href = 'character/';
+    });
     menu.querySelector('[data-close-new]').addEventListener('click', () => menu.classList.add('hidden'));
 }
 

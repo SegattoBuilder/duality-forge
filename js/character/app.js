@@ -1,5 +1,5 @@
 import { SAVE_KEY, THEME_KEY, setRestoring } from './state.js';
-import { LS_CHAR_ACTIVE_TAB, LS_CHAR_SAVE_V1 } from '../core/constants.js';
+import { LS_CHAR_ACTIVE_TAB, LS_CHAR_SAVE_V1, LS_CHAR_ROW_ID } from '../core/constants.js';
 import { renderThemePicker, applyTheme, toggleMode, setMode, initMode } from './theme.js';
 import { toggleSection } from './ui.js';
 import { renderDots, updateThresholds, updateAttackBonus } from './trackers.js';
@@ -80,6 +80,12 @@ window.switchModernTab = function(tabId) {
 // Load saved data immediately (module runs after DOM is ready)
 setRestoring(true);
 {
+    // Check if coming from dashboard "New" button
+    if (sessionStorage.getItem('dh_dashboard_new') === 'character') {
+        sessionStorage.removeItem('dh_dashboard_new');
+        localStorage.removeItem(SAVE_KEY);
+        localStorage.removeItem(LS_CHAR_ROW_ID);
+    }
     // Migrate old key
     if (!localStorage.getItem(SAVE_KEY) && localStorage.getItem(LS_CHAR_SAVE_V1)) {
         localStorage.setItem(SAVE_KEY, localStorage.getItem(LS_CHAR_SAVE_V1));

@@ -1,6 +1,6 @@
 import { initAuth, onAuthChange, getUser, getSupabase, showAlert, showConfirm } from '../core/auth.js';
 import { escHtml, escHtmlAttr } from '../core/utils.js';
-import { LS_DM_CREATURES, LS_DM_FEAR, LS_DM_COUNTERS, LS_DM_CAMPAIGN, LS_DM_ACTIONBAR, LS_DM_FEARPOOL, LS_DM_TITLE, LS_DM_ACTIVE_TAB, LS_THEME, TABLE_DM_TABLES } from '../core/constants.js';
+import { LS_DM_CREATURES, LS_DM_FEAR, LS_DM_COUNTERS, LS_DM_CAMPAIGN, LS_DM_ACTIONBAR, LS_DM_FEARPOOL, LS_DM_TITLE, LS_DM_ACTIVE_TAB, LS_DM_VAULT, LS_DM_VAULT_GROUPS, LS_DM_CHRONICLE, LS_DM_TABLE_ID, LS_THEME, TABLE_DM_TABLES } from '../core/constants.js';
 import { initMode, setMode, toggleMode, applyTheme, renderThemePicker } from '../core/theme.js';
 import { initTracker, renderGrid, renderFearDots, autoCache, creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled } from './tracker.js';
 import { initVault, renderVaultGrid, autoCacheVault, vaultCreatures, setVaultCreatures, vaultGroups, setVaultGroups } from './vault.js';
@@ -218,6 +218,12 @@ window.addEventListener('DOMContentLoaded', async () => {
     initMode();
     renderThemePicker();
     applyTheme(localStorage.getItem(LS_THEME) || 'gold');
+
+    // Check if coming from dashboard "New" button
+    if (sessionStorage.getItem('dh_dashboard_new') === 'dm') {
+        sessionStorage.removeItem('dh_dashboard_new');
+        [SAVE_KEY, COUNTERS_KEY, FEAR_KEY, CAMPAIGN_KEY, LS_DM_VAULT, LS_DM_VAULT_GROUPS, LS_DM_CHRONICLE, LS_DM_TABLE_ID].forEach(k => localStorage.removeItem(k));
+    }
 
     // Load from localStorage
     try { setCreatures(JSON.parse(localStorage.getItem(SAVE_KEY)) || []); } catch { setCreatures([]); }
