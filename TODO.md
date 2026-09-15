@@ -168,7 +168,29 @@
 
 ## 🔜 Planned
 
-**Table Board** ← _next_
+**Dashboard (`epic/dashboard`)**
+- [x] Dashboard view — signed-in users see all saves (tables + characters) on landing page
+- [x] Horizontal scrollable card rows per section, newest first
+- [x] Save picker modal — click card to choose Save vs Autosave, with delete option
+- [x] Character cards show linked table name
+- [x] "+ New" button — creates clean character or table, clears cached data
+- [x] Upload button — auto-detects character vs table JSON, creates row
+- [x] Profile modal on dashboard — view and edit profile directly
+- [x] Dashboard card navigation — clicking a card loads save directly in character/DM app
+- [x] Persist `currentCharacterRowId` in localStorage — saves update existing row on reload
+- [x] Sign out clears character row ID
+- [ ] Remove profile/save-management from character/DM auth menus (cleanup)
+- [ ] DM equivalent of `LS_CHAR_ROW_ID` — persist current table row ID
+
+**Autosave Schema Refactor (merged to main)**
+- [x] `autosave_data` + `autosave_at` columns on `characters` and `dm_tables`
+- [x] Autosave writes to same row instead of separate `is_autosave` rows
+- [x] Cloud picker reads autosave from same row
+- [x] Migrated existing autosave data, promoted orphans, cleaned up old rows
+- [x] Removed all `is_autosave` references from JS code
+- [x] Backup tables (`_backup_characters_autosave`, `_backup_dm_tables_autosave`) retained
+
+**Table Board** ← _next epic_
 - [ ] Shared board per DM table — DM and players can post notes, schedule, table rules, session recaps
 
 ---
