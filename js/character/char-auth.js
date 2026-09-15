@@ -1,7 +1,7 @@
 import { initAuth, getUser, getProfile, getSupabase, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, changeEmail, isEmailUser, signOut as coreSignOut, signOutAll as coreSignOutAll, deleteAccount as coreDeleteAccount, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, showConfirm, showAlert } from '../core/auth.js';
 import { escHtml, escHtmlAttr } from '../core/utils.js';
 import { showCloudPicker } from '../core/cloud-picker.js';
-import { TOAST_DURATION, SYNC_STATUS_DURATION, AUTOSAVE_INTERVAL, TABLE_CHARACTERS, TABLE_DM_TABLES, LS_CHAR_SAVE } from '../core/constants.js';
+import { TOAST_DURATION, SYNC_STATUS_DURATION, AUTOSAVE_INTERVAL, TABLE_CHARACTERS, TABLE_DM_TABLES, LS_CHAR_SAVE, LS_CHAR_ROW_ID } from '../core/constants.js';
 import { gatherData, applyData, autoCache, resetSheet } from './save.js';
 
 let cloudAutoSaveInterval = null;
@@ -9,7 +9,13 @@ let lastSavedSnapshot = null;
 let syncStatusTimer = null;
 let characterPickerShown = false;
 let linkedTable = null;
-let currentCharacterRowId = null;
+let currentCharacterRowId = localStorage.getItem(LS_CHAR_ROW_ID) || null;
+
+function setCharacterRowId(id) {
+    currentCharacterRowId = id;
+    if (id) localStorage.setItem(LS_CHAR_ROW_ID, id);
+    else localStorage.removeItem(LS_CHAR_ROW_ID);
+}
 
 export function initCharAuth() {
     onAuthChange(renderAuthUI);
@@ -118,7 +124,7 @@ async function cloudSave() {
             .insert({ user_id: getUser().id, character_name: charName, data })
             .select('id').single();
         if (error) { showAlert('Cloud save failed: ' + error.message); return; }
-        currentCharacterRowId = row.id;
+        setCharacterRowId(row.id);
     }
     lastSavedSnapshot = JSON.stringify(data);
     renderTableLink();
@@ -319,7 +325,7 @@ window.dismissClosedTable = () => {
 function applyCharacterRow(row) {
     applyData(row.data);
     localStorage.setItem(LS_CHAR_SAVE, JSON.stringify(row.data));
-    currentCharacterRowId = row.id;
+    setCharacterRowId(row.id);
     linkedTable = null;
     if (row.table_id) loadLinkedTable(row.table_id, row.table_approved);
     else if (!row.table_id && row.table_approved === null) { linkedTable = { _closed: true }; renderTableLink(); }
@@ -340,7 +346,7 @@ function closeCharacterPicker() { document.getElementById('characterPickerModal'
 function startNewCharacter() {
     closeCharacterPicker();
     resetSheet();
-    currentCharacterRowId = null;
+    setCharacterRowId(null);
     linkedTable = null;
     renderTableLink();
 }
@@ -406,7 +412,7 @@ async function submitTableLink() {
             .insert({ user_id: getUser().id, character_name: charName, data })
             .select('id').single();
         if (saveErr) { showAlert('Failed to save character: ' + saveErr.message); return; }
-        currentCharacterRowId = row.id;
+        setCharacterRowId(row.id);
     }
     const { error } = await sb.from(TABLE_CHARACTERS).update({ table_id: table.id, table_approved: false }).eq('id', currentCharacterRowId);
     if (error) { showAlert('Link failed: ' + error.message); return; }
