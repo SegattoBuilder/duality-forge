@@ -4,7 +4,7 @@ export async function onRequestGet(context) {
     const provided = (url.searchParams.get('key') || '').trim();
     const expected = (env.FORGE_ADMIN_KEY || '').trim();
     if (!provided || provided !== expected) {
-        return json({ error: 'Unauthorized', debug: { providedLen: provided.length, expectedLen: expected.length, hasKey: !!env.ADMIN_KEY } }, 401);
+        return json({ error: 'Unauthorized', debug: { providedLen: provided.length, expectedLen: expected.length, keyType: typeof env.FORGE_ADMIN_KEY, rawLen: env.FORGE_ADMIN_KEY ? String(env.FORGE_ADMIN_KEY).length : -1, envKeys: Object.keys(env).sort() } }, 401);
     }
 
     const supabaseUrl = env.SUPABASE_URL;
