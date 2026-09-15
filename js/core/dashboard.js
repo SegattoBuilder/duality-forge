@@ -1,4 +1,4 @@
-import { TABLE_DM_TABLES, TABLE_CHARACTERS } from './constants.js';
+import { TABLE_DM_TABLES, TABLE_CHARACTERS, TABLE_PROFILES } from './constants.js';
 import { formatRelativeDate } from './dashboard-logic.js';
 import { escHtml } from './utils.js';
 
@@ -32,7 +32,7 @@ export async function renderDashboard(container) {
     }
 
     let html = `<div class="flex items-center justify-between mb-6">
-        <div></div>
+        <button id="dashProfileBtn" class="btn-primary-pill px-4 py-2">👤 Profile</button>
         <button id="dashNewBtn" class="btn-primary-pill px-4 py-2">+ New</button>
     </div>`;
 
@@ -41,6 +41,7 @@ export async function renderDashboard(container) {
 
     container.innerHTML = html;
     wireNewButton(container);
+    wireProfileButton(container);
     wireCards(container, sortedTables, sortedChars);
 }
 
@@ -193,6 +194,91 @@ function showDeleteConfirm(name, onYes) {
 function navigateTo(type, rowId, useAutosave = false) {
     sessionStorage.setItem('dh_dashboard_pick', JSON.stringify({ type, id: rowId, autosave: useAutosave }));
     window.location.href = type === 'dm' ? 'dm/' : 'character/';
+}
+
+function wireProfileButton(container) {
+    const btn = container.querySelector('#dashProfileBtn');
+    if (!btn) return;
+    btn.addEventListener('click', () => showProfileModal());
+}
+
+async function showProfileModal() {
+    let modal = document.getElementById('dashProfileModal');
+    if (modal) modal.remove();
+
+    const { data: profile } = await supabase.from(TABLE_PROFILES).select('*').eq('id', userId).single();
+    const p = profile || {};
+
+    modal = document.createElement('div');
+    modal.id = 'dashProfileModal';
+    modal.className = 'fixed inset-0 modal-overlay z-50 p-4 overflow-y-auto flex items-center justify-center';
+    modal.innerHTML = `<div class="modal-panel p-6 w-full max-w-sm">
+        <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5">
+            <h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color:var(--accent-1)">Profile</h2>
+            <button data-close class="btn-close">✕</button>
+        </div>
+        <div class="space-y-4">
+            <div class="flex justify-center"><div id="dpAvatarPreview" class="w-20 h-20 rounded-full border-2 border-[#d4a017] bg-[#2a2418] flex items-center justify-center text-3xl overflow-hidden">🎲</div></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Avatar URL</label><input id="dpAvatar" type="url" placeholder="https://example.com/avatar.png" class="w-full input-field" value="${escHtml(p.avatar_url || '')}"></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Nickname</label><input id="dpNickname" type="text" placeholder="How should we call you?" maxlength="30" class="w-full input-field" value="${escHtml(p.nickname || '')}"></div>
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Country</label><input id="dpCountry" type="text" placeholder="e.g. Canada" maxlength="50" class="w-full input-field" value="${escHtml(p.country || '')}"></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">State / Province</label><input id="dpState" type="text" placeholder="e.g. Alberta" maxlength="50" class="w-full input-field" value="${escHtml(p.state || '')}"></div>
+            </div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Age Range</label><select id="dpAge" class="w-full select-field">
+                <option value="">Select...</option><option value="under-18">Under 18</option><option value="18-24">18–24</option><option value="25-34">25–34</option><option value="35-44">35–44</option><option value="45-54">45–54</option><option value="55+">55+</option>
+            </select></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">DM Experience</label><select id="dpDmExp" class="w-full select-field">
+                <option value="">Select...</option><option value="none">Never</option><option value="<1">Less than 1 year</option><option value="1-2">1–2 years</option><option value="3-5">3–5 years</option><option value="5-10">5–10 years</option><option value="10+">10+ years</option>
+            </select></div>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Player Experience</label><select id="dpPlayerExp" class="w-full select-field">
+                <option value="">Select...</option><option value="none">Never</option><option value="<1">Less than 1 year</option><option value="1-2">1–2 years</option><option value="3-5">3–5 years</option><option value="5-10">5–10 years</option><option value="10+">10+ years</option>
+            </select></div>
+        </div>
+        <div class="flex gap-3 mt-6">
+            <button data-save class="flex-1 btn-primary">Save</button>
+            <button data-cancel class="flex-1 btn-secondary">Cancel</button>
+        </div>
+    </div>`;
+
+    const close = () => modal.remove();
+    modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+    modal.querySelector('[data-close]').addEventListener('click', close);
+    modal.querySelector('[data-cancel]').addEventListener('click', close);
+
+    // Set select values after DOM insertion
+    document.body.appendChild(modal);
+    if (p.age) document.getElementById('dpAge').value = p.age;
+    if (p.dm_experience) document.getElementById('dpDmExp').value = p.dm_experience;
+    if (p.player_experience) document.getElementById('dpPlayerExp').value = p.player_experience;
+
+    // Avatar preview
+    const previewEl = document.getElementById('dpAvatarPreview');
+    const avatarInput = document.getElementById('dpAvatar');
+    const updatePreview = () => {
+        const url = avatarInput.value.trim();
+        if (url && url.match(/^https?:\/\//)) previewEl.innerHTML = `<img src="${escHtml(url)}" alt="" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='🎲'">`;
+        else previewEl.innerHTML = '🎲';
+    };
+    avatarInput.addEventListener('input', updatePreview);
+    updatePreview();
+
+    // Save
+    modal.querySelector('[data-save]').addEventListener('click', async () => {
+        const row = {
+            id: userId,
+            nickname: document.getElementById('dpNickname').value.trim() || null,
+            avatar_url: avatarInput.value.trim() || null,
+            country: document.getElementById('dpCountry').value.trim() || null,
+            state: document.getElementById('dpState').value.trim() || null,
+            age: document.getElementById('dpAge').value || null,
+            dm_experience: document.getElementById('dpDmExp').value || null,
+            player_experience: document.getElementById('dpPlayerExp').value || null
+        };
+        const { error } = await supabase.from(TABLE_PROFILES).upsert(row);
+        if (error) { alert('Failed to save profile: ' + error.message); return; }
+        close();
+    });
 }
 
 function showNewMenu() {
