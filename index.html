@@ -32,7 +32,7 @@
     <div class="w-full max-w-2xl mx-auto px-4">
         <div class="text-center mb-10">
             <picture><source srcset="images/logo/logo.webp" type="image/webp"><img src="images/logo/logo.png" alt="Duality Forge" class="mx-auto h-48 mb-4" width="192" height="192"></picture>
-            <p class="text-sm text-zinc-500">Your toolkit for the table. Pick a tool to get started.</p>
+            <p id="landingSubtitle" class="text-sm text-zinc-500">Your toolkit for the table. Pick a tool to get started.</p>
         </div>
 
         <div id="choiceGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8 min-h-[160px]">
@@ -54,6 +54,14 @@
         <div id="backRow" class="text-center mb-4 hidden">
             <button onclick="goBack()" class="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-[#d4a017] transition-colors">← Back</button>
         </div>
+
+        <!-- View toggle (shown when signed in, always same spot) -->
+        <div id="viewToggleRow" class="hidden text-center mb-4">
+            <button id="viewToggleBtn" class="inline-flex items-center gap-1.5 text-xs font-bold text-zinc-400 hover:text-[#d4a017] transition-colors border border-[#3d362a] rounded-full px-4 py-2 hover:border-[#d4a017]"></button>
+        </div>
+
+        <!-- Dashboard view (hidden by default) -->
+        <div id="dashboardView" class="hidden mb-8"></div>
 
         <div class="text-center space-y-2">
             <a href="support/" class="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-[#d4a017] transition-colors">🤝 Support & Feedback</a>
@@ -95,10 +103,16 @@
     <script type="module">
         import SUPABASE_CONFIG from './js/core/config.js';
         import { hasConsent } from './js/core/auth.js';
+        import { LS_DASHBOARD_VIEW } from './js/core/constants.js';
+        import { initDashboard, renderDashboard } from './js/core/dashboard.js';
 
         const sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
         const grid = document.getElementById('choiceGrid');
         const backRow = document.getElementById('backRow');
+        const dashboardView = document.getElementById('dashboardView');
+        const viewToggleRow = document.getElementById('viewToggleRow');
+        const viewToggleBtn = document.getElementById('viewToggleBtn');
+        let isDashboard = localStorage.getItem(LS_DASHBOARD_VIEW) === '1';
 
         const authCards = `
             <div class="choice-card" onclick="chooseMode('online')">
@@ -188,9 +202,16 @@
             const email = document.getElementById('authEmail').value.trim();
             const pw = document.getElementById('authPassword').value;
             if (!email || !pw) { showAlert('Please enter email and password.'); return; }
-            const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+            const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
             if (error) showAlert('Sign-in failed: ' + error.message);
-            else { closeAuthModal(); showTools(); }
+            else {
+                closeAuthModal();
+                initDashboard(sb, data.user.id);
+                document.getElementById('signOutRow').classList.remove('hidden');
+                viewToggleRow.classList.remove('hidden');
+                if (isDashboard) showView(true);
+                else showTools();
+            }
         }
 
         async function doSignUp() {
@@ -202,7 +223,7 @@
             if (error) {
                 if (error.message.includes('security purposes')) showCooldown(error.message);
                 else showAlert('Sign-up failed: ' + error.message);
-            } else showAlert('📧 Confirmation email sent!<br><span class="text-xs text-zinc-400 font-[Inter] font-normal">Check your inbox (and spam/junk folder) for a confirmation link.<br>Already signed up with Google? Use the Google button instead.</span>');
+            } else showAlert('📧 Confirmation email sent!<br><span class="text-xs text-zinc-500 font-[Inter] font-normal">Check your inbox (and spam/junk folder) for a confirmation link.</span>');
         }
 
         async function signInWithGoogle() {
@@ -213,9 +234,36 @@
             if (error) showAlert('Google sign-in failed: ' + error.message);
         }
 
+        function showView(dashboard) {
+            isDashboard = dashboard;
+            localStorage.setItem(LS_DASHBOARD_VIEW, dashboard ? '1' : '0');
+            backRow.classList.add('hidden');
+            if (dashboard) {
+                grid.classList.add('hidden');
+                dashboardView.classList.remove('hidden');
+                viewToggleBtn.textContent = '📋 Classic View';
+                document.getElementById('landingSubtitle').textContent = 'Your saves at a glance.';
+                renderDashboard(dashboardView);
+            } else {
+                dashboardView.classList.add('hidden');
+                grid.classList.remove('hidden');
+                viewToggleBtn.textContent = '📊 Dashboard View';
+                document.getElementById('landingSubtitle').textContent = 'Your toolkit for the table. Pick a tool to get started.';
+                showTools();
+            }
+        }
+
+        viewToggleBtn.addEventListener('click', () => showView(!isDashboard));
+
         // Check if user is already signed in (e.g. returning from Google OAuth)
         const { data: { session } } = await sb.auth.getSession();
-        if (session) { showTools(); backRow.classList.add('hidden'); document.getElementById('signOutRow').classList.remove('hidden'); }
+        if (session) {
+            initDashboard(sb, session.user.id);
+            document.getElementById('signOutRow').classList.remove('hidden');
+            viewToggleRow.classList.remove('hidden');
+            if (isDashboard) showView(true);
+            else { showTools(); backRow.classList.add('hidden'); }
+        }
         else showAuthChoice();
 
         // Listen for password recovery redirect
@@ -253,37 +301,12 @@
 
         // Expose to onclick handlers
         window.go = (tool) => { window.location.href = tool + '/'; };
-        window.showTools = showTools;
-        window.openAuthModal = openAuthModal;
         window.chooseMode = (mode) => {
             if (mode === 'online') openAuthModal();
-            else showOfflineNotice();
+            else { showTools(); viewToggleRow.classList.add('hidden'); }
         };
-
-        function showOfflineNotice() {
-            let modal = document.getElementById('offlineNoticeModal');
-            if (modal) modal.remove();
-            modal = document.createElement('div');
-            modal.id = 'offlineNoticeModal';
-            modal.className = 'fixed inset-0 modal-overlay z-[9999] p-4 flex items-center justify-center';
-            modal.innerHTML = `<div class="modal-panel p-6 w-full max-w-sm">
-                <div class="text-center mb-4"><span class="text-3xl">⚠️</span></div>
-                <h2 class="font-[Cinzel] text-sm font-bold text-[#d4a017] text-center uppercase tracking-wide mb-4">Offline Mode Is Going Away</h2>
-                <div class="text-xs text-zinc-400 leading-relaxed space-y-3">
-                    <p>Offline mode will be <strong class="text-[#f5efe6]">removed on September 30, 2026</strong>. All features will require an account (free).</p>
-                    <p>Creating an account gives you <strong class="text-[#f5efe6]">cloud sync across devices</strong>, automatic backups, party linking, and access to the community.</p>
-                    <p>If you have existing offline data, <strong class="text-[#f5efe6]">sign in and use the cloud save</strong> option inside the tools to back up your characters and campaigns before the change.</p>
-                </div>
-                <div class="flex gap-3 mt-6">
-                    <button onclick="document.getElementById('offlineNoticeModal').remove(); openAuthModal()" class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">Create Account</button>
-                    <button onclick="document.getElementById('offlineNoticeModal').remove(); showTools()" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880]">Continue Offline</button>
-                </div>
-            </div>`;
-            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-            document.body.appendChild(modal);
-        }
-        window.goBack = () => { showAuthChoice(); document.getElementById('signOutRow').classList.add('hidden'); };
-        window.doSignOut = async () => { await sb.auth.signOut({ scope: 'local' }); showAuthChoice(); document.getElementById('signOutRow').classList.add('hidden'); };
+        window.goBack = () => { showAuthChoice(); document.getElementById('signOutRow').classList.add('hidden'); viewToggleRow.classList.add('hidden'); dashboardView.classList.add('hidden'); grid.classList.remove('hidden'); };
+        window.doSignOut = async () => { await sb.auth.signOut({ scope: 'local' }); showAuthChoice(); document.getElementById('signOutRow').classList.add('hidden'); viewToggleRow.classList.add('hidden'); dashboardView.classList.add('hidden'); grid.classList.remove('hidden'); };
         window.doSignIn = doSignIn;
         window.doSignUp = doSignUp;
         window.signInWithGoogle = signInWithGoogle;

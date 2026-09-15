@@ -25,6 +25,7 @@ export const TABLE_COMMUNITY_HOMEBREW_IMPORTS = 'community_homebrew_imports';
 export const LS_CONSENT = 'dh_terms_accepted';
 export const LS_THEME = 'dh_theme';
 export const LS_MODE = 'dh_mode';
+export const LS_DASHBOARD_VIEW = 'dh_dashboard_view';
 
 // ========== LOCALSTORAGE KEYS: DM ==========
 export const LS_DM_CREATURES = 'dh_dm_creatures';
@@ -48,3 +49,4 @@ export const LS_CHAR_ROW_ID = 'dh_char_row_id';
 export const LS_CHAR_EXPORT = 'dh_last_export';
 export const LS_CHAR_ACTIVE_TAB = 'dh_active_tab';
 export const LS_CHAR_SAVE_V1 = 'dh_sheet_v1';
+export const LS_CHAR_ROW_ID = 'dh_char_row_id';
