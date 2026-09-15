@@ -247,11 +247,11 @@ export async function saveProfile(profile) {
 }
 
 // ========== GENERIC CLOUD SAVE/LOAD ==========
-export async function cloudSaveRow(table, matchFields, data, { isAutosave = false } = {}) {
+export async function cloudSaveRow(table, matchFields, data) {
     if (!currentUser) return { error: 'Not signed in' };
     const sb = getSupabase();
 
-    const query = sb.from(table).select('id').eq('user_id', currentUser.id).eq('is_autosave', isAutosave);
+    const query = sb.from(table).select('id').eq('user_id', currentUser.id);
     for (const [k, v] of Object.entries(matchFields)) query.eq(k, v);
     const { data: existing } = await query.limit(1);
 
@@ -263,7 +263,7 @@ export async function cloudSaveRow(table, matchFields, data, { isAutosave = fals
             .eq('id', existing[0].id));
     } else {
         const { data: inserted, error: insertErr } = await sb.from(table)
-            .insert({ user_id: currentUser.id, ...matchFields, data, is_autosave: isAutosave })
+            .insert({ user_id: currentUser.id, ...matchFields, data })
             .select('id').single();
         error = insertErr;
         rowId = inserted?.id;
@@ -277,7 +277,6 @@ export async function cloudLoadRows(table, orderBy = 'updated_at') {
         .from(table)
         .select('*')
         .eq('user_id', currentUser.id)
-        .eq('is_autosave', false)
         .order(orderBy, { ascending: false });
     return { rows: rows || [], error: error?.message || null };
 }

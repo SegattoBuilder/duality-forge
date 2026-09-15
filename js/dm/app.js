@@ -186,7 +186,7 @@ export async function newCampaign(event) {
         if (getUser()) {
             const sb = getSupabase();
             const { data: row, error } = await sb.from(TABLE_DM_TABLES)
-                .insert({ user_id: getUser().id, campaign_name: 'My Campaign', is_autosave: false })
+                .insert({ user_id: getUser().id, campaign_name: 'My Campaign' })
                 .select().single();
             if (!error && row) setCurrentTable(row);
         }

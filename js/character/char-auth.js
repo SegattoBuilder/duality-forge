@@ -115,7 +115,7 @@ async function cloudSave() {
         if (error) { showAlert('Cloud save failed: ' + error.message); return; }
     } else {
         const { data: row, error } = await sb.from(TABLE_CHARACTERS)
-            .insert({ user_id: getUser().id, character_name: charName, data, is_autosave: false })
+            .insert({ user_id: getUser().id, character_name: charName, data })
             .select('id').single();
         if (error) { showAlert('Cloud save failed: ' + error.message); return; }
         currentCharacterRowId = row.id;
@@ -403,7 +403,7 @@ async function submitTableLink() {
         const charName = data.fields?.charName?.trim() || 'My Character';
         const sb2 = getSupabase();
         const { data: row, error: saveErr } = await sb2.from(TABLE_CHARACTERS)
-            .insert({ user_id: getUser().id, character_name: charName, data, is_autosave: false })
+            .insert({ user_id: getUser().id, character_name: charName, data })
             .select('id').single();
         if (saveErr) { showAlert('Failed to save character: ' + saveErr.message); return; }
         currentCharacterRowId = row.id;

@@ -109,7 +109,7 @@ async function cloudSave() {
     } else {
         // Create new campaign
         const { data: row, error } = await sb.from(TABLE_DM_TABLES)
-            .insert({ user_id: getUser().id, campaign_name: campaign, data, is_autosave: false })
+            .insert({ user_id: getUser().id, campaign_name: campaign, data })
             .select().single();
         if (error) { showAlert('Cloud save failed: ' + error.message); return; }
         table = row;
@@ -305,7 +305,7 @@ async function startNewCampaign() {
     if (getUser()) {
         const sb = getSupabase();
         const { data: row, error } = await sb.from(TABLE_DM_TABLES)
-            .insert({ user_id: getUser().id, campaign_name: 'My Campaign', is_autosave: false })
+            .insert({ user_id: getUser().id, campaign_name: 'My Campaign' })
             .select().single();
         if (!error && row) setCurrentTable(row);
     }

@@ -15,7 +15,7 @@ export async function showCloudPicker(opts) {
         return;
     }
 
-    const manualRows = rows.filter(r => !r.is_autosave);
+    const manualRows = rows;
 
     const close = () => modal.classList.add('hidden');
 
