@@ -1,10 +1,8 @@
 export async function onRequestGet(context) {
     const { env, request } = context;
     const url = new URL(request.url);
-    const provided = (url.searchParams.get('key') || '').trim();
-    const expected = (env.FORGE_ADMIN_KEY || '').trim();
-    if (!provided || provided !== expected) {
-        return json({ error: 'Unauthorized', debug: { providedLen: provided.length, expectedLen: expected.length, keyType: typeof env.FORGE_ADMIN_KEY, rawLen: env.FORGE_ADMIN_KEY ? String(env.FORGE_ADMIN_KEY).length : -1, envKeys: Object.keys(env).sort() } }, 401);
+    if ((url.searchParams.get('key') || '').trim() !== (env.FORGE_ADMIN_KEY || '').trim()) {
+        return json({ error: 'Unauthorized' }, 401);
     }
 
     const supabaseUrl = env.SUPABASE_URL;
@@ -78,7 +76,7 @@ export async function onRequestGet(context) {
             users: Object.entries(perUser).map(([id, data]) => ({ id, ...data }))
         });
     } catch (e) {
-        return json({ error: 'Internal error', detail: e.message, stack: e.stack }, 500);
+        return json({ error: 'Internal error' }, 500);
     }
 }
 
