@@ -76,7 +76,7 @@ export async function onRequestGet(context) {
             users: Object.entries(perUser).map(([id, data]) => ({ id, ...data }))
         });
     } catch (e) {
-        return json({ error: 'Internal error' }, 500);
+        return json({ error: 'Internal error', detail: e.message, stack: e.stack }, 500);
     }
 }
 
