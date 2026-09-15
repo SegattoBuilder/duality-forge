@@ -74,19 +74,9 @@ async function cloudAutoSaveNow() {
     const data = gatherDmData();
     const campaign = data.campaign;
 
-    // Check if autosave row exists for this campaign
-    const { data: existing } = await sb.from(TABLE_DM_TABLES)
-        .select('id').eq('user_id', getUser().id).eq('campaign_name', campaign).eq('is_autosave', true).limit(1);
-
-    let error;
-    if (existing && existing.length) {
-        ({ error } = await sb.from(TABLE_DM_TABLES)
-            .update({ data, campaign_name: campaign, updated_at: new Date().toISOString() })
-            .eq('id', existing[0].id));
-    } else {
-        ({ error } = await sb.from(TABLE_DM_TABLES)
-            .insert({ user_id: getUser().id, campaign_name: campaign, data, is_autosave: true }));
-    }
+    const { error } = await sb.from(TABLE_DM_TABLES)
+        .update({ autosave_data: data, autosave_at: new Date().toISOString(), campaign_name: campaign })
+        .eq('id', table.id);
     if (!error) showSyncStatus('☁️ Auto-saved');
 }
 
