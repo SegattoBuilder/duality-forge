@@ -2,7 +2,7 @@ export async function onRequestGet(context) {
     const { env, request } = context;
     const url = new URL(request.url);
     const secret = url.searchParams.get('key');
-    if (secret !== env.ADMIN_KEY) {
+    if (secret !== env.FORGE_ADMIN_KEY) {
         return new Response('Unauthorized', { status: 401 });
     }
     const list = await env.forge_reports.list({ limit: 100 });

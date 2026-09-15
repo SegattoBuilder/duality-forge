@@ -2,7 +2,7 @@ export async function onRequestGet(context) {
     const { env, request } = context;
     const url = new URL(request.url);
     const provided = (url.searchParams.get('key') || '').trim();
-    const expected = (env.ADMIN_KEY || '').trim();
+    const expected = (env.FORGE_ADMIN_KEY || '').trim();
     if (!provided || provided !== expected) {
         return json({ error: 'Unauthorized', debug: { providedLen: provided.length, expectedLen: expected.length, hasKey: !!env.ADMIN_KEY } }, 401);
     }
