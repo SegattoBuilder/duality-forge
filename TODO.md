@@ -204,3 +204,4 @@ _Brainstorm space — no commitment, just possibilities._
 - **Community Discovery** — contextual "Browse Community" links from Compendium/Adversary tabs; optional toggle to show community homebrew alongside SRD data
 - **Table Scheduling** — DM sets a session schedule, players and DM receive email reminders _(high effort — requires email infrastructure)_
 - **Companion/Pet Tracker** — HP, abilities, notes on character sheet
+- **Font Size System** — CSS custom properties (`--text-micro`, `--text-label`, `--text-small`, `--text-body`, `--text-title`, `--text-hero`) to standardize sizes across components; replace hardcoded values in `components.css` first, then Tailwind inline classes gradually

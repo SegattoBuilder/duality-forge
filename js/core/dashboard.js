@@ -33,11 +33,11 @@ export async function renderDashboard(container) {
     const sortedChars = characters.slice().sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 
     const headerHtml = `<div class="flex items-center justify-between mb-6">
-        <button id="dashProfileBtn" class="btn-primary-pill px-4 py-2">👤 Profile</button>
+        <button id="dashProfileBtn" class="btn-primary-pill px-4 py-2 text-xs">👤 Profile</button>
         <div class="flex gap-2">
-            <button id="dashCommunityBtn" class="btn-primary-pill px-4 py-2">🔥 Fireside</button>
-            <button id="dashUploadBtn" class="btn-primary-pill px-4 py-2">⬆ Upload</button>
-            <button id="dashNewBtn" class="btn-primary-pill px-4 py-2">+ New</button>
+            <button id="dashCommunityBtn" class="btn-primary-pill px-4 py-2 text-xs">🔥 Community</button>
+            <button id="dashUploadBtn" class="btn-primary-pill px-4 py-2 text-xs">📤 Upload</button>
+            <button id="dashNewBtn" class="btn-primary-pill px-4 py-2 text-xs">+ New</button>
             <div class="relative">
                 <button id="dashGearBtn" class="btn-primary-pill px-3 py-2 text-lg leading-none">⚙️</button>
                 <div id="gearMenu" class="hidden absolute right-0 top-12 w-52 dropdown-menu z-50">
