@@ -273,7 +273,7 @@ function renderTableLink() {
         container.innerHTML = `<button onclick="dismissClosedTable()" class="btn-nav border-none text-2xl" title="Table closed by DM">⚠️</button>`;
     } else if (linkedTable) {
         const icon = linkedTable._approved ? '✅' : '⏳';
-        container.innerHTML = `<span class="btn-nav border-none text-2xl pointer-events-none" title="${linkedTable._approved ? 'Linked' : 'Pending'}: ${escHtml(linkedTable.campaign_name)}">${icon}</span>`;
+        container.innerHTML = `<span class="btn-nav border-none text-2xl pointer-events-none" title="${linkedTable._approved ? 'Linked' : 'Pending'}: ${escHtml(linkedTable.campaign_name)}">📋</span>`;
     } else {
         container.innerHTML = `<button onclick="openTableLinkModal()" class="btn-nav border-none text-2xl" title="Link to Table">🔗</button>`;
     }

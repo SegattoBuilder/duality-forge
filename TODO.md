@@ -181,7 +181,7 @@
 - [x] Sign out clears character row ID
 - [x] Remove profile/save-management from character/DM auth menus (cleanup)
 - [x] Character name not set when creating new character from dashboard (applyCharacterRow needs to read `character_name` when `data` is empty)
-- [ ] DM equivalent of `LS_CHAR_ROW_ID` — persist current table row ID
+- [x] DM equivalent of `LS_CHAR_ROW_ID` — persist current table row ID
 
 **Autosave Schema Refactor (merged to main)**
 - [x] `autosave_data` + `autosave_at` columns on `characters` and `dm_tables`
