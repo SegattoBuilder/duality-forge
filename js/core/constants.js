@@ -1,6 +1,5 @@
 // ========== TIMERS (ms) ==========
 export const TOAST_DURATION = 5000;
-export const SYNC_STATUS_DURATION = 10000;
 export const AUTOSAVE_INTERVAL = 15 * 60 * 1000;
 
 // ========== VALIDATION ==========

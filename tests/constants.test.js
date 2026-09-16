@@ -34,7 +34,6 @@ describe('constants', () => {
 
     it('timer constants are positive numbers', () => {
         expect(C.TOAST_DURATION).toBeGreaterThan(0);
-        expect(C.SYNC_STATUS_DURATION).toBeGreaterThan(0);
         expect(C.AUTOSAVE_INTERVAL).toBeGreaterThan(0);
     });
 
