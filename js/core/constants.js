@@ -44,6 +44,7 @@ export const LS_DM_TABLE_ID = 'dh_dm_table_id';
 
 // ========== LOCALSTORAGE KEYS: CHARACTER ==========
 export const LS_CHAR_SAVE = 'dh_sheet';
+export const LS_CHAR_ROW_ID = 'dh_char_row_id';
 export const LS_CHAR_EXPORT = 'dh_last_export';
 export const LS_CHAR_ACTIVE_TAB = 'dh_active_tab';
 export const LS_CHAR_SAVE_V1 = 'dh_sheet_v1';
