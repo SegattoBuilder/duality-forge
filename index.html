@@ -17,11 +17,9 @@
     <link rel="stylesheet" href="css/components.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <style>
-        .choice-card { background: linear-gradient(145deg, #221f1a, #1e1b16); border: 1px solid #3d362a; border-radius: 16px; padding: 32px; cursor: pointer; transition: all 0.2s; }
-        .choice-card:hover { border-color: #d4a017; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-        #authModal input:-webkit-autofill,
-        #authModal input:-webkit-autofill:hover,
-        #authModal input:-webkit-autofill:focus {
+        #signInForm input:-webkit-autofill,
+        #signInForm input:-webkit-autofill:hover,
+        #signInForm input:-webkit-autofill:focus {
             -webkit-text-fill-color: #f5efe6 !important;
             -webkit-box-shadow: 0 0 0 1000px #1a1714 inset !important;
             transition: background-color 9999s ease-in-out 0s;
@@ -32,27 +30,26 @@
     <div class="w-full max-w-2xl mx-auto px-4">
         <div class="text-center mb-10">
             <picture><source srcset="images/logo/logo.webp" type="image/webp"><img src="images/logo/logo.png" alt="Duality Forge" class="mx-auto h-48 mb-4" width="192" height="192"></picture>
-            <p id="landingSubtitle" class="text-sm text-zinc-500">Your toolkit for the table. Pick a tool to get started.</p>
+            <p id="landingSubtitle" class="text-sm text-zinc-500">Your toolkit for the table. Sign in to get started.</p>
         </div>
 
-        <div id="choiceGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8 min-h-[160px]">
-            <div class="choice-card" onclick="chooseMode('online')">
-                <div class="text-center">
-                    <div class="text-3xl mb-3">☁️</div>
-                    <h2 class="font-[Cinzel] text-lg font-bold text-[#f5efe6] mb-2">Sign In / Sign Up</h2>
-                    <p class="text-xs text-zinc-500 leading-relaxed">Cloud sync across devices. Sign in with Google or email to save your data.</p>
+        <!-- Sign-in form (shown when not signed in) -->
+        <div id="signInForm" class="max-w-sm mx-auto mb-8">
+            <div class="space-y-4">
+                <button onclick="signInWithGoogle()" class="w-full flex items-center justify-center gap-3 p-3 bg-[#1a1714] border border-[#4a3f30] rounded-xl hover:border-[#d4a017] transition-colors">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                    <span class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">Continue with Google</span>
+                </button>
+                <div class="flex items-center gap-3"><div class="flex-1 border-t border-[#3d362a]"></div><span class="text-[10px] text-zinc-600 uppercase">or</span><div class="flex-1 border-t border-[#3d362a]"></div></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Email</label><input id="authEmail" type="email" placeholder="your@email.com" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Password</label><input id="authPassword" type="password" placeholder="••••••••" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600" onkeydown="if(event.key==='Enter')doSignIn()"></div>
+                <div class="flex gap-3">
+                    <button onclick="doSignIn()" class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">Sign In</button>
+                    <button onclick="doSignUp()" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880]">Sign Up</button>
                 </div>
+                <div class="text-[10px] text-zinc-600 text-center"><button onclick="doResetPassword()" class="text-[#d4a017] hover:underline font-bold">Forgot password?</button></div>
+                <div class="text-[10px] text-zinc-600 text-center">Sign in to save your data to the cloud across devices.</div>
             </div>
-            <div class="choice-card" onclick="chooseMode('offline')">
-                <div class="text-center">
-                    <div class="text-3xl mb-3">📴</div>
-                    <h2 class="font-[Cinzel] text-lg font-bold text-[#f5efe6] mb-2">Offline Mode</h2>
-                    <p class="text-xs text-zinc-500 leading-relaxed">No account needed. Your data stays in this browser via local storage/file.</p>
-                </div>
-            </div>
-        </div>
-        <div id="backRow" class="text-center mb-4 hidden">
-            <button onclick="goBack()" class="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-[#d4a017] transition-colors">← Back</button>
         </div>
 
         <!-- Dashboard view (hidden by default) -->
@@ -70,96 +67,14 @@
         </div>
     </div>
 
-    <!-- Auth Modal -->
-    <div id="authModal" class="fixed inset-0 modal-overlay hidden z-50 p-4 overflow-y-auto flex items-center justify-center" onclick="if(event.target===this)closeAuthModal()">
-        <div class="modal-panel p-6 w-full max-w-sm">
-            <div class="flex justify-between items-center border-b border-[#363026] pb-3 mb-5">
-                <h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color: var(--accent-1)">Sign In</h2>
-                <button onclick="closeAuthModal()" class="text-[#6b5d4d] hover:text-white text-2xl leading-none">×</button>
-            </div>
-            <div class="space-y-4">
-                <button onclick="signInWithGoogle()" class="w-full flex items-center justify-center gap-3 p-3 bg-[#1a1714] border border-[#4a3f30] rounded-xl hover:border-[#d4a017] transition-colors">
-                    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                    <span class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">Continue with Google</span>
-                </button>
-                <div class="flex items-center gap-3"><div class="flex-1 border-t border-[#3d362a]"></div><span class="text-[10px] text-zinc-600 uppercase">or</span><div class="flex-1 border-t border-[#3d362a]"></div></div>
-                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Email</label><input id="authEmail" type="email" placeholder="your@email.com" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
-                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Password</label><input id="authPassword" type="password" placeholder="••••••••" class="w-full bg-[#1a1714] border border-[#4a3f30] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#d4a017] placeholder-zinc-600"></div>
-                <div class="flex gap-3">
-                    <button onclick="doSignIn()" class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">Sign In</button>
-                    <button onclick="doSignUp()" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880]">Sign Up</button>
-                </div>
-                <div class="text-[10px] text-zinc-600 text-center"><button onclick="doResetPassword()" class="text-[#d4a017] hover:underline font-bold">Forgot password?</button></div>
-                <div class="text-[10px] text-zinc-600 text-center">Sign in to save your data to the cloud across devices.</div>
-            </div>
-        </div>
-    </div>
-
     <script type="module">
         import SUPABASE_CONFIG from './js/core/config.js';
         import { hasConsent } from './js/core/auth.js';
         import { initDashboard, renderDashboard } from './js/core/dashboard.js';
 
         const sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
-        const grid = document.getElementById('choiceGrid');
-        const backRow = document.getElementById('backRow');
+        const signInForm = document.getElementById('signInForm');
         const dashboardView = document.getElementById('dashboardView');
-
-        const authCards = `
-            <div class="choice-card" onclick="chooseMode('online')">
-                <div class="text-center">
-                    <div class="text-3xl mb-3">☁️</div>
-                    <h2 class="font-[Cinzel] text-lg font-bold text-[#f5efe6] mb-2">Sign In / Sign Up</h2>
-                    <p class="text-xs text-zinc-500 leading-relaxed">Cloud sync across devices. Sign in with Google or email to save your data.</p>
-                </div>
-            </div>
-            <div class="choice-card" onclick="chooseMode('offline')">
-                <div class="text-center">
-                    <div class="text-3xl mb-3">📴</div>
-                    <h2 class="font-[Cinzel] text-lg font-bold text-[#f5efe6] mb-2">Offline Mode</h2>
-                    <p class="text-xs text-zinc-500 leading-relaxed">No account needed. Your data stays in this browser via local storage/file.</p>
-                </div>
-            </div>`;
-
-        const toolCards = `
-            <div class="choice-card" onclick="go('dm')">
-                <div class="text-center">
-                    <div class="text-3xl mb-3">⚒️</div>
-                    <h2 class="font-[Cinzel] text-lg font-bold text-[#f5efe6] mb-2">The Anvil</h2>
-                    <p class="text-xs text-zinc-500 leading-relaxed">Where encounters are forged. Every instrument a Game Master requires to shape the realm from behind the screen.</p>
-                </div>
-            </div>
-            <div class="choice-card" onclick="go('character')">
-                <div class="text-center">
-                    <div class="text-3xl mb-3">🗡️</div>
-                    <h2 class="font-[Cinzel] text-lg font-bold text-[#f5efe6] mb-2">The Crucible</h2>
-                    <p class="text-xs text-zinc-500 leading-relaxed">Where raw stats, domains, and background are melted down and fused into a finished, battle-ready hero.</p>
-                </div>
-            </div>
-            <div class="choice-card sm:col-span-2" onclick="go('community')">
-                <div class="text-center">
-                    <div class="text-3xl mb-3">🔥</div>
-                    <h2 class="font-[Cinzel] text-lg font-bold text-[#f5efe6] mb-2">The Fireside</h2>
-                    <p class="text-xs text-zinc-500 leading-relaxed">Gather round tales forged by fellow forgers, cast your mark upon their chronicles, and unearth adventures waiting to be brought to life.</p>
-                </div>
-            </div>`;
-
-        function showAuthChoice() {
-            grid.innerHTML = authCards;
-            backRow.classList.add('hidden');
-        }
-
-        function showTools() {
-            grid.innerHTML = toolCards;
-            backRow.classList.remove('hidden');
-        }
-
-        function openAuthModal() {
-            document.getElementById('authModal').classList.remove('hidden');
-            document.getElementById('authEmail').value = '';
-            document.getElementById('authPassword').value = '';
-        }
-        function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
 
         let cooldownInterval = null;
         function showCooldown(msg) {
@@ -196,7 +111,6 @@
             const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
             if (error) showAlert('Sign-in failed: ' + error.message);
             else {
-                closeAuthModal();
                 initDashboard(sb, data.user.id);
                 document.getElementById('signOutRow').classList.remove('hidden');
                 showDashboard();
@@ -224,21 +138,25 @@
         }
 
         function showDashboard() {
-            grid.classList.add('hidden');
-            backRow.classList.add('hidden');
+            signInForm.classList.add('hidden');
             dashboardView.classList.remove('hidden');
             document.getElementById('landingSubtitle').textContent = 'Your saves at a glance.';
             renderDashboard(dashboardView);
         }
 
-        // Check if user is already signed in (e.g. returning from Google OAuth)
+        function showSignIn() {
+            signInForm.classList.remove('hidden');
+            dashboardView.classList.add('hidden');
+            document.getElementById('signOutRow').classList.add('hidden');
+            document.getElementById('landingSubtitle').textContent = 'Your toolkit for the table. Sign in to get started.';
+        }
+
         const { data: { session } } = await sb.auth.getSession();
         if (session) {
             initDashboard(sb, session.user.id);
             document.getElementById('signOutRow').classList.remove('hidden');
             showDashboard();
         }
-        else showAuthChoice();
 
         // Listen for password recovery redirect
         sb.auth.onAuthStateChange((event, session) => {
@@ -273,23 +191,15 @@
             };
         }
 
-        // Expose to onclick handlers
-        window.go = (tool) => { window.location.href = tool + '/'; };
-        window.chooseMode = (mode) => {
-            if (mode === 'online') openAuthModal();
-            else showTools();
-        };
-        window.goBack = () => { showAuthChoice(); document.getElementById('signOutRow').classList.add('hidden'); dashboardView.classList.add('hidden'); grid.classList.remove('hidden'); };
         window.doSignOut = async () => {
             await sb.auth.signOut({ scope: 'local' });
             Object.keys(localStorage).filter(k => k.startsWith('dh_') && !k.includes('mode')).forEach(k => localStorage.removeItem(k));
             sessionStorage.clear();
-            showAuthChoice(); document.getElementById('signOutRow').classList.add('hidden'); dashboardView.classList.add('hidden'); grid.classList.remove('hidden');
+            showSignIn();
         };
         window.doSignIn = doSignIn;
         window.doSignUp = doSignUp;
         window.signInWithGoogle = signInWithGoogle;
-        window.closeAuthModal = closeAuthModal;
         window.doResetPassword = async () => {
             const email = document.getElementById('authEmail').value.trim();
             if (!email) { showAlert('Enter your email address.'); return; }
