@@ -222,7 +222,7 @@ function showSavePicker(type, row, dashContainer) {
     modal.querySelector('[data-delete]').addEventListener('click', () => {
         showDeleteConfirm(name, async () => {
             if (type === 'dm') {
-                await supabase.from(TABLE_CHARACTERS).update({ table_id: null, table_approved: null }).eq('table_id', row.id);
+                await supabase.from(TABLE_CHARACTERS).update({ table_approved: 'kicked' }).eq('table_id', row.id);
             }
             await supabase.from(table).delete().eq('id', row.id);
             close();
