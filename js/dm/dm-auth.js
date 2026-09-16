@@ -10,7 +10,6 @@ import { setCurrentTable, getCurrentTable, restoreCurrentTable } from './party.j
 
 let cloudAutoSaveInterval = null;
 let lastSavedSnapshot = null;
-let syncStatusTimer = null;
 let campaignPickerShown = false;
 const isNewFromDashboard = sessionStorage.getItem('dh_dashboard_new') === 'dm';
 
@@ -58,11 +57,28 @@ async function tryDashboardPick() {
     } catch { return false; }
 }
 
+let syncAnimationTimer = null;
+
 function showSyncStatus(text) {
     const el = document.getElementById('syncStatus');
-    el.textContent = text; el.classList.remove('hidden');
-    if (syncStatusTimer) clearTimeout(syncStatusTimer);
-    syncStatusTimer = setTimeout(() => el.classList.add('hidden'), SYNC_STATUS_DURATION);
+    if (el) {
+        el.classList.remove('sync-idle', 'sync-flash');
+        void el.offsetWidth;
+        el.classList.add('sync-flash');
+        el.title = text;
+        if (syncAnimationTimer) clearTimeout(syncAnimationTimer);
+        syncAnimationTimer = setTimeout(() => {
+            el.classList.remove('sync-flash');
+            void el.offsetWidth;
+            el.classList.add('sync-idle');
+        }, 1500);
+    }
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn) {
+        saveBtn.classList.remove('save-flash');
+        void saveBtn.offsetWidth;
+        saveBtn.classList.add('save-flash');
+    }
 }
 
 function showToast(message) {
@@ -75,6 +91,8 @@ function showToast(message) {
 function startCloudAutoSave() {
     if (cloudAutoSaveInterval) return;
     lastSavedSnapshot = JSON.stringify(gatherDmData());
+    const el = document.getElementById('syncStatus');
+    if (el && !el.classList.contains('sync-idle') && !el.classList.contains('sync-flash')) el.classList.add('sync-idle');
     cloudAutoSaveInterval = setInterval(async () => {
         if (!getUser()) return;
         const current = JSON.stringify(gatherDmData());
