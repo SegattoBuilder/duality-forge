@@ -54,11 +54,15 @@ const MODE_CYCLE = ['dark', 'light', 'scifi', 'fantasy'];
 const MODE_ICONS = { dark: '🌙', light: '☀️', scifi: '🖥️', fantasy: '🐉' };
 
 export function setMode(mode) {
+    if (document.body.getAttribute('data-mode') === mode) return;
     document.body.setAttribute('data-mode', mode);
     localStorage.setItem(LS_MODE, mode);
     const icon = document.getElementById('modeToggleIcon');
     if (icon) icon.textContent = MODE_ICONS[mode];
-    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.getAttribute('onclick')?.includes(`'${mode}'`)));
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        const match = btn.dataset.mode === mode || btn.getAttribute('onclick')?.includes(`'${mode}'`);
+        btn.classList.toggle('active', !!match);
+    });
 }
 
 export function toggleMode() {

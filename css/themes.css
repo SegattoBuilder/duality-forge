@@ -215,6 +215,9 @@
 [data-mode="light"] #gearMenu label:hover,
 [data-mode="light"] #gearMenu a:hover,
 [data-mode="light"] #authMenu button:hover { background: #f5f0e8 !important; }
+[data-mode="light"] .mode-btn { background: #f9f5ef !important; border-color: #d4c9b8 !important; }
+[data-mode="light"] .mode-btn:hover { border-color: var(--accent-1) !important; }
+[data-mode="light"] .mode-btn.active { background: rgba(212,160,23,0.15) !important; border-color: var(--accent-1) !important; }
 
 /* Nav bar light */
 [data-mode="light"] nav { background-color: rgba(245,240,232,0.95) !important; border-color: #d4c9b8 !important; }
