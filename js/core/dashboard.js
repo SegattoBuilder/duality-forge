@@ -1,14 +1,23 @@
-import { TABLE_DM_TABLES, TABLE_CHARACTERS, TABLE_PROFILES, LS_THEME } from './constants.js';
+import { TABLE_DM_TABLES, TABLE_CHARACTERS, TABLE_PROFILES, LS_THEME, LS_CONSENT } from './constants.js';
 import { formatRelativeDate, detectJsonType } from './dashboard-logic.js';
 import { escHtml } from './utils.js';
 import { initMode, setMode, applyTheme, renderThemePicker } from './theme.js';
+import { resetPassword, changeEmail, signOutAll, deleteAccount, showAlert, showConfirm } from './auth.js';
 
 let supabase = null;
 let userId = null;
+let isEmail = false;
+let defaultNickname = 'Forger';
 
 export function initDashboard(sb, uid) {
     supabase = sb;
     userId = uid;
+    sb.auth.getSession().then(({ data: { session } }) => {
+        isEmail = session?.user?.app_metadata?.provider === 'email';
+        defaultNickname = session?.user?.user_metadata?.full_name
+            || session?.user?.email?.split('@')[0]
+            || 'Forger';
+    });
 }
 
 export async function renderDashboard(container) {
@@ -23,16 +32,7 @@ export async function renderDashboard(container) {
     const sortedTables = tables.slice().sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
     const sortedChars = characters.slice().sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 
-    if (!sortedTables.length && !sortedChars.length) {
-        container.innerHTML = `<div class="text-center py-8">
-            <p class="text-zinc-500 text-sm mb-4">No saves yet. Start forging!</p>
-            <button id="dashNewBtn" class="btn-primary-pill px-6 py-2">+ New</button>
-        </div>`;
-        wireNewButton(container);
-        return;
-    }
-
-    let html = `<div class="flex items-center justify-between mb-6">
+    const headerHtml = `<div class="flex items-center justify-between mb-6">
         <button id="dashProfileBtn" class="btn-primary-pill px-4 py-2">👤 Profile</button>
         <div class="flex gap-2">
             <button id="dashCommunityBtn" class="btn-primary-pill px-4 py-2">🔥 Fireside</button>
@@ -59,16 +59,35 @@ export async function renderDashboard(container) {
         </div>
     </div>`;
 
+    const wireHeader = () => {
+        wireNewButton(container);
+        wireProfileButton(container);
+        wireUploadButton(container);
+        wireCommunityButton(container);
+        wireGearButton(container);
+    };
+
+    // Check if profile exists, show welcome prompt if not
+    const { data: existingProfile } = await supabase.from(TABLE_PROFILES).select('id').eq('id', userId).single();
+    const needsWelcome = !existingProfile;
+
+    if (!sortedTables.length && !sortedChars.length) {
+        container.innerHTML = headerHtml + `<div class="text-center py-8">
+            <p class="text-zinc-500 text-sm mb-4">No saves yet. Start forging!</p>
+        </div>`;
+        wireHeader();
+        if (needsWelcome) showWelcomeModal();
+        return;
+    }
+
+    let html = headerHtml;
     if (sortedTables.length) html += sectionHtml('⚒️ Tables', sortedTables, 'dm', tableMap);
     if (sortedChars.length) html += sectionHtml('🗡️ Characters', sortedChars, 'character', tableMap);
 
     container.innerHTML = html;
-    wireNewButton(container);
-    wireProfileButton(container);
-    wireUploadButton(container);
-    wireCommunityButton(container);
-    wireGearButton(container);
+    wireHeader();
     wireCards(container, sortedTables, sortedChars);
+    if (needsWelcome) showWelcomeModal();
 }
 
 async function buildTableMap(tableRows, charRows) {
@@ -283,6 +302,20 @@ async function showProfileModal() {
             <button data-save class="flex-1 btn-primary">Save</button>
             <button data-cancel class="flex-1 btn-secondary">Cancel</button>
         </div>
+        <div class="mt-4 text-center flex justify-center gap-4">
+            <button data-reset-pw class="btn-link hidden">🔑 Reset Password</button>
+            <button data-change-email class="btn-link hidden">✉️ Change Email</button>
+        </div>
+        <div id="dpChangeEmailRow" class="hidden mt-3 flex gap-2">
+            <input id="dpChangeEmailInput" type="email" placeholder="new@email.com" class="flex-1 input-compact text-left px-3">
+            <button data-send-email class="btn-primary text-[10px] px-4 py-2">Send</button>
+        </div>
+        <div class="mt-2 text-center">
+            <button data-signout-all class="btn-link text-red-400/60 hover:text-red-400">🚪 Sign Out All Devices</button>
+        </div>
+        <div class="mt-2 text-center">
+            <button data-delete-account class="btn-link text-red-500/60 hover:text-red-500">🗑️ Delete Account</button>
+        </div>
     </div>`;
 
     const close = () => modal.remove();
@@ -320,8 +353,115 @@ async function showProfileModal() {
             player_experience: document.getElementById('dpPlayerExp').value || null
         };
         const { error } = await supabase.from(TABLE_PROFILES).upsert(row);
-        if (error) { alert('Failed to save profile: ' + error.message); return; }
+        if (error) { showAlert('Failed to save profile: ' + error.message); return; }
         close();
+    });
+
+    // Email-only actions
+    const emailUser = isEmail;
+    const resetPwBtn = modal.querySelector('[data-reset-pw]');
+    const changeEmailBtn = modal.querySelector('[data-change-email]');
+    if (emailUser) {
+        resetPwBtn.classList.remove('hidden');
+        changeEmailBtn.classList.remove('hidden');
+    }
+    resetPwBtn.addEventListener('click', async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.email) { resetPassword(user.email); close(); }
+    });
+    changeEmailBtn.addEventListener('click', () => {
+        document.getElementById('dpChangeEmailRow').classList.toggle('hidden');
+    });
+    modal.querySelector('[data-send-email]').addEventListener('click', () => {
+        const val = document.getElementById('dpChangeEmailInput').value.trim();
+        if (val) { changeEmail(val); close(); }
+    });
+
+    // Sign out all
+    modal.querySelector('[data-signout-all]').addEventListener('click', () => {
+        showConfirm('Sign out from all devices?', async () => {
+            await signOutAll();
+            window.location.href = '/';
+        });
+    });
+
+    // Delete account
+    modal.querySelector('[data-delete-account]').addEventListener('click', () => {
+        showDeleteAccountModal(async () => {
+            const ok = await deleteAccount();
+            if (ok) window.location.href = '/';
+        });
+    });
+}
+
+function showDeleteAccountModal(onConfirm) {
+    let modal = document.getElementById('dashDeleteAccountModal');
+    if (modal) modal.remove();
+    modal = document.createElement('div');
+    modal.id = 'dashDeleteAccountModal';
+    modal.className = 'fixed inset-0 modal-overlay z-[9999] p-4 flex items-center justify-center';
+    modal.innerHTML = `<div class="modal-panel p-6 w-full max-w-sm">
+        <div class="border-b border-[#363026] pb-3 mb-5"><h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide text-red-500">Delete Account</h2></div>
+        <div class="space-y-4">
+            <p class="text-xs text-zinc-400">This will <span class="text-red-400 font-bold">permanently delete</span> your account, all characters, campaigns, and profile data. This action cannot be undone.</p>
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Type <span class="text-red-500">DELETE</span> to confirm</label><input data-confirm-input type="text" placeholder="DELETE" class="w-full input-field text-center font-mono uppercase" autocomplete="off"></div>
+            <div class="flex gap-3">
+                <button data-confirm-btn disabled class="flex-1 bg-red-600 text-xs py-3 rounded-xl font-bold uppercase text-white opacity-40 cursor-not-allowed">Delete Forever</button>
+                <button data-confirm-cancel class="flex-1 btn-secondary text-xs py-3 rounded-xl font-bold uppercase">Cancel</button>
+            </div>
+        </div>
+    </div>`;
+    const input = modal.querySelector('[data-confirm-input]');
+    const btn = modal.querySelector('[data-confirm-btn]');
+    input.oninput = () => {
+        const ok = input.value.trim().toUpperCase() === 'DELETE';
+        btn.disabled = !ok;
+        btn.classList.toggle('opacity-40', !ok);
+        btn.classList.toggle('cursor-not-allowed', !ok);
+    };
+    btn.addEventListener('click', () => { modal.remove(); onConfirm(); });
+    modal.querySelector('[data-confirm-cancel]').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+}
+
+function showWelcomeModal() {
+    let modal = document.getElementById('dashWelcomeModal');
+    if (modal) modal.remove();
+    modal = document.createElement('div');
+    modal.id = 'dashWelcomeModal';
+    modal.className = 'fixed inset-0 modal-overlay z-50 p-4 flex items-center justify-center';
+    modal.innerHTML = `<div class="modal-panel p-6 w-full max-w-sm">
+        <div class="text-center mb-5">
+            <div class="text-3xl mb-2">🔥</div>
+            <h2 class="font-black text-base uppercase font-[Cinzel] tracking-wide" style="color:var(--accent-1)">Welcome to the Forge!</h2>
+        </div>
+        <div class="space-y-4">
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Nickname</label><input data-nickname type="text" maxlength="30" class="w-full input-field" value="${escHtml(defaultNickname)}"></div>
+            <div class="text-[10px] text-zinc-500 text-center">You can change this later in your profile.</div>
+        </div>
+        <div class="flex gap-3 mt-6">
+            <button data-save class="flex-1 btn-primary">Let's Go!</button>
+            <button data-dismiss class="flex-1 btn-secondary">Skip</button>
+        </div>
+        <div class="text-[10px] text-zinc-600 text-center mt-3">Skip will use <strong>${escHtml(defaultNickname)}</strong> as your nickname.</div>
+    </div>`;
+    document.body.appendChild(modal);
+
+    const save = async (nickname) => {
+        await supabase.from(TABLE_PROFILES).upsert({ id: userId, nickname });
+        modal.remove();
+    };
+    modal.querySelector('[data-save]').addEventListener('click', () => {
+        const val = modal.querySelector('[data-nickname]').value.trim() || defaultNickname;
+        save(val);
+    });
+    modal.querySelector('[data-dismiss]').addEventListener('click', () => save(defaultNickname));
+    modal.querySelector('[data-nickname]').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const val = modal.querySelector('[data-nickname]').value.trim() || defaultNickname;
+            save(val);
+        }
     });
 }
 
