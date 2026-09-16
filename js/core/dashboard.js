@@ -34,6 +34,7 @@ export async function renderDashboard(container) {
     let html = `<div class="flex items-center justify-between mb-6">
         <button id="dashProfileBtn" class="btn-primary-pill px-4 py-2">👤 Profile</button>
         <div class="flex gap-2">
+            <button id="dashCommunityBtn" class="btn-primary-pill px-4 py-2">🔥 Fireside</button>
             <button id="dashUploadBtn" class="btn-primary-pill px-4 py-2">⬆ Upload</button>
             <button id="dashNewBtn" class="btn-primary-pill px-4 py-2">+ New</button>
         </div>
@@ -46,6 +47,7 @@ export async function renderDashboard(container) {
     wireNewButton(container);
     wireProfileButton(container);
     wireUploadButton(container);
+    wireCommunityButton(container);
     wireCards(container, sortedTables, sortedChars);
 }
 
@@ -283,6 +285,12 @@ async function showProfileModal() {
         if (error) { alert('Failed to save profile: ' + error.message); return; }
         close();
     });
+}
+
+function wireCommunityButton(container) {
+    const btn = container.querySelector('#dashCommunityBtn');
+    if (!btn) return;
+    btn.addEventListener('click', () => { window.location.href = 'community/'; });
 }
 
 function wireUploadButton(container) {

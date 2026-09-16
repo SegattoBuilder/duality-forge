@@ -280,7 +280,12 @@
             else showTools();
         };
         window.goBack = () => { showAuthChoice(); document.getElementById('signOutRow').classList.add('hidden'); dashboardView.classList.add('hidden'); grid.classList.remove('hidden'); };
-        window.doSignOut = async () => { await sb.auth.signOut({ scope: 'local' }); showAuthChoice(); document.getElementById('signOutRow').classList.add('hidden'); dashboardView.classList.add('hidden'); grid.classList.remove('hidden'); };
+        window.doSignOut = async () => {
+            await sb.auth.signOut({ scope: 'local' });
+            Object.keys(localStorage).filter(k => k.startsWith('dh_') && !k.includes('mode')).forEach(k => localStorage.removeItem(k));
+            sessionStorage.clear();
+            showAuthChoice(); document.getElementById('signOutRow').classList.add('hidden'); dashboardView.classList.add('hidden'); grid.classList.remove('hidden');
+        };
         window.doSignIn = doSignIn;
         window.doSignUp = doSignUp;
         window.signInWithGoogle = signInWithGoogle;
