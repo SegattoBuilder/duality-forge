@@ -1,6 +1,7 @@
-import { TABLE_DM_TABLES, TABLE_CHARACTERS, TABLE_PROFILES } from './constants.js';
+import { TABLE_DM_TABLES, TABLE_CHARACTERS, TABLE_PROFILES, LS_THEME } from './constants.js';
 import { formatRelativeDate, detectJsonType } from './dashboard-logic.js';
 import { escHtml } from './utils.js';
+import { initMode, setMode, applyTheme, renderThemePicker } from './theme.js';
 
 let supabase = null;
 let userId = null;
@@ -37,6 +38,24 @@ export async function renderDashboard(container) {
             <button id="dashCommunityBtn" class="btn-primary-pill px-4 py-2">🔥 Fireside</button>
             <button id="dashUploadBtn" class="btn-primary-pill px-4 py-2">⬆ Upload</button>
             <button id="dashNewBtn" class="btn-primary-pill px-4 py-2">+ New</button>
+            <div class="relative">
+                <button id="dashGearBtn" class="btn-primary-pill px-3 py-2 text-lg leading-none">⚙️</button>
+                <div id="gearMenu" class="hidden absolute right-0 top-12 w-52 dropdown-menu z-50">
+                    <div class="px-4 py-3 border-b border-[#3d362a]">
+                        <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Display Mode</div>
+                        <div class="flex gap-2">
+                            <button data-mode="dark" class="mode-btn" title="Dark">🌙</button>
+                            <button data-mode="light" class="mode-btn" title="Light">☀️</button>
+                            <button data-mode="scifi" class="mode-btn" title="Sci-Fi">🖥️</button>
+                            <button data-mode="fantasy" class="mode-btn" title="Fantasy">🐉</button>
+                        </div>
+                    </div>
+                    <div class="px-4 py-3">
+                        <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Accent Color</div>
+                        <div id="kebabThemeSwatches" class="grid grid-cols-5 gap-2"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>`;
 
@@ -48,6 +67,7 @@ export async function renderDashboard(container) {
     wireProfileButton(container);
     wireUploadButton(container);
     wireCommunityButton(container);
+    wireGearButton(container);
     wireCards(container, sortedTables, sortedChars);
 }
 
@@ -309,6 +329,39 @@ function wireCommunityButton(container) {
     const btn = container.querySelector('#dashCommunityBtn');
     if (!btn) return;
     btn.addEventListener('click', () => { window.location.href = 'community/'; });
+}
+
+let gearMenuHandler = null;
+
+function wireGearButton(container) {
+    const btn = container.querySelector('#dashGearBtn');
+    const menu = container.querySelector('#gearMenu');
+    if (!btn || !menu) return;
+
+    initMode();
+    renderThemePicker();
+    applyTheme(localStorage.getItem(LS_THEME) || 'gold');
+
+    menu.querySelectorAll('[data-mode]').forEach(b => {
+        b.addEventListener('click', (e) => { e.stopPropagation(); setMode(b.dataset.mode); });
+    });
+
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const wasHidden = menu.classList.contains('hidden');
+        menu.classList.toggle('hidden');
+        if (gearMenuHandler) { document.removeEventListener('click', gearMenuHandler); gearMenuHandler = null; }
+        if (wasHidden) {
+            gearMenuHandler = (ev) => {
+                if (!menu.contains(ev.target) && !btn.contains(ev.target)) {
+                    menu.classList.add('hidden');
+                    document.removeEventListener('click', gearMenuHandler);
+                    gearMenuHandler = null;
+                }
+            };
+            setTimeout(() => document.addEventListener('click', gearMenuHandler), 0);
+        }
+    });
 }
 
 function wireUploadButton(container) {
