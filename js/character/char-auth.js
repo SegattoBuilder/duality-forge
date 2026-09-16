@@ -114,7 +114,7 @@ async function refreshTableApproval() {
     }
     if (!linkedTable || linkedTable._closed) return;
     const wasApproved = linkedTable._approved;
-    linkedTable._approved = data.table_approved || false;
+    linkedTable._approved = data.table_approved === 'true';
     if (wasApproved !== linkedTable._approved) renderTableLink();
 }
 
@@ -326,7 +326,7 @@ window.unlinkTable = unlinkFromTable;
 window.dismissClosedTable = () => {
     if (!currentCharacterRowId) return;
     const sb = getSupabase();
-    sb.from(TABLE_CHARACTERS).update({ table_approved: false }).eq('id', currentCharacterRowId).then(() => {
+    sb.from(TABLE_CHARACTERS).update({ table_approved: 'false' }).eq('id', currentCharacterRowId).then(() => {
         linkedTable = null;
         renderTableLink();
     });
@@ -425,7 +425,7 @@ async function submitTableLink() {
         if (saveErr) { showAlert('Failed to save character: ' + saveErr.message); return; }
         setCharacterRowId(row.id);
     }
-    const { error } = await sb.from(TABLE_CHARACTERS).update({ table_id: table.id, table_approved: false }).eq('id', currentCharacterRowId);
+    const { error } = await sb.from(TABLE_CHARACTERS).update({ table_id: table.id, table_approved: 'false' }).eq('id', currentCharacterRowId);
     if (error) { showAlert('Link failed: ' + error.message); return; }
     linkedTable = table;
     linkedTable._approved = false;

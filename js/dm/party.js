@@ -22,7 +22,7 @@ export async function restoreCurrentTable() {
 
 async function approveMember(characterId) {
     const sb = getSupabase();
-    const { error } = await sb.from(TABLE_CHARACTERS).update({ table_approved: true }).eq('id', characterId);
+    const { error } = await sb.from(TABLE_CHARACTERS).update({ table_approved: 'true' }).eq('id', characterId);
     if (error) { showAlert('Approve failed: ' + error.message); return; }
     await refreshMembers();
 }
@@ -85,8 +85,9 @@ function renderMemberList(members) {
     const list = document.getElementById('partyMemberList');
     if (!list) return;
 
-    const approved = members.filter(m => m.table_approved);
-    const pending = members.filter(m => !m.table_approved);
+    const active = members.filter(m => m.table_approved !== 'kicked' && m.table_approved !== 'denied');
+    const approved = active.filter(m => m.table_approved === 'true');
+    const pending = active.filter(m => m.table_approved !== 'true');
 
     let html = '';
 
