@@ -14,8 +14,8 @@ export async function renderDashboard(container) {
     container.innerHTML = '<div class="text-center text-zinc-600 text-xs py-8">Loading saves…</div>';
 
     const [tables, characters] = await Promise.all([
-        loadRows(TABLE_DM_TABLES, 'campaign_name'),
-        loadRows(TABLE_CHARACTERS, 'character_name, table_id, autosave_data, autosave_at')
+        loadRows(TABLE_DM_TABLES, 'campaign_name, data, autosave_data, autosave_at'),
+        loadRows(TABLE_CHARACTERS, 'character_name, table_id, data, autosave_data, autosave_at')
     ]);
 
     const tableMap = await buildTableMap(tables, characters);
@@ -80,6 +80,21 @@ function cardHtml(row, type, tableMap) {
     const hasAutosave = row.autosave_data && row.autosave_at;
     const badge = hasAutosave ? '<span class="text-[9px] text-zinc-600">2 saves</span>' : '';
 
+    let previewHtml = '';
+    if (type === 'character' && row.data?.fields) {
+        const f = row.data.fields;
+        const parts = [f.charClass, f.charLevel ? `Lv ${f.charLevel}` : ''].filter(Boolean);
+        if (parts.length) previewHtml = `<div class="text-[9px] text-zinc-500 truncate mt-1">${escHtml(parts.join(' · '))}</div>`;
+    } else if (type === 'dm' && row.data) {
+        const d = row.data;
+        const parts = [
+            d.creatures?.length ? `${d.creatures.length} ⚔` : '',
+            d.vaultCreatures?.length ? `${d.vaultCreatures.length} 📦` : '',
+            d.chronicleEntries?.length ? `${d.chronicleEntries.length} 📜` : ''
+        ].filter(Boolean);
+        if (parts.length) previewHtml = `<div class="text-[9px] text-zinc-500 truncate mt-1">${parts.join(' · ')}</div>`;
+    }
+
     let linkedHtml = '';
     if (type === 'character' && row.table_id && tableMap[row.table_id]) {
         linkedHtml = `<div class="text-[9px] text-zinc-500 truncate mt-1">🔗 ${escHtml(tableMap[row.table_id])}</div>`;
@@ -94,6 +109,7 @@ function cardHtml(row, type, tableMap) {
             <span class="text-[10px] text-zinc-500">${date}</span>
             ${badge}
         </div>
+        ${previewHtml}
         ${linkedHtml}
     </button>`;
 }
