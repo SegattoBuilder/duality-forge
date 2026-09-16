@@ -283,7 +283,7 @@ async function showCampaignPicker() {
         onBeforeDelete: async (ids) => {
             const sb = getSupabase();
             for (const id of ids) {
-                await sb.from(TABLE_CHARACTERS).update({ table_id: null, table_approved: null }).eq('table_id', id);
+                await sb.from(TABLE_CHARACTERS).update({ table_approved: 'kicked' }).eq('table_id', id);
             }
         }
     });

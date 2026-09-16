@@ -92,6 +92,17 @@ async function refreshTableApproval() {
     const sb = getSupabase();
     const { data } = await sb.from(TABLE_CHARACTERS).select('table_id, table_approved').eq('id', currentCharacterRowId).single();
     if (!data) return;
+
+    // DM kicked or denied — player clears their own table_id
+    if (data.table_approved === 'kicked' || data.table_approved === 'denied') {
+        const msg = data.table_approved === 'kicked' ? 'You have been removed from the table by the DM.' : 'Your request to join the table was denied.';
+        await sb.from(TABLE_CHARACTERS).update({ table_id: null, table_approved: null }).eq('id', currentCharacterRowId);
+        linkedTable = null;
+        renderTableLink();
+        showAlert(msg);
+        return;
+    }
+
     if (!data.table_id && data.table_approved === null) {
         linkedTable = { _closed: true };
         renderTableLink();

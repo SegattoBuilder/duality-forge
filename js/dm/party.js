@@ -29,14 +29,14 @@ async function approveMember(characterId) {
 
 async function denyMember(characterId) {
     const sb = getSupabase();
-    const { error } = await sb.from(TABLE_CHARACTERS).update({ table_id: null, table_approved: false }).eq('id', characterId);
+    const { error } = await sb.from(TABLE_CHARACTERS).update({ table_approved: 'denied' }).eq('id', characterId);
     if (error) { showAlert('Deny failed: ' + error.message); return; }
     await refreshMembers();
 }
 
 async function kickMember(characterId) {
     const sb = getSupabase();
-    const { error } = await sb.from(TABLE_CHARACTERS).update({ table_id: null, table_approved: false }).eq('id', characterId);
+    const { error } = await sb.from(TABLE_CHARACTERS).update({ table_approved: 'kicked' }).eq('id', characterId);
     if (error) { showAlert('Kick failed: ' + error.message); return; }
     await refreshMembers();
 }
