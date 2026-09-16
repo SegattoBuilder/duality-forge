@@ -7,6 +7,7 @@ const COMPENDIUM_CACHE_KEY = 'dh_compendium_cache';
 let compendiumData = [];
 let activeCategory = 'all';
 let activeFilters = {};
+let activeSort = 'name-asc';
 let searchTimeout = null;
 let _characterMode = false;
 let _onAddWeapon = null;
@@ -73,7 +74,7 @@ const CATEGORY_FILTERS = {
 };
 
 function setCategory(cat) {
-    activeCategory = cat; activeFilters = {};
+    activeCategory = cat; activeFilters = {}; activeSort = 'name-asc';
     document.querySelectorAll('#categoryFilters .filter-pill').forEach(btn => btn.classList.toggle('active', btn.textContent.trim().toLowerCase().replace(' ', '-') === cat || (cat === 'all' && btn.textContent.trim().toLowerCase() === 'all')));
     renderContextFilters(); runSearch();
 }
@@ -81,12 +82,51 @@ function setCategory(cat) {
 function renderContextFilters() {
     const container = document.getElementById('contextFilters');
     const filterDefs = CATEGORY_FILTERS[activeCategory];
-    if (!filterDefs) { container.classList.add('hidden'); container.innerHTML = ''; return; }
+    const sortOpts = getSortOptions();
+    if (!filterDefs && sortOpts.length <= 2) { container.classList.add('hidden'); container.innerHTML = ''; return; }
     container.classList.remove('hidden');
-    container.innerHTML = filterDefs.map(f => {
-        const selected = activeFilters[f.field] || '';
-        return `<div class="flex flex-col"><label class="text-[9px] text-zinc-500 uppercase tracking-wide font-bold mb-0.5">${escHtml(f.label)}</label><select onchange="window._setFilter('${f.field}', this.value)" class="input-compact cursor-pointer"><option value="">All</option>${f.values.map(v => `<option value="${escHtml(v)}" ${selected === v ? 'selected' : ''}>${v.replace(/_/g, ' ')}</option>`).join('')}</select></div>`;
-    }).join('');
+    let html = '';
+    if (filterDefs) {
+        html += filterDefs.map(f => {
+            const selected = activeFilters[f.field] || '';
+            return `<div class="flex flex-col"><label class="text-[9px] text-zinc-500 uppercase tracking-wide font-bold mb-0.5">${escHtml(f.label)}</label><select onchange="window._setFilter('${f.field}', this.value)" class="input-compact cursor-pointer"><option value="">All</option>${f.values.map(v => `<option value="${escHtml(v)}" ${selected === v ? 'selected' : ''}>${v.replace(/_/g, ' ')}</option>`).join('')}</select></div>`;
+        }).join('');
+    }
+    html += `<div class="flex flex-col"><label class="text-[9px] text-zinc-500 uppercase tracking-wide font-bold mb-0.5">Sort</label><select onchange="window._setSort(this.value)" class="input-compact cursor-pointer">${sortOpts.map(o => `<option value="${o.value}" ${activeSort === o.value ? 'selected' : ''}>${o.label}</option>`).join('')}</select></div>`;
+    container.innerHTML = html;
+}
+
+function getSortOptions() {
+    const opts = [
+        { value: 'name-asc', label: 'Name A→Z' },
+        { value: 'name-desc', label: 'Name Z→A' }
+    ];
+    const cat = activeCategory;
+    if (['domain-cards'].includes(cat)) {
+        opts.push({ value: 'level-asc', label: 'Level ↑' }, { value: 'level-desc', label: 'Level ↓' });
+    }
+    if (['weapons', 'armors'].includes(cat)) {
+        opts.push({ value: 'tier-asc', label: 'Tier ↑' }, { value: 'tier-desc', label: 'Tier ↓' });
+    }
+    if (cat === 'all') {
+        opts.push({ value: 'category-asc', label: 'Category A→Z' }, { value: 'category-desc', label: 'Category Z→A' });
+    }
+    return opts;
+}
+
+function setSort(value) { activeSort = value; runSearch(); }
+
+function sortResults(items) {
+    const [field, dir] = activeSort.split('-');
+    const mult = dir === 'desc' ? -1 : 1;
+    return items.slice().sort((a, b) => {
+        let va, vb;
+        if (field === 'name') { va = getLocStr(a.name).toLowerCase(); vb = getLocStr(b.name).toLowerCase(); return va < vb ? -mult : va > vb ? mult : 0; }
+        if (field === 'level') { va = a.level ?? 999; vb = b.level ?? 999; return (va - vb) * mult; }
+        if (field === 'tier') { va = a.tier ?? 999; vb = b.tier ?? 999; return (va - vb) * mult; }
+        if (field === 'category') { va = a._category; vb = b._category; return va < vb ? -mult : va > vb ? mult : 0; }
+        return 0;
+    });
 }
 
 function setFilter(field, value) { if (value) activeFilters[field] = value; else delete activeFilters[field]; runSearch(); }
@@ -117,6 +157,7 @@ function runSearch() {
         return name.includes(query) || desc.includes(query);
     });
     if (query.length === 0 && activeCategory === 'all' && Object.keys(activeFilters).length === 0) { resultsEl.innerHTML = ''; statusEl.textContent = `${compendiumData.length} entries loaded. Start typing to search.`; return; }
+    filtered = sortResults(filtered);
     if (filtered.length === 0) { resultsEl.innerHTML = ''; statusEl.textContent = 'No results found.'; return; }
     const limited = filtered.slice(0, 60);
     statusEl.textContent = filtered.length > 60 ? `Showing 60 of ${filtered.length} results.` : `${filtered.length} result${filtered.length > 1 ? 's' : ''}.`;
@@ -296,6 +337,7 @@ function clearCompendiumSearch() { document.getElementById('compendiumSearch').v
 // ========== WINDOW BINDINGS ==========
 window.setCategory = setCategory;
 window._setFilter = setFilter;
+window._setSort = setSort;
 window._openCardModal = openCardModal;
 window.closeCardModal = closeCardModal;
 window.clearCompendiumSearch = clearCompendiumSearch;
