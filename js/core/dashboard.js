@@ -574,20 +574,56 @@ function showNewMenu() {
         </div>
         <button class="w-full text-center text-[10px] text-zinc-600 mt-4 hover:text-zinc-400" data-close-new>Cancel</button>
     </div>`;
-    menu.addEventListener('click', (e) => { if (e.target === menu) menu.classList.add('hidden'); });
+    const close = () => menu.classList.add('hidden');
+    menu.addEventListener('click', (e) => { if (e.target === menu) close(); });
+    menu.querySelector('[data-close-new]').addEventListener('click', close);
+    menu.querySelector('[data-new="dm"]').addEventListener('click', () => { close(); showNewNamePrompt('dm'); });
+    menu.querySelector('[data-new="character"]').addEventListener('click', () => { close(); showNewNamePrompt('character'); });
     document.body.appendChild(menu);
+}
 
-    menu.querySelector('[data-new="dm"]').addEventListener('click', () => {
-        menu.classList.add('hidden');
-        sessionStorage.setItem('dh_dashboard_new', 'dm');
-        window.location.href = 'dm/';
-    });
-    menu.querySelector('[data-new="character"]').addEventListener('click', () => {
-        menu.classList.add('hidden');
-        sessionStorage.setItem('dh_dashboard_new', 'character');
-        window.location.href = 'character/';
-    });
-    menu.querySelector('[data-close-new]').addEventListener('click', () => menu.classList.add('hidden'));
+function showNewNamePrompt(type) {
+    const isDm = type === 'dm';
+    const label = isDm ? 'Campaign Name' : 'Character Name';
+    const placeholder = isDm ? 'e.g. Curse of the Crimson Throne' : 'e.g. Thorn Ironveil';
+    const icon = isDm ? '⚒️' : '🗡️';
+
+    let modal = document.getElementById('dashNewNameModal');
+    if (modal) modal.remove();
+    modal = document.createElement('div');
+    modal.id = 'dashNewNameModal';
+    modal.className = 'fixed inset-0 modal-overlay z-50 p-4 flex items-center justify-center';
+    modal.innerHTML = `<div class="modal-panel p-6 w-full max-w-xs">
+        <div class="text-center mb-4"><span class="text-2xl">${icon}</span></div>
+        <div class="mb-4"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">${label}</label>
+        <input data-name type="text" placeholder="${placeholder}" maxlength="60" class="w-full input-field text-center"></div>
+        <div class="flex gap-3">
+            <button data-create class="flex-1 btn-primary">Create</button>
+            <button data-cancel class="flex-1 btn-secondary">Cancel</button>
+        </div>
+    </div>`;
+
+    const close = () => modal.remove();
+    modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+    modal.querySelector('[data-cancel]').addEventListener('click', close);
+
+    const create = async () => {
+        const name = modal.querySelector('[data-name]').value.trim();
+        if (!name) { modal.querySelector('[data-name]').focus(); return; }
+        const table = isDm ? TABLE_DM_TABLES : TABLE_CHARACTERS;
+        const nameCol = isDm ? 'campaign_name' : 'character_name';
+        const { data: row, error } = await supabase.from(table)
+            .insert({ user_id: userId, [nameCol]: name })
+            .select('id').single();
+        if (error) { showAlert('Failed to create: ' + error.message); return; }
+        close();
+        navigateTo(type, row.id);
+    };
+
+    modal.querySelector('[data-create]').addEventListener('click', create);
+    modal.querySelector('[data-name]').addEventListener('keydown', (e) => { if (e.key === 'Enter') create(); });
+    document.body.appendChild(modal);
+    modal.querySelector('[data-name]').focus();
 }
 
 async function loadRows(table, columns) {
