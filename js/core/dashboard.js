@@ -68,7 +68,7 @@ async function buildTableMap(tableRows, charRows) {
 function sectionHtml(title, rows, type, tableMap) {
     const cards = rows.map(r => cardHtml(r, type, tableMap)).join('');
     return `<div class="mb-6">
-        <h3 class="font-[Cinzel] text-xs font-bold uppercase tracking-wide text-zinc-500 mb-3">${title}</h3>
+        <h3 class="font-[Cinzel] text-sm font-bold uppercase tracking-wide text-zinc-500 mb-3">${title}</h3>
         <div class="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory" style="scrollbar-width:thin;scrollbar-color:#3d362a transparent">${cards}</div>
     </div>`;
 }
@@ -78,35 +78,37 @@ function cardHtml(row, type, tableMap) {
     const date = row.updated_at ? formatRelativeDate(row.updated_at) : '';
     const icon = type === 'dm' ? '⚒️' : '🗡️';
     const hasAutosave = row.autosave_data && row.autosave_at;
-    const badge = hasAutosave ? '<span class="text-[9px] text-zinc-600">2 saves</span>' : '';
+    const badge = hasAutosave ? '<span class="text-[10px] text-zinc-600">2 saves</span>' : '';
 
     let previewHtml = '';
     if (type === 'character' && row.data?.fields) {
         const f = row.data.fields;
-        const parts = [f.charClass, f.charLevel ? `Lv ${f.charLevel}` : ''].filter(Boolean);
-        if (parts.length) previewHtml = `<div class="text-[9px] text-zinc-500 truncate mt-1">${escHtml(parts.join(' · '))}</div>`;
+        const pills = [f.charClass, f.charLevel ? `Lv ${f.charLevel}` : ''].filter(Boolean)
+            .map(t => `<span class="text-[10px] bg-[#2a2418] border border-[#3d362a] rounded px-2 py-0.5 text-zinc-400">${escHtml(t)}</span>`).join('');
+        if (pills) previewHtml = `<div class="flex flex-wrap gap-1 mt-2">${pills}</div>`;
     } else if (type === 'dm' && row.data) {
         const d = row.data;
-        const parts = [
+        const pills = [
             d.creatures?.length ? `${d.creatures.length} ⚔` : '',
             d.vaultCreatures?.length ? `${d.vaultCreatures.length} 📦` : '',
             d.chronicleEntries?.length ? `${d.chronicleEntries.length} 📜` : ''
-        ].filter(Boolean);
-        if (parts.length) previewHtml = `<div class="text-[9px] text-zinc-500 truncate mt-1">${parts.join(' · ')}</div>`;
+        ].filter(Boolean)
+            .map(t => `<span class="text-[10px] bg-[#2a2418] border border-[#3d362a] rounded px-2 py-0.5 text-zinc-400">${t}</span>`).join('');
+        if (pills) previewHtml = `<div class="flex flex-wrap gap-1 mt-2">${pills}</div>`;
     }
 
     let linkedHtml = '';
     if (type === 'character' && row.table_id && tableMap[row.table_id]) {
-        linkedHtml = `<div class="text-[9px] text-zinc-500 truncate mt-1">🔗 ${escHtml(tableMap[row.table_id])}</div>`;
+        linkedHtml = `<div class="text-[10px] text-zinc-500 truncate mt-1">🔗 ${escHtml(tableMap[row.table_id])}</div>`;
     }
 
-    return `<button class="dash-card picker-card text-left flex-shrink-0 w-44 snap-start" data-type="${type}" data-row-id="${row.id}">
-        <div class="flex items-center gap-2 mb-1">
-            <span class="text-base">${icon}</span>
-            <span class="text-xs font-bold text-[#f5efe6] font-[Cinzel] truncate">${escHtml(name)}</span>
+    return `<button class="dash-card picker-card text-left flex-shrink-0 w-52 snap-start p-4" data-type="${type}" data-row-id="${row.id}">
+        <div class="flex items-center gap-2 mb-2">
+            <span class="text-xl">${icon}</span>
+            <span class="text-base font-bold text-[#f5efe6] font-[Cinzel] truncate">${escHtml(name)}</span>
         </div>
-        <div class="flex items-center gap-2">
-            <span class="text-[10px] text-zinc-500">${date}</span>
+        <div class="flex items-center gap-2 mb-1">
+            <span class="text-sm text-zinc-500">${date}</span>
             ${badge}
         </div>
         ${previewHtml}
