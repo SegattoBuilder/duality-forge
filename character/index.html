@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Duality Forge — Character Sheet</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preload" href="https://fonts.gstatic.com/s/cinzel/v23/8vIU7ww63mVu7gtR-kwKxNvkNOjw-tbnfY3lCA.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;800&display=optional" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="icon" href="../images/logo/favicon.ico" sizes="32x32">
     <link rel="icon" href="../images/logo/icon-32.png" type="image/png">
     <link rel="apple-touch-icon" href="../images/logo/apple-touch-icon.png">
@@ -35,10 +36,10 @@
 <nav class="fixed top-0 left-0 right-0 z-30 bg-[#1a1714]/95 backdrop-blur border-b border-[#3d362a] px-4 py-3" style="will-change:transform">
     <div class="max-w-[1200px] mx-auto">
         <div class="flex flex-col gap-3 items-center">
-            <div class="w-full flex flex-col sm:grid sm:grid-cols-[auto_1fr_auto] gap-3 sm:gap-4 items-center">
-                <div class="flex items-center gap-2">
-                    <a href="../" class="hover:opacity-80 transition-opacity" title="Back to Forge"><picture><source srcset="../images/logo/logo.webp" type="image/webp"><img src="../images/logo/logo.png" alt="Forge" class="h-14"></picture></a>
-                    <span class="font-[Cinzel] text-[14px] tracking-widest uppercase font-black italic leading-tight" data-theme-level="1" style="color:#d4a017">Character<br>Sheet</span>
+            <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-2">
+                <div class="flex flex-col items-start shrink-0">
+                    <span class="font-[Cinzel] text-[14px] tracking-widest uppercase font-black italic leading-tight" data-theme-level="1" style="color: var(--accent-1)">Character Sheet</span>
+                    <a href="../" class="text-[10px] text-zinc-500 hover:text-[#d4a017] transition-colors">← Dashboard</a>
                 </div>
                 <div class="flex items-center justify-center gap-1 flex-wrap">
                     <button onclick="switchModernTab('tab-combat')" id="btn-tab-combat" class="modern-tab-btn active">Combat</button>
@@ -47,42 +48,10 @@
                     <button onclick="switchModernTab('tab-story')" id="btn-tab-story" class="modern-tab-btn">Story</button>
                     <button onclick="switchModernTab('tab-compendium')" id="btn-tab-compendium" class="modern-tab-btn">Compendium</button>
                 </div>
-                <div class="flex items-center gap-2">
-                    <div class="relative">
-                        <button id="gearBtn" onclick="toggleGear()" class="btn-nav border-none text-2xl">⚙️</button>
-                        <div id="gearMenu" class="hidden absolute right-0 top-12 w-56 dropdown-menu z-50">
-                            <div class="px-4 py-3 border-b border-[#3d362a]">
-                                <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Display Mode</div>
-                                <div class="flex gap-2">
-                                    <button onclick="setMode('dark')" class="mode-btn" title="Dark">🌙</button>
-                                    <button onclick="setMode('light')" class="mode-btn" title="Light">☀️</button>
-                                    <button onclick="setMode('scifi')" class="mode-btn" title="Sci-Fi">🖥️</button>
-                                    <button onclick="setMode('fantasy')" class="mode-btn" title="Fantasy">🐉</button>
-                                </div>
-                            </div>
-                            <div class="px-4 py-3 border-b border-[#3d362a]">
-                                <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Accent Color</div>
-                                <div id="kebabThemeSwatches" class="grid grid-cols-5 gap-2"></div>
-                            </div>
-                            <button onclick="newCharacter(event); closeGear()" class="menu-item menu-item-danger">🆕 New Character</button>
-                            <button onclick="saveSheet(); closeGear()" class="menu-item">💾 Save to File</button>
-                            <button onclick="loadSheet(); closeGear()" class="menu-item">📂 Load from File</button>
-                            <a href="../support/" class="menu-item block">🤝 Support</a>
-                        </div>
-                    </div>
-                    <div class="relative">
-                        <button id="authBtn" class="btn-nav px-3 w-auto" onclick="openAuthModal()"><span class="text-[10px]">Sign In</span></button>
-                        <span id="syncStatus" class="hidden absolute left-1/2 -translate-x-1/2 top-full mt-1 text-[9px] font-bold text-[#d4a017] whitespace-nowrap pointer-events-none z-50"></span>
-                        <div id="authMenu" class="hidden absolute right-0 top-12 w-48 dropdown-menu z-50">
-                            <button onclick="openProfileModal(); closeAuthMenu()" class="menu-item">👤 Profile</button>
-                            <div id="tableLinkStatus"></div>
-                            <button onclick="cloudSave(); closeAuthMenu()" class="menu-item">☁️ Save to Cloud</button>
-                            <button onclick="cloudLoad(); closeAuthMenu()" class="menu-item">☁️ Load from Cloud</button>
-                            <button onclick="signOut(); closeAuthMenu()" class="menu-item menu-item-danger">🚪 Sign Out</button>
-                        </div>
-                    </div>
-                    <div id="themePicker" class="hidden"></div>
-                    <span id="modeToggleIcon" class="hidden">🌙</span>
+                <div class="flex items-center gap-2 shrink-0">
+                    <span id="syncStatus" class="inline-flex items-center pointer-events-none sync-idle" title="Auto-save status"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="w-5 h-5"><path d="M160.53 20.906c-22.075.207-39.973 9.138-54.218 23.782C89.507 61.962 78.3 87.6 74.876 115.624c-6.847 56.05 16.55 119.953 82.094 146.625l-7.032 17.313c-64.128-26.096-93.275-84.757-94.782-141-17.36 10.866-27.608 27.05-32.343 46.437-5.728 23.448-2.727 51.54 7.906 77.844 21.264 52.61 71.37 96.856 138.436 87.594l2.563 18.53c-48.795 6.74-90.183-11.576-119.907-41.03-8.152 16.216-7.504 32.264-.657 48.312 8.472 19.854 27.498 39.252 52.875 53.594 47.085 26.61 114.8 35.554 173.19 5.094-5.43-20.99-2.652-45.074 11.342-69.313 22.71-39.332 60.78-49.83 88.375-38.688 13.798 5.572 25.08 16.555 29.875 31.157 4.796 14.6 2.836 32.303-7.375 50.312-11.8 20.81-34.144 27.877-51.25 22.22-8.552-2.83-16.22-9.437-18.875-18.876-2.653-9.44-.142-20.366 7.063-31.313l15.594 10.282c-5.238 7.955-5.5 13.08-4.69 15.967.813 2.888 2.84 4.895 6.75 6.188 7.822 2.587 21.483-.152 29.158-13.688 8.188-14.44 8.82-26.183 5.843-35.25-2.976-9.066-9.846-15.954-19.092-19.687-18.493-7.467-46.14-2.273-65.188 30.72-14.024 24.29-14.373 45.376-6.72 63.436l2.814 4.375c-.197.13-.397.25-.594.376.256.497.513 1.008.78 1.5a72.155 72.155 0 0 0 6.814 10.28c.1.13.21.25.312.377.395.49.81.984 1.22 1.468 11.508 13.657 28.358 24.378 47.312 30.283 24.26 7.557 51.596 7.146 74.843-3.75 23.248-10.897 42.935-31.972 52.69-68.375 3.323-12.406 5.08-23.776 5.5-34.313.01-.418.023-.832.03-1.25.087-5.1-.088-10.246-.563-15.406-.037-.407-.084-.814-.125-1.22-.032-.27-.06-.544-.093-.813-3.295-25.79-15.823-46.16-34.345-64.437-29.635-29.24-75.698-51.638-122.75-74.125-47.052-22.487-95.112-45.1-128.875-77.656-31.683-30.553-49.926-71.185-40.313-124.814-.72-.01-1.444-.006-2.156 0z" fill="currentColor"/></svg></span>
+                    <button id="saveBtn" onclick="cloudSave()" class="btn-nav border-none text-2xl" title="Save to Cloud">💾</button>
+                    <div id="tableLinkStatus"></div>
                 </div>
             </div>
         </div>

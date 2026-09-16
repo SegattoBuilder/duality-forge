@@ -87,6 +87,7 @@ export async function renderDashboard(container) {
     container.innerHTML = html;
     wireHeader();
     wireCards(container, sortedTables, sortedChars);
+    wireCarouselArrows(container);
     if (needsWelcome) showWelcomeModal();
 }
 
@@ -106,9 +107,15 @@ async function buildTableMap(tableRows, charRows) {
 
 function sectionHtml(title, rows, type, tableMap) {
     const cards = rows.map(r => cardHtml(r, type, tableMap)).join('');
+    const id = 'carousel-' + type;
+    const showArrows = rows.length > 3;
     return `<div class="mb-6">
         <h3 class="font-[Cinzel] text-sm font-bold uppercase tracking-wide text-zinc-500 mb-3">${title}</h3>
-        <div class="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory" style="scrollbar-width:thin;scrollbar-color:#3d362a transparent">${cards}</div>
+        <div class="relative">
+            ${showArrows ? `<button data-scroll-left="${id}" class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 w-8 h-8 rounded-full bg-[#1e1b16] border border-[#4a3f30] text-zinc-400 hover:border-[#d4a017] hover:text-[#d4a017] transition-all flex items-center justify-center text-sm">‹</button>` : ''}
+            <div id="${id}" class="flex pb-2" style="gap:0.75rem;overflow:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;max-width:calc(13rem * 3 + 0.75rem * 2)">${cards}</div>
+            ${showArrows ? `<button data-scroll-right="${id}" class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 w-8 h-8 rounded-full bg-[#1e1b16] border border-[#4a3f30] text-zinc-400 hover:border-[#d4a017] hover:text-[#d4a017] transition-all flex items-center justify-center text-sm">›</button>` : ''}
+        </div>
     </div>`;
 }
 
@@ -141,7 +148,7 @@ function cardHtml(row, type, tableMap) {
         linkedHtml = `<div class="text-[10px] text-zinc-500 truncate mt-1">🔗 ${escHtml(tableMap[row.table_id])}</div>`;
     }
 
-    return `<button class="dash-card picker-card text-left flex-shrink-0 w-52 snap-start p-4" data-type="${type}" data-row-id="${row.id}">
+    return `<button class="dash-card picker-card text-left snap-start p-4 overflow-hidden" style="height:8rem;min-width:13rem;width:13rem;flex:0 0 13rem" data-type="${type}" data-row-id="${row.id}">
         <div class="flex items-center gap-2 mb-2">
             <span class="text-xl">${icon}</span>
             <span class="text-base font-bold text-[#f5efe6] font-[Cinzel] truncate">${escHtml(name)}</span>
@@ -159,6 +166,21 @@ function wireNewButton(container) {
     const btn = container.querySelector('#dashNewBtn');
     if (!btn) return;
     btn.addEventListener('click', () => showNewMenu());
+}
+
+function wireCarouselArrows(container) {
+    container.querySelectorAll('[data-scroll-left]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const track = document.getElementById(btn.dataset.scrollLeft);
+            if (track) track.scrollBy({ left: -220 });
+        });
+    });
+    container.querySelectorAll('[data-scroll-right]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const track = document.getElementById(btn.dataset.scrollRight);
+            if (track) track.scrollBy({ left: 220 });
+        });
+    });
 }
 
 function wireCards(container, tableRows, charRows) {

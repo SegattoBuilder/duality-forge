@@ -1,12 +1,11 @@
-import { initAuth, getUser, getProfile, getSupabase, onAuthChange, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, changeEmail, isEmailUser, signOut as coreSignOut, signOutAll as coreSignOutAll, deleteAccount as coreDeleteAccount, saveProfile as coreSaveProfile, cloudSaveRow, cloudLoadRows, cloudDeleteRow, showConfirm, showAlert } from '../core/auth.js';
-import { escHtml, escHtmlAttr } from '../core/utils.js';
+import { initAuth, getUser, getProfile, getSupabase, onAuthChange, showConfirm, showAlert } from '../core/auth.js';
+import { escHtml } from '../core/utils.js';
 import { showCloudPicker } from '../core/cloud-picker.js';
-import { TOAST_DURATION, SYNC_STATUS_DURATION, AUTOSAVE_INTERVAL, TABLE_CHARACTERS, TABLE_DM_TABLES, LS_CHAR_SAVE, LS_CHAR_ROW_ID } from '../core/constants.js';
+import { TOAST_DURATION, AUTOSAVE_INTERVAL, TABLE_CHARACTERS, TABLE_DM_TABLES, LS_CHAR_SAVE, LS_CHAR_ROW_ID } from '../core/constants.js';
 import { gatherData, applyData, autoCache, resetSheet } from './save.js';
 
 let cloudAutoSaveInterval = null;
 let lastSavedSnapshot = null;
-let syncStatusTimer = null;
 let characterPickerShown = false;
 let linkedTable = null;
 let currentCharacterRowId = localStorage.getItem(LS_CHAR_ROW_ID) || null;
@@ -19,7 +18,7 @@ function setCharacterRowId(id) {
 }
 
 export function initCharAuth() {
-    onAuthChange(renderAuthUI);
+    onAuthChange(() => renderTableLink());
     onAuthChange(user => { if (user) startCloudAutoSave(); else stopCloudAutoSave(); });
     onAuthChange(async user => {
         renderTableLink();
@@ -27,6 +26,7 @@ export function initCharAuth() {
             characterPickerShown = true;
             if (await tryDashboardPick()) return;
             if (isNewFromDashboard) return;
+            if (currentCharacterRowId) return;
             const localRaw = localStorage.getItem(LS_CHAR_SAVE);
             let hasLocal = false;
             try { const d = JSON.parse(localRaw); hasLocal = d && (d.fields?.charName || (d.cards && d.cards.length)); } catch {}
@@ -63,12 +63,23 @@ async function tryDashboardPick() {
     } catch { return false; }
 }
 
-function showSyncStatus(text) {
+function showSyncStatus() {
     const el = document.getElementById('syncStatus');
     if (!el) return;
-    el.textContent = text; el.classList.remove('hidden');
-    if (syncStatusTimer) clearTimeout(syncStatusTimer);
-    syncStatusTimer = setTimeout(() => el.classList.add('hidden'), SYNC_STATUS_DURATION);
+    el.classList.remove('sync-idle');
+    void el.offsetWidth;
+    el.classList.add('sync-flash');
+    el.addEventListener('animationend', () => {
+        el.classList.remove('sync-flash');
+        el.classList.add('sync-idle');
+    }, { once: true });
+    const btn = document.getElementById('saveBtn');
+    if (btn) {
+        btn.classList.remove('save-flash');
+        void btn.offsetWidth;
+        btn.classList.add('save-flash');
+        btn.addEventListener('animationend', () => btn.classList.remove('save-flash'), { once: true });
+    }
 }
 
 function showToast(message) {
@@ -82,6 +93,8 @@ function showToast(message) {
 
 function startCloudAutoSave() {
     if (cloudAutoSaveInterval) return;
+    const el = document.getElementById('syncStatus');
+    if (el) el.classList.add('sync-idle');
     lastSavedSnapshot = JSON.stringify(gatherData());
     cloudAutoSaveInterval = setInterval(async () => {
         if (!getUser()) return;
@@ -101,11 +114,10 @@ async function cloudAutoSaveNow() {
     if (!currentCharacterRowId) return;
     const sb = getSupabase();
     const data = gatherData();
-    const charName = data.fields?.charName?.trim() || 'My Character';
     const { error } = await sb.from(TABLE_CHARACTERS)
-        .update({ autosave_data: data, autosave_at: new Date().toISOString(), character_name: charName })
+        .update({ autosave_data: data, autosave_at: new Date().toISOString() })
         .eq('id', currentCharacterRowId);
-    if (!error) showSyncStatus('☁️ Auto-saved');
+    if (!error) showSyncStatus();
     await refreshTableApproval();
 }
 
@@ -142,10 +154,11 @@ async function refreshTableApproval() {
 
 // ========== CLOUD SAVE / LOAD ==========
 async function cloudSave() {
-    if (!getUser()) { openAuthModal(); return; }
+    if (!getUser()) return;
     const sb = getSupabase();
     const data = gatherData();
-    const charName = data.fields?.charName?.trim() || 'My Character';
+    const charName = data.fields?.charName?.trim();
+    if (!charName) { showAlert('Character name is required to save.'); return; }
 
     if (currentCharacterRowId) {
         const { error } = await sb.from(TABLE_CHARACTERS)
@@ -161,11 +174,11 @@ async function cloudSave() {
     }
     lastSavedSnapshot = JSON.stringify(data);
     renderTableLink();
-    showSyncStatus('☁️ Saved');
+    showSyncStatus();
 }
 
 async function cloudLoad() {
-    if (!getUser()) { openAuthModal(); return; }
+    if (!getUser()) return;
     showCloudPicker({
         table: TABLE_CHARACTERS, nameColumn: 'character_name',
         modalId: 'characterPickerModal', listId: 'characterPickerList',
@@ -180,169 +193,14 @@ async function importLocalToCloud() {
     showConfirm('Upload your current local data to the cloud as a new save?', async () => { await cloudSave(); });
 }
 
-async function doSignOut() {
-    setCharacterRowId(null);
-    await coreSignOut();
-    window.location.href = '/';
-}
 
-async function doSignOutAll() {
-    showConfirm('Sign out from all devices?', async () => {
-        setCharacterRowId(null);
-        await coreSignOutAll();
-        window.location.href = '/';
-    });
-}
-
-function doDeleteAccount() {
-    showDeleteAccountModal(async () => {
-        const ok = await coreDeleteAccount();
-        if (ok) window.location.href = '/';
-    });
-}
-
-function showDeleteAccountModal(onConfirm) {
-    const modal = document.getElementById('deleteAccountModal');
-    if (!modal) return;
-    modal.classList.remove('hidden');
-    const input = document.getElementById('deleteConfirmInput');
-    const btn = document.getElementById('deleteConfirmBtn');
-    input.value = '';
-    btn.disabled = true;
-    btn.classList.add('opacity-40', 'cursor-not-allowed');
-    input.oninput = () => {
-        const ok = input.value.trim().toUpperCase() === 'DELETE';
-        btn.disabled = !ok;
-        btn.classList.toggle('opacity-40', !ok);
-        btn.classList.toggle('cursor-not-allowed', !ok);
-    };
-    btn.onclick = () => { modal.classList.add('hidden'); onConfirm(); };
-    document.getElementById('deleteCancelBtn').onclick = () => modal.classList.add('hidden');
-}
-
-// ========== AUTH UI ==========
-function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); document.getElementById('authEmail').value = ''; document.getElementById('authPassword').value = ''; }
-function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
-
-let gearMenuHandler = null;
-let authMenuHandler = null;
-
-function toggleGear(e) {
-    if (e) e.stopPropagation();
-    const menu = document.getElementById('gearMenu');
-    const wasHidden = menu.classList.contains('hidden');
-    document.getElementById('authMenu').classList.add('hidden');
-    menu.classList.toggle('hidden');
-    if (gearMenuHandler) { document.removeEventListener('click', gearMenuHandler); gearMenuHandler = null; }
-    if (wasHidden) {
-        gearMenuHandler = (ev) => { if (!menu.contains(ev.target) && !document.getElementById('gearBtn').contains(ev.target)) { menu.classList.add('hidden'); document.removeEventListener('click', gearMenuHandler); gearMenuHandler = null; } };
-        setTimeout(() => document.addEventListener('click', gearMenuHandler), 0);
-    }
-}
-
-function closeGear() { document.getElementById('gearMenu').classList.add('hidden'); }
-
-function toggleAuthMenu(e) {
-    if (e) e.stopPropagation();
-    const menu = document.getElementById('authMenu');
-    const wasHidden = menu.classList.contains('hidden');
-    document.getElementById('gearMenu').classList.add('hidden');
-    menu.classList.toggle('hidden');
-    if (authMenuHandler) { document.removeEventListener('click', authMenuHandler); authMenuHandler = null; }
-    if (wasHidden) {
-        authMenuHandler = (ev) => { if (!menu.contains(ev.target) && !document.getElementById('authBtn').contains(ev.target)) { menu.classList.add('hidden'); document.removeEventListener('click', authMenuHandler); authMenuHandler = null; } };
-        setTimeout(() => document.addEventListener('click', authMenuHandler), 0);
-    }
-}
-
-function closeAuthMenu() { document.getElementById('authMenu').classList.add('hidden'); }
-
-function renderAuthUI() {
-    const user = getUser(), profile = getProfile();
-    const btn = document.getElementById('authBtn');
-    if (!btn) return;
-    if (user) {
-        const avatarUrl = profile?.avatar_url || user.user_metadata?.picture || '';
-        const name = profile?.nickname || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-        btn.innerHTML = avatarUrl ? `<img src="${escHtmlAttr(avatarUrl)}" alt="" class="w-10 h-10 rounded-full border-2 object-cover" style="border-color:var(--accent-1)">` : `<span class="w-10 h-10 rounded-full border-2 bg-[#2a2418] flex items-center justify-center text-sm font-bold" style="border-color:var(--accent-1);color:var(--accent-1)">${escHtml(name.charAt(0).toUpperCase())}</span>`;
-        btn.onclick = toggleAuthMenu;
-        btn.className = 'h-10 w-10 flex items-center justify-center rounded-full hover:opacity-80 transition-opacity cursor-pointer';
-    } else {
-        btn.innerHTML = '<span class="text-[10px] text-zinc-400">Sign In</span>';
-        btn.onclick = openAuthModal;
-        btn.className = 'h-10 px-3 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#4a3f30] transition-colors btn-nav';
-    }
-}
-
-// ========== PROFILE MODAL ==========
-function openProfileModal() {
-    const profile = getProfile();
-    document.getElementById('profileModal').classList.remove('hidden');
-    document.getElementById('profileNickname').value = profile?.nickname || '';
-    document.getElementById('profileAvatar').value = profile?.avatar_url || '';
-    document.getElementById('profileCountry').value = profile?.country || '';
-    document.getElementById('profileState').value = profile?.state || '';
-    document.getElementById('profileExperience').value = profile?.dm_experience || '';
-    document.getElementById('profileAge').value = profile?.age || '';
-    document.getElementById('profilePlayerExp').value = profile?.player_experience || '';
-    previewAvatar(profile?.avatar_url || '');
-    const resetBtn = document.getElementById('profileResetPwBtn');
-    if (resetBtn) resetBtn.classList.toggle('hidden', !isEmailUser());
-    const changeEmailBtn = document.getElementById('profileChangeEmailBtn');
-    if (changeEmailBtn) changeEmailBtn.classList.toggle('hidden', !isEmailUser());
-    const changeEmailRow = document.getElementById('changeEmailRow');
-    if (changeEmailRow) { changeEmailRow.classList.add('hidden'); }
-}
-function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); }
-function previewAvatar(url) {
-    const preview = document.getElementById('profileAvatarPreview');
-    if (url && url.match(/^https?:\/\//)) preview.innerHTML = `<img src="${escHtmlAttr(url)}" alt="" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='🎲'">`;
-    else preview.innerHTML = '🎲';
-}
-async function doSaveProfile() {
-    const ok = await coreSaveProfile({
-        nickname: document.getElementById('profileNickname').value.trim() || null,
-        avatar_url: document.getElementById('profileAvatar').value.trim() || null,
-        country: document.getElementById('profileCountry').value.trim() || null,
-        state: document.getElementById('profileState').value.trim() || null,
-        dm_experience: document.getElementById('profileExperience').value || null,
-        age: document.getElementById('profileAge').value || null,
-        player_experience: document.getElementById('profilePlayerExp').value || null
-    });
-    if (ok) { closeProfileModal(); showToast('👤 Profile saved!'); }
-}
 
 // ========== WINDOW BINDINGS ==========
-window.openAuthModal = openAuthModal;
-window.toggleGear = toggleGear;
-window.closeGear = closeGear;
-window.closeAuthMenu = closeAuthMenu;
-window.closeAuthModal = closeAuthModal;
-window.signInWithGoogle = signInWithGoogle;
-window.signInWithEmail = () => signInWithEmail(document.getElementById('authEmail').value.trim(), document.getElementById('authPassword').value);
-window.signUpWithEmail = () => signUpWithEmail(document.getElementById('authEmail').value.trim(), document.getElementById('authPassword').value);
-window.resetPassword = () => resetPassword(document.getElementById('authEmail').value.trim());
-window.resetPasswordFromProfile = () => { const u = getUser(); if (u?.email) resetPassword(u.email); };
-window.changeEmailFromProfile = () => {
-    const input = document.getElementById('changeEmailInput');
-    if (input) changeEmail(input.value.trim());
-};
-window.toggleChangeEmail = () => {
-    const row = document.getElementById('changeEmailRow');
-    if (row) row.classList.toggle('hidden');
-};
-window.signOut = doSignOut;
-window.signOutAll = doSignOutAll;
-window.deleteAccount = doDeleteAccount;
 window.cloudSave = cloudSave;
 window.cloudLoad = cloudLoad;
 window.importLocalToCloud = importLocalToCloud;
 window.closeCharacterPicker = closeCharacterPicker;
 window.startNewCharacter = startNewCharacter;
-window.openProfileModal = openProfileModal;
-window.closeProfileModal = closeProfileModal;
-window.previewAvatar = previewAvatar;
-window.saveProfile = doSaveProfile;
 window.openTableLinkModal = openTableLinkModal;
 window.closeTableLinkModal = () => document.getElementById('tableLinkModal').classList.add('hidden');
 window.submitTableLink = submitTableLink;
@@ -358,14 +216,17 @@ window.dismissClosedTable = () => {
 
 // ========== CHARACTER PICKER ==========
 function applyCharacterRow(row) {
-    applyData(row.data);
-    localStorage.setItem(LS_CHAR_SAVE, JSON.stringify(row.data));
+    const d = row.data || {};
+    applyData(d);
+    const name = d.fields?.charName || row.character_name || '';
+    if (name) document.getElementById('charName').value = name;
+    localStorage.setItem(LS_CHAR_SAVE, JSON.stringify(gatherData()));
     setCharacterRowId(row.id);
     linkedTable = null;
     if (row.table_id) loadLinkedTable(row.table_id, row.table_approved);
     else if (!row.table_id && row.table_approved === null) { linkedTable = { _closed: true }; renderTableLink(); }
     else renderTableLink();
-    showSyncStatus('☁️ Loaded');
+    showSyncStatus();
 }
 
 async function showCharacterPicker() {
@@ -409,26 +270,17 @@ function renderTableLink() {
         return;
     }
     if (linkedTable && linkedTable._closed) {
-        container.innerHTML = `<div class="px-4 py-3 border-b border-[#3d362a]">
-            <div class="text-[10px] text-red-400 uppercase tracking-wide font-bold mb-1">⚠️ Table closed by DM</div>
-            <button onclick="dismissClosedTable()" class="mt-2 text-[10px] text-zinc-400 hover:text-zinc-300 font-bold uppercase">Dismiss</button>
-        </div>`;
+        container.innerHTML = `<button onclick="dismissClosedTable()" class="btn-nav border-none text-2xl" title="Table closed by DM">⚠️</button>`;
     } else if (linkedTable) {
-        const isApproved = linkedTable._approved;
-        const statusIcon = isApproved ? '✅' : '⏳';
-        const statusText = isApproved ? 'Linked' : 'Pending approval';
-        container.innerHTML = `<div class="px-4 py-3 border-b border-[#3d362a]">
-            <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-1">${statusIcon} ${statusText}</div>
-            <div class="text-xs text-[#f5efe6] font-bold font-[Cinzel]">${escHtml(linkedTable.campaign_name)}</div>
-            <button onclick="unlinkTable()" class="mt-2 text-[10px] text-red-400 hover:text-red-300 font-bold uppercase">Unlink</button>
-        </div>`;
+        const icon = linkedTable._approved ? '✅' : '⏳';
+        container.innerHTML = `<span class="btn-nav border-none text-2xl pointer-events-none" title="${linkedTable._approved ? 'Linked' : 'Pending'}: ${escHtml(linkedTable.campaign_name)}">${icon}</span>`;
     } else {
-        container.innerHTML = `<button onclick="openTableLinkModal()" class="w-full text-left px-4 py-3 text-xs text-[#f5efe6] hover:bg-[#2a2418] transition-colors border-b border-[#3d362a]">🔗 Link to Table</button>`;
+        container.innerHTML = `<button onclick="openTableLinkModal()" class="btn-nav border-none text-2xl" title="Link to Table">🔗</button>`;
     }
 }
 
 function openTableLinkModal() {
-    if (!getUser()) { openAuthModal(); return; }
+    if (!getUser()) return;
     document.getElementById('tableLinkInput').value = '';
     document.getElementById('tableLinkModal').classList.remove('hidden');
 }

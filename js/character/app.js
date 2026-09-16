@@ -1,6 +1,6 @@
 import { SAVE_KEY, THEME_KEY, setRestoring } from './state.js';
 import { LS_CHAR_ACTIVE_TAB, LS_CHAR_SAVE_V1, LS_CHAR_ROW_ID } from '../core/constants.js';
-import { renderThemePicker, applyTheme, toggleMode, setMode, initMode } from './theme.js';
+import { applyTheme, initMode } from './theme.js';
 import { toggleSection } from './ui.js';
 import { renderDots, updateThresholds, updateAttackBonus } from './trackers.js';
 import { openDatabase, closeDatabase, fetchData, filterCards, closeCardDetail, addCardToSheet, openCreateCard, closeCreateCard, onCreateCardTypeChange, addCreateCardFeature, updateCreateCardFeature, removeCreateCardFeature, validateCreateCard, submitCreateCard, openShareCard, closeShareCard, validateShareCard, submitShareCard, openEditCard, closeEditCard, addEditCardFeature, removeEditCardFeature, updateEditCardFeature, saveEditCard } from './cards.js';
@@ -59,8 +59,6 @@ window.loadSheet = loadSheet;
 window.clearSheet = clearSheet;
 window.newCharacter = newCharacter;
 window.autoCache = autoCache;
-window.toggleMode = toggleMode;
-window.setMode = setMode;
 window.toggleSection = toggleSection;
 
 // Modern tab switching
@@ -108,7 +106,6 @@ setRestoring(true);
 
 window.addEventListener('DOMContentLoaded', async () => {
     initMode();
-    renderThemePicker();
     applyTheme(localStorage.getItem(THEME_KEY) || 'gold');
 
     document.addEventListener('keydown', (e) => {

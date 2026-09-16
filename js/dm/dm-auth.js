@@ -112,10 +112,9 @@ async function cloudAutoSaveNow() {
     if (!table) return;
     const sb = getSupabase();
     const data = gatherDmData();
-    const campaign = data.campaign;
 
     const { error } = await sb.from(TABLE_DM_TABLES)
-        .update({ autosave_data: data, autosave_at: new Date().toISOString(), campaign_name: campaign })
+        .update({ autosave_data: data, autosave_at: new Date().toISOString() })
         .eq('id', table.id);
     if (!error) showSyncStatus('☁️ Auto-saved');
 }
@@ -135,7 +134,8 @@ async function cloudSave() {
     if (!getUser()) { openAuthModal(); return; }
     const sb = getSupabase();
     const data = gatherDmData();
-    const campaign = data.campaign;
+    const campaign = data.campaign?.trim();
+    if (!campaign) { showAlert('Campaign name is required to save.'); return; }
     let table = getCurrentTable();
 
     if (table) {
