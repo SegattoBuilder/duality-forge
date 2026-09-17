@@ -8,18 +8,19 @@ let supabase = null;
 let userId = null;
 let isEmail = false;
 let defaultNickname = 'Forger';
+let googleAvatar = '';
 let cachedTables = [];
 let cachedCharacters = [];
 
-export function initDashboard(sb, uid) {
+export function initDashboard(sb, uid, session) {
     supabase = sb;
     userId = uid;
-    sb.auth.getSession().then(({ data: { session } }) => {
-        isEmail = session?.user?.app_metadata?.provider === 'email';
-        defaultNickname = session?.user?.user_metadata?.full_name
-            || session?.user?.email?.split('@')[0]
-            || 'Forger';
-    });
+    isEmail = session?.user?.app_metadata?.provider === 'email';
+    defaultNickname = session?.user?.user_metadata?.full_name
+        || session?.user?.email?.split('@')[0]
+        || 'Forger';
+    const meta = session?.user?.user_metadata;
+    googleAvatar = meta?.avatar_url || meta?.picture || '';
 }
 
 export async function renderDashboard(container) {
@@ -33,11 +34,13 @@ export async function renderDashboard(container) {
     cachedCharacters = characters;
 
     const tableMap = await buildTableMap(tables, characters);
+    const { data: profileRow } = await supabase.from(TABLE_PROFILES).select('id, avatar_url').eq('id', userId).single();
+    const avatarUrl = profileRow?.avatar_url || googleAvatar;
     const sortedTables = tables.slice().sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
     const sortedChars = characters.slice().sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 
     const headerHtml = `<div class="flex items-center justify-between mb-6">
-        <button id="dashProfileBtn" class="btn-primary-pill px-4 py-2 text-xs">👤 Profile</button>
+        <button id="dashProfileBtn" class="w-10 h-10 rounded-full border-2 border-[#d4a017] bg-[#2a2418] overflow-hidden flex items-center justify-center hover:border-[#f0c040] transition-colors" title="Profile">${avatarUrl ? `<img src="${escHtml(avatarUrl)}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display=''"><span style="display:none" class="text-lg">👤</span>` : '<span class="text-lg">👤</span>'}</button>
         <div class="flex gap-2">
             <button id="dashCommunityBtn" class="btn-primary-pill px-4 py-2 text-xs">🔥 Community</button>
             <button id="dashUploadBtn" class="btn-primary-pill px-4 py-2 text-xs">📤 Upload</button>
@@ -72,8 +75,7 @@ export async function renderDashboard(container) {
     };
 
     // Check if profile exists, show welcome prompt if not
-    const { data: existingProfile } = await supabase.from(TABLE_PROFILES).select('id').eq('id', userId).single();
-    const needsWelcome = !existingProfile;
+    const needsWelcome = !profileRow;
 
     if (!sortedTables.length && !sortedChars.length) {
         container.innerHTML = headerHtml + `<div class="text-center py-8">
@@ -297,6 +299,7 @@ async function showProfileModal() {
 
     const { data: profile } = await supabase.from(TABLE_PROFILES).select('*').eq('id', userId).single();
     const p = profile || {};
+    const effectiveAvatar = p.avatar_url || googleAvatar;
 
     modal = document.createElement('div');
     modal.id = 'dashProfileModal';
@@ -307,7 +310,7 @@ async function showProfileModal() {
             <button data-close class="btn-close">✕</button>
         </div>
         <div class="space-y-4">
-            <div class="flex justify-center"><div id="dpAvatarPreview" class="w-20 h-20 rounded-full border-2 border-[#d4a017] bg-[#2a2418] flex items-center justify-center text-3xl overflow-hidden">🎲</div></div>
+            <div class="flex justify-center"><div id="dpAvatarPreview" class="w-20 h-20 rounded-full border-2 border-[#d4a017] bg-[#2a2418] flex items-center justify-center text-3xl overflow-hidden">${effectiveAvatar ? `<img src="${escHtml(effectiveAvatar)}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='🎲'">` : '🎲'}</div></div>
             <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Avatar URL</label><input id="dpAvatar" type="url" placeholder="https://example.com/avatar.png" class="w-full input-field" value="${escHtml(p.avatar_url || '')}"></div>
             <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Nickname</label><input id="dpNickname" type="text" placeholder="How should we call you?" maxlength="30" class="w-full input-field" value="${escHtml(p.nickname || '')}"></div>
             <div class="grid grid-cols-2 gap-3">
@@ -363,8 +366,8 @@ async function showProfileModal() {
     const previewEl = document.getElementById('dpAvatarPreview');
     const avatarInput = document.getElementById('dpAvatar');
     const updatePreview = () => {
-        const url = avatarInput.value.trim();
-        if (url && url.match(/^https?:\/\//)) previewEl.innerHTML = `<img src="${escHtml(url)}" alt="" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='🎲'">`;
+        const url = avatarInput.value.trim() || googleAvatar;
+        if (url && url.match(/^https?:\/\//)) previewEl.innerHTML = `<img src="${escHtml(url)}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='🎲'">`;
         else previewEl.innerHTML = '🎲';
     };
     avatarInput.addEventListener('input', updatePreview);

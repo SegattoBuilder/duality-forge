@@ -113,7 +113,7 @@
             if (error) showAlert('Sign-in failed: ' + error.message);
             else {
                 await initAuth();
-                initDashboard(sb, data.user.id);
+                initDashboard(sb, data.user.id, data.session);
                 document.getElementById('signOutRow').classList.remove('hidden');
                 showDashboard();
             }
@@ -156,7 +156,7 @@
         const { data: { session } } = await sb.auth.getSession();
         if (session) {
             await initAuth();
-            initDashboard(sb, session.user.id);
+            initDashboard(sb, session.user.id, session);
             document.getElementById('signOutRow').classList.remove('hidden');
             showDashboard();
         }
