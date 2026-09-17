@@ -278,15 +278,15 @@ async function showCharacterDetail(charId) {
 
     const weaponsHtml = (d.weapons || []).map(w => {
         const eq = w.equipped ? '★ ' : '';
-        return `<div class="flex items-center gap-2 text-xs"><span class="text-[#d4a017]">${eq}</span><span class="text-[#f5efe6] font-bold">${escHtml(w.name)}</span><span class="text-zinc-500">${escHtml(w.dmg || '')} ${escHtml(w.range || '')}</span></div>`;
+        return `<div class="flex items-center gap-2 text-xs"><span class="text-[#d4a017]">${eq}</span><span class="text-[#f5efe6] ${w.equipped ? 'font-bold' : ''}">${escHtml(w.name)}</span><span class="text-zinc-500">${escHtml(w.dmg || '')} ${escHtml(w.range || '')}</span></div>`;
     }).join('');
 
     const armorsHtml = (d.armors || []).map(a => {
         const eq = a.equipped ? '★ ' : '';
-        return `<div class="flex items-center gap-2 text-xs"><span class="text-[#d4a017]">${eq}</span><span class="text-[#f5efe6] font-bold">${escHtml(a.name)}</span><span class="text-zinc-500">Major ${a.major || 0} / Severe ${a.severe || 0}</span></div>`;
+        return `<div class="flex items-center gap-2 text-xs"><span class="text-[#d4a017]">${eq}</span><span class="text-[#f5efe6] ${a.equipped ? 'font-bold' : ''}">${escHtml(a.name)}</span><span class="text-zinc-500">Major ${a.major || 0} / Severe ${a.severe || 0}</span></div>`;
     }).join('');
 
-    const gearHtml = (d.gear || []).map(g => `<div class="text-xs"><span class="text-[#f5efe6] font-bold">${escHtml(g.name)}</span>${g.bonus ? ` <span class="text-[#d4a017]">${escHtml(g.bonus)}</span>` : ''}${g.desc ? `<div class="text-[10px] text-zinc-500">${escHtml(g.desc)}</div>` : ''}</div>`).join('');
+    const gearHtml = (d.gear || []).map(g => `<div class="text-xs"><span class="text-[#f5efe6] font-bold">${escHtml(g.name)}</span>${g.bonus ? ` <span class="text-[#d4a017]">${escHtml(g.bonus)}</span>` : ''}${g.desc ? `<div class="text-[11px] text-zinc-400 leading-relaxed">${escHtml(g.desc)}</div>` : ''}</div>`).join('');
 
     const itemsHtml = (d.items || []).map(i => `<div class="text-xs text-[#f5efe6]">${escHtml(typeof i === 'string' ? i : i.name)}</div>`).join('');
     const consumablesHtml = (d.consumables || []).map(c => `<div class="text-xs text-[#f5efe6]">${escHtml(typeof c === 'string' ? c : c.name)}</div>`).join('');
@@ -297,7 +297,7 @@ async function showCharacterDetail(charId) {
         return `<div class="text-xs"><span class="text-zinc-500">${escHtml(qty)}×</span> <span class="text-[#f5efe6]">${escHtml(name)}</span></div>`;
     }).join('');
 
-    const expHtml = (d.experience || []).map(e => `<div class="text-xs"><span class="text-[#f5efe6] font-bold">${escHtml(e.name)}</span> <span class="text-[#d4a017]">${escHtml(e.value || '')}</span>${e.desc ? `<div class="text-[10px] text-zinc-500">${escHtml(e.desc)}</div>` : ''}</div>`).join('');
+    const expHtml = (d.experience || []).map(e => `<div class="text-xs"><span class="text-[#f5efe6] font-bold">${escHtml(e.name)}</span> <span class="text-[#d4a017]">${escHtml(e.value || '')}</span>${e.desc ? `<div class="text-[11px] text-zinc-400 leading-relaxed">${escHtml(e.desc)}</div>` : ''}</div>`).join('');
 
     const section = (title, content) => content ? `<div class="mb-4"><div class="text-[10px] uppercase tracking-wide font-bold font-[Cinzel] mb-2 pb-1 border-b" style="color:var(--accent-1,#d4a017);border-color:var(--accent-1,#d4a017)">${title}</div>${content}</div>` : '';
 
