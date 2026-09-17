@@ -56,25 +56,25 @@ describe('resolveAttackBonus', () => {
 });
 
 describe('computeTier', () => {
-    it('returns tier 1 for levels 1-4', () => {
-        [1, 2, 3, 4].forEach(l => expect(computeTier(l)).toBe(1));
+    it('returns tier 0 for level 1', () => {
+        expect(computeTier(1)).toBe(0);
     });
 
-    it('returns tier 2 for levels 5-6', () => {
-        [5, 6].forEach(l => expect(computeTier(l)).toBe(2));
+    it('returns tier 1 for levels 2-4', () => {
+        [2, 3, 4].forEach(l => expect(computeTier(l)).toBe(1));
     });
 
-    it('returns tier 3 for levels 7-8', () => {
-        [7, 8].forEach(l => expect(computeTier(l)).toBe(3));
+    it('returns tier 2 for levels 5-7', () => {
+        [5, 6, 7].forEach(l => expect(computeTier(l)).toBe(2));
     });
 
-    it('returns tier 4 for levels 9-10', () => {
-        [9, 10].forEach(l => expect(computeTier(l)).toBe(4));
+    it('returns tier 3 for levels 8-10', () => {
+        [8, 9, 10].forEach(l => expect(computeTier(l)).toBe(3));
     });
 
-    it('defaults to tier 1 for invalid input', () => {
-        expect(computeTier(undefined)).toBe(1);
-        expect(computeTier('')).toBe(1);
-        expect(computeTier('abc')).toBe(1);
+    it('defaults to tier 0 for invalid input', () => {
+        expect(computeTier(undefined)).toBe(0);
+        expect(computeTier('')).toBe(0);
+        expect(computeTier('abc')).toBe(0);
     });
 });
