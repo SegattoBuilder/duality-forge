@@ -265,16 +265,29 @@ async function showCharacterDetail(charId) {
         return arr.map(v => `<span class="inline-block w-3 h-3 rounded-full ${v ? filledColor : emptyColor}"></span>`).join(' ');
     };
 
-    const cardsHtml = (d.cards || []).map(c => {
+    const allCards = d.cards || [];
+    const selectedNames = (d.selectedDomain || []).map(s => s.toLowerCase());
+
+    const renderCard = (c) => {
         const domainBadge = c.domain ? `<span class="text-[9px] uppercase font-bold text-zinc-500">${escHtml(c.domain)}</span>` : '';
         const levelBadge = c.level ? `<span class="text-[9px] text-zinc-600">Lv${c.level}</span>` : '';
-        const starred = (d.selectedDomain || []).map(s => s.toLowerCase()).includes((c.name || '').toLowerCase());
+        const starred = selectedNames.includes((c.name || '').toLowerCase());
         return `<div class="p-3 rounded-lg border ${starred ? 'border-[#d4a017]/50 bg-[#d4a017]/5' : 'border-zinc-800 bg-black/20'}">
             <div class="flex items-center gap-2 mb-1">${starred ? '<span class="text-[#d4a017] text-xs">★</span>' : ''}<span class="text-xs font-bold text-[#f5efe6]">${escHtml(c.name)}</span></div>
             <div class="flex gap-2">${domainBadge}${levelBadge}</div>
             ${c.feature ? `<div class="text-[10px] text-zinc-400 mt-1 leading-relaxed char-detail-feature">${c.feature}</div>` : ''}
         </div>`;
-    }).join('');
+    };
+
+    const domainCards = allCards.filter(c => c.category === 'domain-cards.json');
+    const generalCards = allCards.filter(c => c.category !== 'domain-cards.json');
+    const sortedDomain = [...domainCards].sort((a, b) => {
+        const aS = selectedNames.includes((a.name || '').toLowerCase()) ? 0 : 1;
+        const bS = selectedNames.includes((b.name || '').toLowerCase()) ? 0 : 1;
+        return aS - bS;
+    });
+    const domainHtml = sortedDomain.map(renderCard).join('');
+    const generalHtml = generalCards.map(renderCard).join('');
 
     const weaponsHtml = (d.weapons || []).map(w => {
         const eq = w.equipped ? '★ ' : '';
@@ -345,7 +358,8 @@ async function showCharacterDetail(charId) {
         ${section('Gear', gearHtml ? `<div class="space-y-2">${gearHtml}</div>` : '')}
         ${section('Inventory', inventoryHtml ? `<div class="space-y-1">${inventoryHtml}</div>` : '')}
         ${section('Experience', expHtml ? `<div class="space-y-2">${expHtml}</div>` : '')}
-        ${section('Domain Cards', cardsHtml ? `<div class="space-y-2">${cardsHtml}</div>` : '')}
+        ${section('Domain Cards', domainHtml ? `<div class="space-y-2">${domainHtml}</div>` : '')}
+        ${section('General Cards', generalHtml ? `<div class="space-y-2">${generalHtml}</div>` : '')}
         ${section('Tiers', buildTierCardsHtml(d))}
         ${section('Backstory', d.textareas?.backstory ? `<div class="text-xs text-zinc-300 whitespace-pre-wrap">${escHtml(d.textareas.backstory)}</div>` : '')}
         ${section('Connections', d.textareas?.connections ? `<div class="text-xs text-zinc-300 whitespace-pre-wrap">${escHtml(d.textareas.connections)}</div>` : '')}
