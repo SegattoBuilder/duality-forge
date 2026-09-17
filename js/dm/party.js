@@ -74,7 +74,10 @@ function renderMemberCard(m, isPending) {
         <div class="flex items-start justify-between">
             <div>
                 <div class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">${name}</div>
-                <div class="text-[10px] text-zinc-500">${cls} · Lv ${escHtml(String(lvl))}</div>
+                <div class="flex flex-wrap gap-1 mt-1">
+                    ${cls !== '—' ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${cls}</span>` : ''}
+                    <span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">Lv ${escHtml(String(lvl))}</span>
+                </div>
             </div>
             ${actionBtn}
         </div>
@@ -156,6 +159,53 @@ export async function renderParty() {
 
 // ========== CHARACTER DETAIL ==========
 
+const TIER_DEFS = [
+    { key: 'tier2', label: 'Tier 2', levels: '2–4', options: [
+        { ids: ['tier2_trait_1','tier2_trait_2','tier2_trait_3'], text: '+1 to two character traits' },
+        { ids: ['tier2_hp_1','tier2_hp_2'], text: '+1 Hit Point slot' },
+        { ids: ['tier2_stress_1','tier2_stress_2'], text: '+1 Stress slot' },
+        { ids: ['tier2_exp'], text: '+1 to two Experiences' },
+        { ids: ['tier2_domain'], text: 'Additional domain card' },
+        { ids: ['tier2_evasion'], text: '+1 Evasion' }
+    ]},
+    { key: 'tier3', label: 'Tier 3', levels: '5–6', options: [
+        { ids: ['tier3_trait_1','tier3_trait_2','tier3_trait_3'], text: '+1 to two character traits' },
+        { ids: ['tier3_hp_1','tier3_hp_2'], text: '+1 Hit Point slot' },
+        { ids: ['tier3_stress_1','tier3_stress_2'], text: '+1 Stress slot' },
+        { ids: ['tier3_exp'], text: '+1 to two Experiences' },
+        { ids: ['tier3_domain'], text: 'Additional domain card' },
+        { ids: ['tier3_evasion'], text: '+1 Evasion' },
+        { ids: ['tier3_subclass'], text: 'Subclass specialization' },
+        { ids: ['tier3_prof_1','tier3_prof_2'], text: '+1 Proficiency' },
+        { ids: ['tier3_multiclass_1','tier3_multiclass_2'], text: 'Multiclass option' }
+    ]},
+    { key: 'tier4', label: 'Tier 4', levels: '7–10', options: [
+        { ids: ['tier4_trait_1','tier4_trait_2','tier4_trait_3'], text: '+1 to two character traits' },
+        { ids: ['tier4_hp_1','tier4_hp_2'], text: '+1 Hit Point slot' },
+        { ids: ['tier4_stress_1','tier4_stress_2'], text: '+1 Stress slot' },
+        { ids: ['tier4_exp'], text: '+1 to two Experiences' },
+        { ids: ['tier4_domain'], text: 'Additional domain card' },
+        { ids: ['tier4_evasion'], text: '+1 Evasion' },
+        { ids: ['tier4_subclass'], text: 'Subclass mastery' },
+        { ids: ['tier4_prof_1','tier4_prof_2'], text: '+1 Proficiency' },
+        { ids: ['tier4_multiclass_1','tier4_multiclass_2'], text: 'Multiclass option' }
+    ]}
+];
+
+function buildTierCardsHtml(d) {
+    return `<div class="grid grid-cols-1 gap-3 mb-4">${TIER_DEFS.map(t => {
+        const data = d[t.key] || {};
+        return `<div class="p-3 rounded-lg border border-zinc-800 bg-black/20">
+            <div class="text-xs font-bold text-[#f5efe6] mb-2">${t.label} <span class="text-zinc-500 font-normal">(Lv ${t.levels})</span></div>
+            <div class="space-y-1">${t.options.map(o => {
+                const checked = o.ids.some(id => data[id]);
+                const marks = o.ids.map(id => data[id] ? '☑' : '☐').join('');
+                return `<div class="text-[11px] leading-relaxed ${checked ? 'text-zinc-400' : 'text-zinc-500'}"><span class="text-sm">${marks}</span> ${o.text}</div>`;
+            }).join('')}</div>
+        </div>`;
+    }).join('')}</div>`;
+}
+
 async function showCharacterDetail(charId) {
     const sb = getSupabase();
     const { data: row } = await sb.from(TABLE_CHARACTERS).select('id, character_name, data, updated_at').eq('id', charId).single();
@@ -203,13 +253,22 @@ async function showCharacterDetail(charId) {
 
     const expHtml = (d.experience || []).map(e => `<div class="text-xs"><span class="text-[#f5efe6] font-bold">${escHtml(e.name)}</span> <span class="text-[#d4a017]">${escHtml(e.value || '')}</span>${e.desc ? `<div class="text-[10px] text-zinc-500">${escHtml(e.desc)}</div>` : ''}</div>`).join('');
 
-    const section = (title, content) => content ? `<div class="mb-4"><div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold font-[Cinzel] mb-2">${title}</div>${content}</div>` : '';
+    const section = (title, content) => content ? `<div class="mb-4"><div class="text-[10px] uppercase tracking-wide font-bold font-[Cinzel] mb-2 pb-1 border-b" style="color:var(--accent-1,#d4a017);border-color:var(--accent-1,#d4a017)">${title}</div>${content}</div>` : '';
 
     const body = document.getElementById('charDetailBody');
     body.innerHTML = `
         <div class="mb-4 pb-4 border-b border-[#3d362a]">
             <div class="text-lg font-black text-[#f5efe6] font-[Cinzel]">${escHtml(f.charName || row.character_name || 'Unnamed')}</div>
-            <div class="text-xs text-zinc-500 mt-1">${escHtml(f.charPronouns || '')} · ${escHtml(f.charHeritage || '')} · ${escHtml(f.charClass || '')} · Lv ${escHtml(f.charLevel || '?')}</div>
+            <div class="flex flex-wrap gap-1.5 mt-2">
+                ${f.charPronouns ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${escHtml(f.charPronouns)}</span>` : ''}
+                ${f.charHeritage ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${escHtml(f.charHeritage)}</span>` : ''}
+                ${f.charClass ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${escHtml(f.charClass)}</span>` : ''}
+                <span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">Lv ${escHtml(f.charLevel || '?')}</span>
+            </div>
+            ${(() => {
+                const descs = [['Clothes', f.desc_clothes], ['Eyes', f.desc_eyes], ['Body', f.desc_body], ['Skin', f.desc_skin], ['Attitude', f.desc_attitude]].filter(([, v]) => v);
+                return descs.length ? `<div class="text-[10px] text-zinc-600 mt-2">${descs.map(([k, v]) => `<span class="text-zinc-500">${k}:</span> ${escHtml(v)}`).join(' · ')}</div>` : '';
+            })()}
         </div>
         <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-4 text-center">
             <div class="bg-black/30 rounded-lg p-2"><div class="text-[9px] text-zinc-500 uppercase">Agi</div><div class="text-sm font-bold text-[#f5efe6]">${escHtml(f.t_agi || '0')}</div></div>
@@ -241,6 +300,7 @@ async function showCharacterDetail(charId) {
         ${section('Inventory', inventoryHtml ? `<div class="space-y-1">${inventoryHtml}</div>` : '')}
         ${section('Experience', expHtml ? `<div class="space-y-2">${expHtml}</div>` : '')}
         ${section('Domain Cards', cardsHtml ? `<div class="space-y-2">${cardsHtml}</div>` : '')}
+        ${section('Tiers', buildTierCardsHtml(d))}
         ${section('Backstory', d.textareas?.backstory ? `<div class="text-xs text-zinc-300 whitespace-pre-wrap">${escHtml(d.textareas.backstory)}</div>` : '')}
         ${section('Connections', d.textareas?.connections ? `<div class="text-xs text-zinc-300 whitespace-pre-wrap">${escHtml(d.textareas.connections)}</div>` : '')}
         ${section('Level Up Notes', d.textareas?.levelupNotes ? `<div class="text-xs text-zinc-300 whitespace-pre-wrap">${escHtml(d.textareas.levelupNotes)}</div>` : '')}

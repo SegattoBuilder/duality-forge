@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeDotTarget, computeThreshold, resolveAttackBonus } from '../js/character/trackers-logic.js';
+import { computeDotTarget, computeThreshold, resolveAttackBonus, computeTier } from '../js/character/trackers-logic.js';
 
 describe('computeDotTarget', () => {
     it('fills up to clicked index when clicking ahead of filled', () => {
@@ -52,5 +52,29 @@ describe('resolveAttackBonus', () => {
 
     it('returns dash when undefined', () => {
         expect(resolveAttackBonus(undefined)).toBe('—');
+    });
+});
+
+describe('computeTier', () => {
+    it('returns tier 1 for levels 1-4', () => {
+        [1, 2, 3, 4].forEach(l => expect(computeTier(l)).toBe(1));
+    });
+
+    it('returns tier 2 for levels 5-6', () => {
+        [5, 6].forEach(l => expect(computeTier(l)).toBe(2));
+    });
+
+    it('returns tier 3 for levels 7-8', () => {
+        [7, 8].forEach(l => expect(computeTier(l)).toBe(3));
+    });
+
+    it('returns tier 4 for levels 9-10', () => {
+        [9, 10].forEach(l => expect(computeTier(l)).toBe(4));
+    });
+
+    it('defaults to tier 1 for invalid input', () => {
+        expect(computeTier(undefined)).toBe(1);
+        expect(computeTier('')).toBe(1);
+        expect(computeTier('abc')).toBe(1);
     });
 });
