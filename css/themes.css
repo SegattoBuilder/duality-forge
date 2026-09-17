@@ -601,6 +601,8 @@
 
 /* Tab buttons */
 [data-mode="fantasy"] .modern-tab-btn { background: #2a1e0e; color: #8a7050; border-color: #4a3518; }
+[data-mode="fantasy"] .tab-icon { display: inline; font-size: 20px; line-height: 1; }
+[data-mode="fantasy"] .tab-label { display: none; }
 [data-mode="fantasy"] .modern-tab-btn.active { background: linear-gradient(135deg, var(--accent-4), var(--accent-3)); color: #fff; border-color: transparent; }
 [data-mode="fantasy"] .classic-tab-btn { background: #2a1e0e; color: #8a7050; border-color: #4a3518; }
 [data-mode="fantasy"] .classic-tab-btn.active { background: linear-gradient(135deg, var(--accent-4), var(--accent-3)); color: #fff; border-color: transparent; }

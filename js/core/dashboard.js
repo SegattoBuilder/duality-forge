@@ -43,7 +43,7 @@ export async function renderDashboard(container) {
             <button id="dashUploadBtn" class="btn-primary-pill px-4 py-2 text-xs">📤 Upload</button>
             <button id="dashNewBtn" class="btn-primary-pill px-4 py-2 text-xs">+ New</button>
             <div class="relative">
-                <button id="dashGearBtn" class="btn-primary-pill px-3 py-2 text-lg leading-none">⚙️</button>
+                <button id="dashGearBtn" class="btn-primary-pill px-4 py-2 text-xs"><span class="tab-icon">⚙️</span><span class="tab-label">Settings</span></button>
                 <div id="gearMenu" class="hidden absolute right-0 top-12 w-52 dropdown-menu z-50">
                     <div class="px-4 py-3 border-b border-[#3d362a]">
                         <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Display Mode</div>

@@ -284,7 +284,7 @@
     padding: 6px 12px;
     border-radius: 9999px;
 }
-.btn-primary-pill:hover { border-color: var(--accent-1); color: var(--accent-1); }
+.btn-primary-pill:hover { border-color: var(--accent-1); color: var(--accent-1); filter: brightness(1.2); }
 
 /* Accent pill — secondary action bar buttons */
 .btn-accent-pill {
@@ -728,6 +728,11 @@
     transition: all 0.15s;
 }
 .info-btn:hover { border-color: var(--accent-1); color: var(--accent-1); }
+
+/* Icon/Label toggle — default: show labels, hide icons (fantasy mode overrides in themes.css) */
+.tab-icon { display: none; }
+.tab-label { display: inline; }
+
 .info-popup {
     display: none; background: #1e1b16; border: 1px solid #4a3f30;
     border-radius: 10px; padding: 10px 14px; margin-top: 8px;
