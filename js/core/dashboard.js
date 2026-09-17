@@ -2,7 +2,7 @@ import { TABLE_DM_TABLES, TABLE_CHARACTERS, TABLE_PROFILES, LS_THEME, LS_CONSENT
 import { formatRelativeDate, detectJsonType } from './dashboard-logic.js';
 import { escHtml } from './utils.js';
 import { initMode, setMode, applyTheme, renderThemePicker } from './theme.js';
-import { resetPassword, changeEmail, signOutAll, deleteAccount, showAlert, showConfirm } from './auth.js';
+import { resetPassword, changeEmail, signOut, signOutAll, deleteAccount, showAlert, showConfirm } from './auth.js';
 
 let supabase = null;
 let userId = null;
@@ -332,11 +332,15 @@ async function showProfileModal() {
             <input id="dpChangeEmailInput" type="email" placeholder="new@email.com" class="flex-1 input-compact text-left px-3">
             <button data-send-email class="btn-primary text-[10px] px-4 py-2">Send</button>
         </div>
-        <div class="mt-2 text-center">
-            <button data-signout-all class="btn-link text-red-400/60 hover:text-red-400">🚪 Sign Out All Devices</button>
+        <div class="mt-4 text-center">
+            <button data-signout class="btn-link text-zinc-400 hover:text-zinc-200">🚪 Sign Out</button>
         </div>
-        <div class="mt-2 text-center">
-            <button data-delete-account class="btn-link text-red-500/60 hover:text-red-500">🗑️ Delete Account</button>
+        <div class="mt-4 border-t border-[#363026] pt-3">
+            <button data-toggle-advanced class="text-[10px] text-zinc-600 hover:text-zinc-400 w-full text-center">▸ Advanced</button>
+            <div data-advanced-section class="hidden mt-3 space-y-2 text-center">
+                <button data-signout-all class="btn-link text-red-400/60 hover:text-red-400">🚪 Sign Out All Devices</button>
+                <button data-delete-account class="btn-link text-red-500/60 hover:text-red-500">🗑️ Delete Account</button>
+            </div>
         </div>
     </div>`;
 
@@ -362,7 +366,16 @@ async function showProfileModal() {
     avatarInput.addEventListener('input', updatePreview);
     updatePreview();
 
-    // Save
+    // Save — skip upsert if nothing changed
+    const originalProfile = JSON.stringify({
+        nickname: p.nickname || null,
+        avatar_url: p.avatar_url || null,
+        country: p.country || null,
+        state: p.state || null,
+        age: p.age || null,
+        dm_experience: p.dm_experience || null,
+        player_experience: p.player_experience || null
+    });
     modal.querySelector('[data-save]').addEventListener('click', async () => {
         const row = {
             id: userId,
@@ -374,6 +387,8 @@ async function showProfileModal() {
             dm_experience: document.getElementById('dpDmExp').value || null,
             player_experience: document.getElementById('dpPlayerExp').value || null
         };
+        const { id, ...fields } = row;
+        if (JSON.stringify(fields) === originalProfile) { close(); return; }
         const { error } = await supabase.from(TABLE_PROFILES).upsert(row);
         if (error) { showAlert('Failed to save profile: ' + error.message); return; }
         close();
@@ -397,6 +412,19 @@ async function showProfileModal() {
     modal.querySelector('[data-send-email]').addEventListener('click', () => {
         const val = document.getElementById('dpChangeEmailInput').value.trim();
         if (val) { changeEmail(val); close(); }
+    });
+
+    // Sign out (this device)
+    modal.querySelector('[data-signout]').addEventListener('click', async () => {
+        await signOut();
+        window.location.href = '/';
+    });
+
+    // Advanced toggle
+    modal.querySelector('[data-toggle-advanced]').addEventListener('click', (e) => {
+        const section = modal.querySelector('[data-advanced-section]');
+        const hidden = section.classList.toggle('hidden');
+        e.target.textContent = hidden ? '▸ Advanced' : '▾ Advanced';
     });
 
     // Sign out all

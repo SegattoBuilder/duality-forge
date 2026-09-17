@@ -182,6 +182,7 @@
 - [x] Remove profile/save-management from character/DM auth menus (cleanup)
 - [x] Character name not set when creating new character from dashboard (applyCharacterRow needs to read `character_name` when `data` is empty)
 - [x] DM equivalent of `LS_CHAR_ROW_ID` — persist current table row ID
+- [x] Auth gate — `/dm/`, `/character/`, `/community/` require Supabase session; direct URL without localStorage redirects to dashboard
 
 **Autosave Schema Refactor (merged to main)**
 - [x] `autosave_data` + `autosave_at` columns on `characters` and `dm_tables`

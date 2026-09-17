@@ -193,7 +193,7 @@ export async function signOutAll() {
 
 export async function deleteAccount() {
     const sb = getSupabase();
-    if (!sb || !currentUser) { showAlert('You must be signed in.'); return false; }
+    if (!sb) { showAlert('You must be signed in.'); return false; }
     const { data: { session } } = await sb.auth.getSession();
     if (!session?.access_token) { showAlert('Session expired. Please sign in again.'); return false; }
     const res = await fetch('/api/delete-account', {

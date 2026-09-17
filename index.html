@@ -70,7 +70,7 @@
 
     <script type="module">
         import SUPABASE_CONFIG from './js/core/config.js';
-        import { hasConsent } from './js/core/auth.js';
+        import { hasConsent, initAuth } from './js/core/auth.js';
         import { initDashboard, renderDashboard } from './js/core/dashboard.js';
 
         const sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
@@ -112,6 +112,7 @@
             const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
             if (error) showAlert('Sign-in failed: ' + error.message);
             else {
+                await initAuth();
                 initDashboard(sb, data.user.id);
                 document.getElementById('signOutRow').classList.remove('hidden');
                 showDashboard();
@@ -154,6 +155,7 @@
 
         const { data: { session } } = await sb.auth.getSession();
         if (session) {
+            await initAuth();
             initDashboard(sb, session.user.id);
             document.getElementById('signOutRow').classList.remove('hidden');
             showDashboard();

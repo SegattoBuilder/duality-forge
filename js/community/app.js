@@ -3,6 +3,9 @@ import { TABLE_COMMUNITY_CHAPTERS, TABLE_COMMUNITY_CHAPTER_RATINGS, TABLE_COMMUN
 import { initMode, applyTheme } from '../core/theme.js';
 import { generateId, escHtml as esc } from '../core/utils.js';
 import { renderStars, parseFeatureText, filterChapters, filterAdversaries, filterHomebrew } from './community-logic.js';
+import { requireAuth } from '../core/auth-gate.js';
+
+if (!await requireAuth()) throw 0;
 
 const sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
 let chapters = [];
