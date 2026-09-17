@@ -8,6 +8,8 @@ let supabase = null;
 let userId = null;
 let isEmail = false;
 let defaultNickname = 'Forger';
+let cachedTables = [];
+let cachedCharacters = [];
 
 export function initDashboard(sb, uid) {
     supabase = sb;
@@ -27,6 +29,8 @@ export async function renderDashboard(container) {
         loadRows(TABLE_DM_TABLES, 'campaign_name, data, autosave_data, autosave_at'),
         loadRows(TABLE_CHARACTERS, 'character_name, table_id, data, autosave_data, autosave_at')
     ]);
+    cachedTables = tables;
+    cachedCharacters = characters;
 
     const tableMap = await buildTableMap(tables, characters);
     const sortedTables = tables.slice().sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
@@ -490,11 +494,9 @@ function showWelcomeModal() {
             <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Nickname</label><input data-nickname type="text" maxlength="30" class="w-full input-field" value="${escHtml(defaultNickname)}"></div>
             <div class="text-[10px] text-zinc-500 text-center">You can change this later in your profile.</div>
         </div>
-        <div class="flex gap-3 mt-6">
-            <button data-save class="flex-1 btn-primary">Let's Go!</button>
-            <button data-dismiss class="flex-1 btn-secondary">Skip</button>
+        <div class="mt-6">
+            <button data-save class="w-full btn-primary">Let's Go!</button>
         </div>
-        <div class="text-[10px] text-zinc-600 text-center mt-3">Skip will use <strong>${escHtml(defaultNickname)}</strong> as your nickname.</div>
     </div>`;
     document.body.appendChild(modal);
 
@@ -506,7 +508,6 @@ function showWelcomeModal() {
         const val = modal.querySelector('[data-nickname]').value.trim() || defaultNickname;
         save(val);
     });
-    modal.querySelector('[data-dismiss]').addEventListener('click', () => save(defaultNickname));
     modal.querySelector('[data-nickname]').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             const val = modal.querySelector('[data-nickname]').value.trim() || defaultNickname;
@@ -660,6 +661,12 @@ function showNewNamePrompt(type) {
     const create = async () => {
         const name = modal.querySelector('[data-name]').value.trim();
         if (!name) { modal.querySelector('[data-name]').focus(); return; }
+        const existing = isDm ? cachedTables : cachedCharacters;
+        const nameKey = isDm ? 'campaign_name' : 'character_name';
+        if (existing.some(r => (r[nameKey] || '').toLowerCase() === name.toLowerCase())) {
+            showAlert(`A ${isDm ? 'table' : 'character'} named "${name}" already exists.`);
+            return;
+        }
         const table = isDm ? TABLE_DM_TABLES : TABLE_CHARACTERS;
         const nameCol = isDm ? 'campaign_name' : 'character_name';
         const { data: row, error } = await supabase.from(table)
