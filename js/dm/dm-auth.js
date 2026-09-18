@@ -60,25 +60,17 @@ async function tryDashboardPick() {
 let syncAnimationTimer = null;
 
 function showSyncStatus(text) {
-    const el = document.getElementById('syncStatus');
-    if (el) {
-        el.classList.remove('sync-idle', 'sync-flash');
-        void el.offsetWidth;
-        el.classList.add('sync-flash');
-        el.title = text;
-        if (syncAnimationTimer) clearTimeout(syncAnimationTimer);
-        syncAnimationTimer = setTimeout(() => {
-            el.classList.remove('sync-flash');
-            void el.offsetWidth;
-            el.classList.add('sync-idle');
-        }, 1500);
-    }
-    const saveBtn = document.getElementById('saveBtn');
-    if (saveBtn) {
-        saveBtn.classList.remove('save-flash');
-        void saveBtn.offsetWidth;
-        saveBtn.classList.add('save-flash');
-    }
+    const btn = document.getElementById('saveBtn');
+    if (!btn) return;
+    btn.classList.remove('saved');
+    void btn.offsetWidth;
+    btn.classList.add('saved');
+    btn.title = text;
+    if (syncAnimationTimer) clearTimeout(syncAnimationTimer);
+    syncAnimationTimer = setTimeout(() => {
+        btn.classList.remove('saved');
+        btn.title = 'Save to Cloud';
+    }, 2500);
 }
 
 function showToast(message) {
@@ -91,8 +83,6 @@ function showToast(message) {
 function startCloudAutoSave() {
     if (cloudAutoSaveInterval) return;
     lastSavedSnapshot = JSON.stringify(gatherDmData());
-    const el = document.getElementById('syncStatus');
-    if (el && !el.classList.contains('sync-idle') && !el.classList.contains('sync-flash')) el.classList.add('sync-idle');
     cloudAutoSaveInterval = setInterval(async () => {
         if (!getUser()) return;
         const current = JSON.stringify(gatherDmData());

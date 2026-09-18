@@ -372,6 +372,8 @@
 [data-mode="scifi"] .btn-outline:hover { border-color: var(--accent-1); color: var(--accent-1); }
 [data-mode="scifi"] .btn-nav { background: transparent; border-color: #1e3a5f; color: #5a7a9a; }
 [data-mode="scifi"] .btn-nav:hover { border-color: var(--accent-1); }
+[data-mode="scifi"] .save-btn { color: #5a7a9a; }
+[data-mode="scifi"] .save-btn:hover { color: var(--accent-1); }
 [data-mode="scifi"] .btn-icon { color: #4a6a80; }
 [data-mode="scifi"] .btn-icon:hover { color: var(--accent-1); }
 [data-mode="scifi"] .btn-close { color: #4a6a80; }
@@ -875,6 +877,12 @@
 [data-mode="fantasy"] .hover\:border-\[\#d4a017\]:hover { border-color: var(--accent-1) !important; }
 [data-mode="fantasy"] .text-\[\#d4a017\] { color: var(--accent-1) !important; }
 [data-mode="fantasy"] .accent-\[\#d4a017\] { accent-color: var(--accent-1) !important; }
+
+/* Save button — fantasy crown */
+[data-mode="fantasy"] .save-btn .save-icon-default { display: none; }
+[data-mode="fantasy"] .save-btn .save-icon-done { display: none; }
+[data-mode="fantasy"] .save-btn .save-icon-fantasy { display: block; }
+[data-mode="fantasy"] .save-btn.saved .save-icon-fantasy { color: var(--accent-1); filter: drop-shadow(0 0 6px var(--accent-1)); }
 
 /* === Fantasy Card Watermarks === */
 

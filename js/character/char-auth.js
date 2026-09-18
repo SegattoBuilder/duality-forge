@@ -63,23 +63,16 @@ async function tryDashboardPick() {
     } catch { return false; }
 }
 
+let syncAnimationTimer = null;
+
 function showSyncStatus() {
-    const el = document.getElementById('syncStatus');
-    if (!el) return;
-    el.classList.remove('sync-idle');
-    void el.offsetWidth;
-    el.classList.add('sync-flash');
-    el.addEventListener('animationend', () => {
-        el.classList.remove('sync-flash');
-        el.classList.add('sync-idle');
-    }, { once: true });
     const btn = document.getElementById('saveBtn');
-    if (btn) {
-        btn.classList.remove('save-flash');
-        void btn.offsetWidth;
-        btn.classList.add('save-flash');
-        btn.addEventListener('animationend', () => btn.classList.remove('save-flash'), { once: true });
-    }
+    if (!btn) return;
+    btn.classList.remove('saved');
+    void btn.offsetWidth;
+    btn.classList.add('saved');
+    if (syncAnimationTimer) clearTimeout(syncAnimationTimer);
+    syncAnimationTimer = setTimeout(() => btn.classList.remove('saved'), 2500);
 }
 
 function showToast(message) {
@@ -93,8 +86,6 @@ function showToast(message) {
 
 function startCloudAutoSave() {
     if (cloudAutoSaveInterval) return;
-    const el = document.getElementById('syncStatus');
-    if (el) el.classList.add('sync-idle');
     lastSavedSnapshot = JSON.stringify(gatherData());
     cloudAutoSaveInterval = setInterval(async () => {
         if (!getUser()) return;

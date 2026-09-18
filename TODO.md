@@ -183,6 +183,9 @@
 - [x] Character name not set when creating new character from dashboard (applyCharacterRow needs to read `character_name` when `data` is empty)
 - [x] DM equivalent of `LS_CHAR_ROW_ID` — persist current table row ID
 - [x] Auth gate — `/dm/`, `/character/`, `/community/` require Supabase session; direct URL without localStorage redirects to dashboard
+- [x] Round avatar profile button — shows saved avatar → Google photo → 👤 fallback; `referrerpolicy="no-referrer"` for Google images
+- [x] Mode picker buttons keep dark-mode styling across all display modes (emoji colors always visible)
+- [x] Unified save button — merged `#syncStatus` + `#saveBtn` into single cloud icon; swaps to cloud-check on save/autosave; fantasy mode shows crown with golden glow
 
 **Autosave Schema Refactor (merged to main)**
 - [x] `autosave_data` + `autosave_at` columns on `characters` and `dm_tables`
@@ -201,8 +204,8 @@
 
 _Brainstorm space — no commitment, just possibilities._
 
-- **Account Linking** — link Google account to existing email account (or vice versa) to unify data under one identity
 - **Community Discovery** — contextual "Browse Community" links from Compendium/Adversary tabs; optional toggle to show community homebrew alongside SRD data
 - **Table Scheduling** — DM sets a session schedule, players and DM receive email reminders _(high effort — requires email infrastructure)_
 - **Companion/Pet Tracker** — HP, abilities, notes on character sheet
 - **Font Size System** — CSS custom properties (`--text-micro`, `--text-label`, `--text-small`, `--text-body`, `--text-title`, `--text-hero`) to standardize sizes across components; replace hardcoded values in `components.css` first, then Tailwind inline classes gradually
+- **Archive** — soft-archive tables and characters (e.g. `archived: true` flag) so they hide from the dashboard but can be reviewed, remembered, or resumed later; could be a separate "Archive" tab on the dashboard; DM-side archiving of a table could optionally archive linked characters too, but needs player consent/notification to avoid surprises
