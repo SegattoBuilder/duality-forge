@@ -4,6 +4,7 @@ import { escHtml } from './utils.js';
 import { initMode, setMode, applyTheme, renderThemePicker } from './theme.js';
 import { resetPassword, changeEmail, signOut, signOutAll, deleteAccount, showAlert, showConfirm, getSupabase as getAuthSupabase } from './auth.js';
 import { renderCharacterDetailHtml } from './character-detail.js';
+import { renderTableDetailHtml } from './table-detail.js';
 
 let supabase = null;
 let userId = null;
@@ -277,8 +278,8 @@ function showSavePicker(type, row) {
         ? `<button data-unarchive class="text-zinc-500 hover:text-[var(--accent-1)] text-sm" title="Unarchive">📤</button>`
         : `<button data-archive class="text-zinc-500 hover:text-[var(--accent-1)] text-sm" title="Archive">📦</button>`;
 
-    const viewBtnHtml = isArchived && type === 'character' && row.data
-        ? `<button data-view class="w-full btn-secondary text-[10px] py-2 rounded-lg">👁 View Character</button>` : '';
+    const viewBtnHtml = isArchived && row.data
+        ? `<button data-view class="w-full btn-secondary text-[10px] py-2 rounded-lg">👁 View ${type === 'character' ? 'Character' : 'Table'}</button>` : '';
 
     modal = document.createElement('div');
     modal.id = 'dashSavePickerModal';
@@ -310,7 +311,11 @@ function showSavePicker(type, row) {
     }
 
     const viewBtn = modal.querySelector('[data-view]');
-    if (viewBtn) viewBtn.addEventListener('click', () => { close(); showArchivedCharDetail(row); });
+    if (viewBtn) viewBtn.addEventListener('click', () => {
+        close();
+        if (type === 'character') showArchivedCharDetail(row);
+        else showArchivedTableDetail(row);
+    });
 
     const archiveBtn = modal.querySelector('[data-archive]');
     if (archiveBtn) archiveBtn.addEventListener('click', async () => {
@@ -373,6 +378,24 @@ function showArchivedCharDetail(row) {
     modal.innerHTML = `<div class="modal-panel p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
         <button data-close class="btn-close absolute top-4 right-4 z-10">✕</button>
         <div>${renderCharacterDetailHtml(row)}</div>
+    </div>`;
+
+    const close = () => modal.remove();
+    modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+    modal.querySelector('[data-close]').addEventListener('click', close);
+    document.body.appendChild(modal);
+}
+
+async function showArchivedTableDetail(row) {
+    let modal = document.getElementById('dashTableDetailModal');
+    if (modal) modal.remove();
+
+    modal = document.createElement('div');
+    modal.id = 'dashTableDetailModal';
+    modal.className = 'fixed inset-0 modal-overlay z-50 p-4 overflow-y-auto flex items-start justify-center pt-8';
+    modal.innerHTML = `<div class="modal-panel p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
+        <button data-close class="btn-close absolute top-4 right-4 z-10">✕</button>
+        <div>${renderTableDetailHtml(row)}</div>
     </div>`;
 
     const close = () => modal.remove();

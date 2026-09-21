@@ -128,6 +128,19 @@ async function cloudSave() {
     if (!campaign) { showAlert('Campaign name is required to save.'); return; }
     let table = getCurrentTable();
 
+    // Snapshot party members
+    if (table) {
+        const { data: members } = await sb.from(TABLE_CHARACTERS)
+            .select('character_name, data')
+            .eq('table_id', table.id);
+        if (members) {
+            data.partyMembers = members.map(m => {
+                const f = m.data?.fields || {};
+                return { name: f.charName || m.character_name || 'Unnamed', class: f.charClass || '', level: f.charLevel || '' };
+            });
+        }
+    }
+
     if (table) {
         // Update existing campaign
         const { error } = await sb.from(TABLE_DM_TABLES)
