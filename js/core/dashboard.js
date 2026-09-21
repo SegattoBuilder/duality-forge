@@ -174,7 +174,9 @@ function sectionHtml(title, rows, type, tableMap) {
 
 function cardHtml(row, type, tableMap) {
     const name = row.campaign_name || row.character_name || 'Unnamed';
-    const date = row.updated_at ? formatRelativeDate(row.updated_at) : '';
+    const ts = row.archived_at || row.updated_at;
+    const date = ts ? formatRelativeDate(ts) : '';
+    const absDate = ts ? new Date(ts).toLocaleDateString() : '';
     const icon = type === 'dm' ? '⚒️' : '🗡️';
     const hasAutosave = row.autosave_data && row.autosave_at;
     const badge = hasAutosave ? '<span class="text-[10px] text-zinc-600">2 saves</span>' : '';
@@ -207,7 +209,7 @@ function cardHtml(row, type, tableMap) {
             <span class="text-base font-bold text-[#f5efe6] font-[Cinzel] truncate">${escHtml(name)}</span>
         </div>
         <div class="flex items-center gap-2 mb-1">
-            <span class="text-sm text-zinc-500">${date}</span>
+            <span class="text-sm text-zinc-500">${date}${absDate && date !== absDate ? ` · ${absDate}` : ''}</span>
             ${badge}
         </div>
         ${previewHtml}

@@ -209,3 +209,4 @@ _Brainstorm space — no commitment, just possibilities._
 - **Companion/Pet Tracker** — HP, abilities, notes on character sheet
 - **Font Size System** — CSS custom properties (`--text-micro`, `--text-label`, `--text-small`, `--text-body`, `--text-title`, `--text-hero`) to standardize sizes across components; replace hardcoded values in `components.css` first, then Tailwind inline classes gradually
 - **Archive** — soft-archive tables and characters (e.g. `archived: true` flag) so they hide from the dashboard but can be reviewed, remembered, or resumed later; could be a separate "Archive" tab on the dashboard; DM-side archiving of a table could optionally archive linked characters too, but needs player consent/notification to avoid surprises
+- **Character Portrait** — optional avatar/image URL on the character sheet; could show in nav bar or dashboard card for visual recognition between saves; likely low usage during actual play
