@@ -71,9 +71,9 @@ export async function renderDashboard(container) {
 
     const archiveCount = filterByArchived([...tables, ...characters], true).length;
     const tabBarHtml = `<div class="flex gap-1 mb-6 border-b border-[#3d362a]">
-        <button class="dash-tab tab-btn px-4 py-2 text-xs font-[Cinzel] font-bold uppercase" data-tab="tables">⚒️ Tables</button>
-        <button class="dash-tab tab-btn px-4 py-2 text-xs font-[Cinzel] font-bold uppercase" data-tab="characters">🗡️ Characters</button>
-        <button class="dash-tab tab-btn px-4 py-2 text-xs font-[Cinzel] font-bold uppercase" data-tab="archive">📦 Archive${archiveCount ? ` <span class="text-[10px] text-zinc-600">(${archiveCount})</span>` : ''}</button>
+        <button class="dash-tab tab-btn px-4 py-2 text-xs font-[Cinzel] font-bold uppercase" data-tab="tables"><span class="tab-icon">⚒️</span><span class="tab-label">⚒️ Tables</span></button>
+        <button class="dash-tab tab-btn px-4 py-2 text-xs font-[Cinzel] font-bold uppercase" data-tab="characters"><span class="tab-icon">🗡️</span><span class="tab-label">🗡️ Characters</span></button>
+        <button class="dash-tab tab-btn px-4 py-2 text-xs font-[Cinzel] font-bold uppercase" data-tab="archive"><span class="tab-icon">📦</span><span class="tab-label">📦 Archive${archiveCount ? ` <span class="text-[10px] text-zinc-600">(${archiveCount})</span>` : ''}</span></button></button>
     </div>
     <div id="dashTabContent"></div>`;
 
