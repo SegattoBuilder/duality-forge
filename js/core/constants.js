@@ -24,6 +24,7 @@ export const TABLE_COMMUNITY_HOMEBREW_IMPORTS = 'community_homebrew_imports';
 export const LS_CONSENT = 'dh_terms_accepted';
 export const LS_THEME = 'dh_theme';
 export const LS_MODE = 'dh_mode';
+export const LS_DASH_TAB = 'dh_dash_tab';
 
 // ========== LOCALSTORAGE KEYS: DM ==========
 export const LS_DM_CREATURES = 'dh_dm_creatures';

@@ -1,5 +1,5 @@
-import { TABLE_DM_TABLES, TABLE_CHARACTERS, TABLE_PROFILES, LS_THEME, LS_CONSENT } from './constants.js';
-import { formatRelativeDate, detectJsonType } from './dashboard-logic.js';
+import { TABLE_DM_TABLES, TABLE_CHARACTERS, TABLE_PROFILES, LS_THEME, LS_CONSENT, LS_DASH_TAB } from './constants.js';
+import { formatRelativeDate, detectJsonType, filterByArchived } from './dashboard-logic.js';
 import { escHtml } from './utils.js';
 import { initMode, setMode, applyTheme, renderThemePicker } from './theme.js';
 import { resetPassword, changeEmail, signOut, signOutAll, deleteAccount, showAlert, showConfirm } from './auth.js';
@@ -11,6 +11,8 @@ let defaultNickname = 'Forger';
 let googleAvatar = '';
 let cachedTables = [];
 let cachedCharacters = [];
+let activeTab = localStorage.getItem(LS_DASH_TAB) || 'tables';
+let dashContainer = null;
 
 export function initDashboard(sb, uid, session) {
     supabase = sb;
@@ -24,11 +26,12 @@ export function initDashboard(sb, uid, session) {
 }
 
 export async function renderDashboard(container) {
+    dashContainer = container;
     container.innerHTML = '<div class="text-center text-zinc-600 text-xs py-8">Loading saves…</div>';
 
     const [tables, characters] = await Promise.all([
-        loadRows(TABLE_DM_TABLES, 'campaign_name, data, autosave_data, autosave_at'),
-        loadRows(TABLE_CHARACTERS, 'character_name, table_id, data, autosave_data, autosave_at')
+        loadRows(TABLE_DM_TABLES, 'campaign_name, data, autosave_data, autosave_at, archived_at'),
+        loadRows(TABLE_CHARACTERS, 'character_name, table_id, data, autosave_data, autosave_at, archived_at')
     ]);
     cachedTables = tables;
     cachedCharacters = characters;
@@ -36,8 +39,6 @@ export async function renderDashboard(container) {
     const tableMap = await buildTableMap(tables, characters);
     const { data: profileRow } = await supabase.from(TABLE_PROFILES).select('id, avatar_url').eq('id', userId).single();
     const avatarUrl = profileRow?.avatar_url || googleAvatar;
-    const sortedTables = tables.slice().sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
-    const sortedChars = characters.slice().sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 
     const headerHtml = `<div class="flex items-center justify-between mb-6">
         <button id="dashProfileBtn" class="w-10 h-10 rounded-full border-2 border-transparent bg-[#2a2418] overflow-hidden flex items-center justify-center hover:border-[var(--accent-1)] transition-colors" title="Profile">${avatarUrl ? `<img src="${escHtml(avatarUrl)}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display=''"><span style="display:none" class="text-lg">👤</span>` : '<span class="text-lg">👤</span>'}</button>
@@ -66,35 +67,79 @@ export async function renderDashboard(container) {
         </div>
     </div>`;
 
-    const wireHeader = () => {
-        wireNewButton(container);
-        wireProfileButton(container);
-        wireUploadButton(container);
-        wireCommunityButton(container);
-        wireGearButton(container);
-    };
+    const archiveCount = filterByArchived([...tables, ...characters], true).length;
+    const tabBarHtml = `<div class="flex gap-1 mb-6 border-b border-[#3d362a]">
+        <button class="dash-tab tab-btn px-4 py-2 text-xs font-[Cinzel] font-bold uppercase" data-tab="tables">⚒️ Tables</button>
+        <button class="dash-tab tab-btn px-4 py-2 text-xs font-[Cinzel] font-bold uppercase" data-tab="characters">🗡️ Characters</button>
+        <button class="dash-tab tab-btn px-4 py-2 text-xs font-[Cinzel] font-bold uppercase" data-tab="archive">📦 Archive${archiveCount ? ` <span class="text-[10px] text-zinc-600">(${archiveCount})</span>` : ''}</button>
+    </div>
+    <div id="dashTabContent"></div>`;
 
-    // Check if profile exists, show welcome prompt if not
+    container.innerHTML = headerHtml + tabBarHtml;
+
+    wireNewButton(container);
+    wireProfileButton(container);
+    wireUploadButton(container);
+    wireCommunityButton(container);
+    wireGearButton(container);
+    wireDashTabs(container, tableMap);
+
+    renderActiveTab(container, tableMap);
+
     const needsWelcome = !profileRow;
-
-    if (!sortedTables.length && !sortedChars.length) {
-        container.innerHTML = headerHtml + `<div class="text-center py-8">
-            <p class="text-zinc-500 text-sm mb-4">No saves yet. Start forging!</p>
-        </div>`;
-        wireHeader();
-        if (needsWelcome) showWelcomeModal();
-        return;
-    }
-
-    let html = headerHtml;
-    if (sortedTables.length) html += sectionHtml('⚒️ Tables', sortedTables, 'dm', tableMap);
-    if (sortedChars.length) html += sectionHtml('🗡️ Characters', sortedChars, 'character', tableMap);
-
-    container.innerHTML = html;
-    wireHeader();
-    wireCards(container, sortedTables, sortedChars);
-    wireCarouselArrows(container);
     if (needsWelcome) showWelcomeModal();
+}
+
+function wireDashTabs(container, tableMap) {
+    container.querySelectorAll('.dash-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            activeTab = btn.dataset.tab;
+            localStorage.setItem(LS_DASH_TAB, activeTab);
+            renderActiveTab(container, tableMap);
+        });
+    });
+}
+
+function renderActiveTab(container, tableMap) {
+    container.querySelectorAll('.dash-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === activeTab);
+    });
+
+    const content = container.querySelector('#dashTabContent');
+    if (!content) return;
+
+    if (activeTab === 'tables') {
+        const rows = filterByArchived(cachedTables, false).sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+        if (!rows.length) {
+            content.innerHTML = '<div class="text-center py-8"><p class="text-zinc-500 text-sm">No tables yet. Create one to get started!</p></div>';
+        } else {
+            content.innerHTML = sectionHtml(null, rows, 'dm', tableMap);
+            wireCards(content, rows, []);
+            wireCarouselArrows(content);
+        }
+    } else if (activeTab === 'characters') {
+        const rows = filterByArchived(cachedCharacters, false).sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+        if (!rows.length) {
+            content.innerHTML = '<div class="text-center py-8"><p class="text-zinc-500 text-sm">No characters yet. Create one to get started!</p></div>';
+        } else {
+            content.innerHTML = sectionHtml(null, rows, 'character', tableMap);
+            wireCards(content, [], rows);
+            wireCarouselArrows(content);
+        }
+    } else {
+        const archivedTables = filterByArchived(cachedTables, true).sort((a, b) => new Date(b.archived_at) - new Date(a.archived_at));
+        const archivedChars = filterByArchived(cachedCharacters, true).sort((a, b) => new Date(b.archived_at) - new Date(a.archived_at));
+        if (!archivedTables.length && !archivedChars.length) {
+            content.innerHTML = '<div class="text-center py-8"><p class="text-zinc-500 text-sm">No archived saves.</p><p class="text-zinc-600 text-[10px] mt-1">Archive a table or character from its save picker to move it here.</p></div>';
+        } else {
+            let html = '';
+            if (archivedTables.length) html += sectionHtml('⚒️ Tables', archivedTables, 'dm', tableMap);
+            if (archivedChars.length) html += sectionHtml('🗡️ Characters', archivedChars, 'character', tableMap);
+            content.innerHTML = html;
+            wireCards(content, archivedTables, archivedChars);
+            wireCarouselArrows(content);
+        }
+    }
 }
 
 async function buildTableMap(tableRows, charRows) {
@@ -113,10 +158,10 @@ async function buildTableMap(tableRows, charRows) {
 
 function sectionHtml(title, rows, type, tableMap) {
     const cards = rows.map(r => cardHtml(r, type, tableMap)).join('');
-    const id = 'carousel-' + type;
+    const id = 'carousel-' + type + '-' + Date.now();
     const showArrows = rows.length > 3;
     return `<div class="mb-6">
-        <h3 class="font-[Cinzel] text-sm font-bold uppercase tracking-wide text-zinc-500 mb-3">${title}</h3>
+        ${title ? `<h3 class="font-[Cinzel] text-sm font-bold uppercase tracking-wide text-zinc-500 mb-3">${title}</h3>` : ''}
         <div class="relative">
             ${showArrows ? `<button data-scroll-left="${id}" class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 w-8 h-8 rounded-full bg-[#1e1b16] border border-[#4a3f30] text-zinc-400 hover:border-[#d4a017] hover:text-[#d4a017] transition-all flex items-center justify-center text-sm">‹</button>` : ''}
             <div id="${id}" class="flex pb-2" style="gap:0.75rem;overflow:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;max-width:calc(13rem * 3 + 0.75rem * 2)">${cards}</div>
@@ -189,40 +234,47 @@ function wireCarouselArrows(container) {
     });
 }
 
-function wireCards(container, tableRows, charRows) {
-    container.querySelectorAll('.dash-card').forEach(card => {
+function wireCards(content, tableRows, charRows) {
+    content.querySelectorAll('.dash-card').forEach(card => {
         card.addEventListener('click', () => {
             const type = card.dataset.type;
             const id = card.dataset.rowId;
             const rows = type === 'dm' ? tableRows : charRows;
             const row = rows.find(r => r.id === id);
             if (!row) return;
-            showSavePicker(type, row, container);
+            showSavePicker(type, row);
         });
     });
 }
 
-function showSavePicker(type, row, dashContainer) {
+function showSavePicker(type, row) {
     let modal = document.getElementById('dashSavePickerModal');
     if (modal) modal.remove();
 
     const name = row.campaign_name || row.character_name || 'Unnamed';
     const icon = type === 'dm' ? '⚒️' : '🗡️';
     const table = type === 'dm' ? TABLE_DM_TABLES : TABLE_CHARACTERS;
+    const isArchived = !!row.archived_at;
     const saveDate = new Date(row.updated_at).toLocaleString();
 
-    let saveBtns = `<button data-pick="save" class="picker-card flex-1 text-left">
-        <div class="text-[10px] font-bold uppercase mb-1" style="color:var(--accent-1)">Save</div>
-        <div class="text-[10px] text-zinc-500">${saveDate}</div>
-    </button>`;
-
-    if (row.autosave_data && row.autosave_at) {
-        const autoDate = new Date(row.autosave_at).toLocaleString();
-        saveBtns += `<button data-pick="autosave" class="picker-card picker-card-auto flex-1 text-left">
-            <div class="text-[10px] font-bold text-green-400 uppercase mb-1">Autosave</div>
-            <div class="text-[10px] text-zinc-500">${autoDate}</div>
+    let saveBtns = '';
+    if (!isArchived) {
+        saveBtns = `<button data-pick="save" class="picker-card flex-1 text-left">
+            <div class="text-[10px] font-bold uppercase mb-1" style="color:var(--accent-1)">Save</div>
+            <div class="text-[10px] text-zinc-500">${saveDate}</div>
         </button>`;
+        if (row.autosave_data && row.autosave_at) {
+            const autoDate = new Date(row.autosave_at).toLocaleString();
+            saveBtns += `<button data-pick="autosave" class="picker-card picker-card-auto flex-1 text-left">
+                <div class="text-[10px] font-bold text-green-400 uppercase mb-1">Autosave</div>
+                <div class="text-[10px] text-zinc-500">${autoDate}</div>
+            </button>`;
+        }
     }
+
+    const archiveBtnHtml = isArchived
+        ? `<button data-unarchive class="text-zinc-500 hover:text-[var(--accent-1)] text-sm" title="Unarchive">📤</button>`
+        : `<button data-archive class="text-zinc-500 hover:text-[var(--accent-1)] text-sm" title="Archive">📦</button>`;
 
     modal = document.createElement('div');
     modal.id = 'dashSavePickerModal';
@@ -233,9 +285,12 @@ function showSavePicker(type, row, dashContainer) {
                 <span class="text-lg">${icon}</span>
                 <h2 class="font-[Cinzel] text-sm font-bold" style="color:var(--accent-1)">${escHtml(name)}</h2>
             </div>
-            <button data-delete class="text-red-400/60 hover:text-red-400 text-base" title="Delete">🗑</button>
+            <div class="flex items-center gap-2">
+                ${archiveBtnHtml}
+                <button data-delete class="text-red-400/60 hover:text-red-400 text-base" title="Delete">🗑</button>
+            </div>
         </div>
-        <div class="flex gap-2">${saveBtns}</div>
+        ${saveBtns ? `<div class="flex gap-2">${saveBtns}</div>` : `<div class="text-center py-3"><p class="text-[10px] text-zinc-500">Archived ${formatRelativeDate(row.archived_at)}</p></div>`}
         <button class="w-full text-center text-[10px] text-zinc-600 mt-4 hover:text-zinc-400" data-close>Cancel</button>
     </div>`;
 
@@ -243,9 +298,25 @@ function showSavePicker(type, row, dashContainer) {
     modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
     modal.querySelector('[data-close]').addEventListener('click', close);
 
-    modal.querySelector('[data-pick="save"]').addEventListener('click', () => { close(); navigateTo(type, row.id); });
-    const autoBtn = modal.querySelector('[data-pick="autosave"]');
-    if (autoBtn) autoBtn.addEventListener('click', () => { close(); navigateTo(type, row.id, true); });
+    if (!isArchived) {
+        modal.querySelector('[data-pick="save"]').addEventListener('click', () => { close(); navigateTo(type, row.id); });
+        const autoBtn = modal.querySelector('[data-pick="autosave"]');
+        if (autoBtn) autoBtn.addEventListener('click', () => { close(); navigateTo(type, row.id, true); });
+    }
+
+    const archiveBtn = modal.querySelector('[data-archive]');
+    if (archiveBtn) archiveBtn.addEventListener('click', async () => {
+        await supabase.from(table).update({ archived_at: new Date().toISOString() }).eq('id', row.id);
+        close();
+        renderDashboard(dashContainer);
+    });
+
+    const unarchiveBtn = modal.querySelector('[data-unarchive]');
+    if (unarchiveBtn) unarchiveBtn.addEventListener('click', async () => {
+        await supabase.from(table).update({ archived_at: null }).eq('id', row.id);
+        close();
+        renderDashboard(dashContainer);
+    });
 
     modal.querySelector('[data-delete]').addEventListener('click', () => {
         showDeleteConfirm(name, async () => {

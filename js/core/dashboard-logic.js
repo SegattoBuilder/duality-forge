@@ -1,3 +1,7 @@
+export function filterByArchived(rows, archived) {
+    return rows.filter(r => archived ? r.archived_at : !r.archived_at);
+}
+
 export function detectJsonType(json) {
     if (!json || typeof json !== 'object') return null;
     if (json.fields || json.cards) return 'character';

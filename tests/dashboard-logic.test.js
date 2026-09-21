@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatRelativeDate, detectJsonType } from '../js/core/dashboard-logic.js';
+import { formatRelativeDate, detectJsonType, filterByArchived } from '../js/core/dashboard-logic.js';
 
 describe('detectJsonType', () => {
     it('detects character JSON', () => {
@@ -41,5 +41,28 @@ describe('formatRelativeDate', () => {
     it('returns days for recent past', () => {
         const twoDaysAgo = new Date(Date.now() - 2 * 86400000).toISOString();
         expect(formatRelativeDate(twoDaysAgo)).toBe('2d ago');
+    });
+});
+
+describe('filterByArchived', () => {
+    const rows = [
+        { id: '1', archived_at: null },
+        { id: '2', archived_at: '2025-01-01T00:00:00Z' },
+        { id: '3', archived_at: null },
+        { id: '4', archived_at: '2025-06-01T00:00:00Z' }
+    ];
+
+    it('returns only active rows when archived=false', () => {
+        const result = filterByArchived(rows, false);
+        expect(result.map(r => r.id)).toEqual(['1', '3']);
+    });
+
+    it('returns only archived rows when archived=true', () => {
+        const result = filterByArchived(rows, true);
+        expect(result.map(r => r.id)).toEqual(['2', '4']);
+    });
+
+    it('returns empty array when no matches', () => {
+        expect(filterByArchived([{ id: '1', archived_at: null }], true)).toEqual([]);
     });
 });
