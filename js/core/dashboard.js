@@ -2,7 +2,8 @@ import { TABLE_DM_TABLES, TABLE_CHARACTERS, TABLE_PROFILES, LS_THEME, LS_CONSENT
 import { formatRelativeDate, detectJsonType, filterByArchived } from './dashboard-logic.js';
 import { escHtml } from './utils.js';
 import { initMode, setMode, applyTheme, renderThemePicker } from './theme.js';
-import { resetPassword, changeEmail, signOut, signOutAll, deleteAccount, showAlert, showConfirm } from './auth.js';
+import { resetPassword, changeEmail, signOut, signOutAll, deleteAccount, showAlert, showConfirm, getSupabase as getAuthSupabase } from './auth.js';
+import { renderCharacterDetailHtml } from './character-detail.js';
 
 let supabase = null;
 let userId = null;
@@ -15,7 +16,7 @@ let activeTab = localStorage.getItem(LS_DASH_TAB) || 'tables';
 let dashContainer = null;
 
 export function initDashboard(sb, uid, session) {
-    supabase = sb;
+    supabase = getAuthSupabase() || sb;
     userId = uid;
     isEmail = session?.user?.app_metadata?.provider === 'email';
     defaultNickname = session?.user?.user_metadata?.full_name
@@ -276,6 +277,9 @@ function showSavePicker(type, row) {
         ? `<button data-unarchive class="text-zinc-500 hover:text-[var(--accent-1)] text-sm" title="Unarchive">📤</button>`
         : `<button data-archive class="text-zinc-500 hover:text-[var(--accent-1)] text-sm" title="Archive">📦</button>`;
 
+    const viewBtnHtml = isArchived && type === 'character' && row.data
+        ? `<button data-view class="w-full btn-secondary text-[10px] py-2 rounded-lg">👁 View Character</button>` : '';
+
     modal = document.createElement('div');
     modal.id = 'dashSavePickerModal';
     modal.className = 'fixed inset-0 modal-overlay z-50 p-4 flex items-center justify-center';
@@ -291,6 +295,7 @@ function showSavePicker(type, row) {
             </div>
         </div>
         ${saveBtns ? `<div class="flex gap-2">${saveBtns}</div>` : `<div class="text-center py-3"><p class="text-[10px] text-zinc-500">Archived ${formatRelativeDate(row.archived_at)}</p></div>`}
+        ${viewBtnHtml ? `<div class="mt-3">${viewBtnHtml}</div>` : ''}
         <button class="w-full text-center text-[10px] text-zinc-600 mt-4 hover:text-zinc-400" data-close>Cancel</button>
     </div>`;
 
@@ -303,6 +308,9 @@ function showSavePicker(type, row) {
         const autoBtn = modal.querySelector('[data-pick="autosave"]');
         if (autoBtn) autoBtn.addEventListener('click', () => { close(); navigateTo(type, row.id, true); });
     }
+
+    const viewBtn = modal.querySelector('[data-view]');
+    if (viewBtn) viewBtn.addEventListener('click', () => { close(); showArchivedCharDetail(row); });
 
     const archiveBtn = modal.querySelector('[data-archive]');
     if (archiveBtn) archiveBtn.addEventListener('click', async () => {
@@ -319,12 +327,9 @@ function showSavePicker(type, row) {
     });
 
     modal.querySelector('[data-delete]').addEventListener('click', () => {
+        close();
         showDeleteConfirm(name, async () => {
-            if (type === 'dm') {
-                await supabase.from(TABLE_CHARACTERS).update({ table_approved: 'kicked' }).eq('table_id', row.id);
-            }
             await supabase.from(table).delete().eq('id', row.id);
-            close();
             renderDashboard(dashContainer);
         });
     });
@@ -356,6 +361,24 @@ function showDeleteConfirm(name, onYes) {
 function navigateTo(type, rowId, useAutosave = false) {
     sessionStorage.setItem('dh_dashboard_pick', JSON.stringify({ type, id: rowId, autosave: useAutosave }));
     window.location.href = type === 'dm' ? 'dm/' : 'character/';
+}
+
+function showArchivedCharDetail(row) {
+    let modal = document.getElementById('dashCharDetailModal');
+    if (modal) modal.remove();
+
+    modal = document.createElement('div');
+    modal.id = 'dashCharDetailModal';
+    modal.className = 'fixed inset-0 modal-overlay z-50 p-4 overflow-y-auto flex items-start justify-center pt-8';
+    modal.innerHTML = `<div class="modal-panel p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
+        <button data-close class="btn-close absolute top-4 right-4 z-10">✕</button>
+        <div>${renderCharacterDetailHtml(row)}</div>
+    </div>`;
+
+    const close = () => modal.remove();
+    modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+    modal.querySelector('[data-close]').addEventListener('click', close);
+    document.body.appendChild(modal);
 }
 
 function wireProfileButton(container) {
