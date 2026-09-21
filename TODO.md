@@ -200,6 +200,41 @@
 
 ---
 
+## ⚡ Performance & Optimization (Backlog)
+
+_Identified improvements — not urgent at current scale (~30 users), but good practice to address as the app grows._
+
+**Data Loading**
+- [ ] Community pagination — `select('*')` loads all chapters/adversaries/homebrew unbounded; add `range()`/pagination and server-side filtering
+- [ ] Dashboard metadata-only fetch — currently loads full `data` + `autosave_data` JSON for every row; fetch only names/timestamps/preview fields, load full payload on open
+- [ ] Compendium cache-first loading — read localStorage/IndexedDB cache before fetching 10 remote JSON files; add version + expiration
+- [ ] Combine compendium JSON — merge 10 separate category files into a single compressed asset
+
+**Search & Rendering**
+- [ ] Precompute compendium search text — normalize and cache searchable strings at load time instead of rebuilding descriptions on every keystroke
+- [ ] Compendium card index — attach stable ID/index to items during preprocessing; avoid repeated `indexOf()` O(n²) lookups
+- [ ] Community filter debounce — debounce text input and limit visible results; full `innerHTML` grid rebuild on every keystroke is expensive at scale
+- [ ] Event delegation — replace per-card click handlers (dashboard cards, carousel arrows) with delegated container handlers using `data-*` attributes
+
+**Dashboard**
+- [ ] Local cache update after mutations — archive/unarchive/delete/upload currently refetch all data + rebuild full DOM; update cached row locally and rerender only active list
+- [ ] Row lookup Map — replace `rows.find(r => r.id === id)` with `Map` keyed by row ID
+
+**Storage & Memory**
+- [ ] IndexedDB for growing collections — community imports parse/rewrite full localStorage arrays synchronously; move to IndexedDB for larger collections
+- [ ] Separate autosave metadata from content — avoid holding duplicate large JSON blobs in memory
+
+**CSS & Assets**
+- [ ] Lazy-load theme stylesheets — `themes.css` is ~80KB with repeated rules; split per-mode and load on demand
+- [ ] Self-host Tailwind — replace CDN runtime with built/minified output for production
+- [ ] Font optimization — `font-display: swap`, preload only critical fonts, defer non-critical assets
+- [ ] Reduced-motion support — disable decorative SVG backgrounds, drop shadows, and animations under `prefers-reduced-motion`
+
+**Bug/Correctness**
+- [x] Compendium input listener duplication — `loadCompendium()` adds a new input listener every call; guarded with `_searchWired` flag
+
+---
+
 ## 💡 Ideas / Someday
 
 _Brainstorm space — no commitment, just possibilities._

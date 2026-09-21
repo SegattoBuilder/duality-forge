@@ -18,6 +18,7 @@ let _onAddItem = null;
 let _onAddConsumable = null;
 let _onAddDomainCard = null;
 let _onAddGeneral = null;
+let _searchWired = false;
 
 function getLocStr(obj) {
     if (!obj) return '';
@@ -51,7 +52,7 @@ export async function loadCompendium(opts = {}) {
     _onAddDomainCard = opts.onAddDomainCard || null;
     _onAddGeneral = opts.onAddGeneral || null;
 
-    document.getElementById('compendiumSearch').addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(runSearch, 200); });
+    if (!_searchWired) { document.getElementById('compendiumSearch').addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(runSearch, 200); }); _searchWired = true; }
 
     document.getElementById('compendiumStatus').textContent = 'Fetching compendium data...';
     try {
