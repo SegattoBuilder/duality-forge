@@ -54,11 +54,7 @@ async function tryDashboardPick() {
         const sb = getSupabase();
         const { data: row } = await sb.from(TABLE_CHARACTERS).select('*').eq('id', pick.id).single();
         if (!row) return false;
-        if (pick.autosave && row.autosave_data) {
-            applyCharacterRow({ ...row, data: row.autosave_data });
-        } else {
-            applyCharacterRow(row);
-        }
+        applyCharacterRow(row);
         return true;
     } catch { return false; }
 }
@@ -84,9 +80,19 @@ function showToast(message) {
     setTimeout(() => toast.classList.add('hidden'), TOAST_DURATION);
 }
 
+function isDirty() {
+    if (!lastSavedSnapshot) return false;
+    return JSON.stringify(gatherData()) !== lastSavedSnapshot;
+}
+
+function onBeforeUnload(e) {
+    if (isDirty()) { e.preventDefault(); e.returnValue = ''; }
+}
+
 function startCloudAutoSave() {
     if (cloudAutoSaveInterval) return;
     lastSavedSnapshot = JSON.stringify(gatherData());
+    window.addEventListener('beforeunload', onBeforeUnload);
     cloudAutoSaveInterval = setInterval(async () => {
         if (!getUser()) return;
         const current = JSON.stringify(gatherData());
@@ -98,6 +104,7 @@ function startCloudAutoSave() {
 
 function stopCloudAutoSave() {
     if (cloudAutoSaveInterval) { clearInterval(cloudAutoSaveInterval); cloudAutoSaveInterval = null; }
+    window.removeEventListener('beforeunload', onBeforeUnload);
     lastSavedSnapshot = null;
 }
 
@@ -105,8 +112,9 @@ async function cloudAutoSaveNow() {
     if (!currentCharacterRowId) return;
     const sb = getSupabase();
     const data = gatherData();
+    const charName = data.fields?.charName?.trim();
     const { error } = await sb.from(TABLE_CHARACTERS)
-        .update({ autosave_data: data, autosave_at: new Date().toISOString() })
+        .update({ data, character_name: charName || undefined, updated_at: new Date().toISOString() })
         .eq('id', currentCharacterRowId);
     if (!error) showSyncStatus();
     await refreshTableApproval();
@@ -163,7 +171,7 @@ async function cloudSave() {
         if (error) { showAlert('Cloud save failed: ' + error.message); return; }
         setCharacterRowId(row.id);
     }
-    lastSavedSnapshot = JSON.stringify(data);
+    lastSavedSnapshot = JSON.stringify(gatherData());
     renderTableLink();
     showSyncStatus();
 }
@@ -213,6 +221,7 @@ function applyCharacterRow(row) {
     if (name) document.getElementById('charName').value = name;
     localStorage.setItem(LS_CHAR_SAVE, JSON.stringify(gatherData()));
     setCharacterRowId(row.id);
+    lastSavedSnapshot = JSON.stringify(gatherData());
     linkedTable = null;
     if (row.table_id) loadLinkedTable(row.table_id, row.table_approved);
     else if (!row.table_id && row.table_approved === null) { linkedTable = { _closed: true }; renderTableLink(); }

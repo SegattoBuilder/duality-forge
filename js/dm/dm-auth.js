@@ -48,11 +48,7 @@ async function tryDashboardPick() {
         const sb = getSupabase();
         const { data: row } = await sb.from(TABLE_DM_TABLES).select('*').eq('id', pick.id).single();
         if (!row) return false;
-        if (pick.autosave && row.autosave_data) {
-            applyCampaignRow({ ...row, data: row.autosave_data });
-        } else {
-            applyCampaignRow(row);
-        }
+        applyCampaignRow(row);
         return true;
     } catch { return false; }
 }
@@ -80,9 +76,19 @@ function showToast(message) {
     setTimeout(() => toast.classList.add('hidden'), TOAST_DURATION);
 }
 
+function isDirty() {
+    if (!lastSavedSnapshot) return false;
+    return JSON.stringify(gatherDmData()) !== lastSavedSnapshot;
+}
+
+function onBeforeUnload(e) {
+    if (isDirty()) { e.preventDefault(); e.returnValue = ''; }
+}
+
 function startCloudAutoSave() {
     if (cloudAutoSaveInterval) return;
     lastSavedSnapshot = JSON.stringify(gatherDmData());
+    window.addEventListener('beforeunload', onBeforeUnload);
     cloudAutoSaveInterval = setInterval(async () => {
         if (!getUser()) return;
         const current = JSON.stringify(gatherDmData());
@@ -94,6 +100,7 @@ function startCloudAutoSave() {
 
 function stopCloudAutoSave() {
     if (cloudAutoSaveInterval) { clearInterval(cloudAutoSaveInterval); cloudAutoSaveInterval = null; }
+    window.removeEventListener('beforeunload', onBeforeUnload);
     lastSavedSnapshot = null;
 }
 
@@ -103,10 +110,15 @@ async function cloudAutoSaveNow() {
     const sb = getSupabase();
     const data = gatherDmData();
 
+    const campaign = data.campaign?.trim();
     const { error } = await sb.from(TABLE_DM_TABLES)
-        .update({ autosave_data: data, autosave_at: new Date().toISOString() })
+        .update({ data, campaign_name: campaign || table.campaign_name, updated_at: new Date().toISOString() })
         .eq('id', table.id);
-    if (!error) showSyncStatus('☁️ Auto-saved');
+    if (!error) {
+        table.data = data;
+        if (campaign) table.campaign_name = campaign;
+        showSyncStatus('☁️ Auto-saved');
+    }
 }
 
 function hasLocalDmData() {
@@ -159,7 +171,7 @@ async function cloudSave() {
     }
 
     setCurrentTable(table);
-    lastSavedSnapshot = JSON.stringify(data);
+    lastSavedSnapshot = JSON.stringify(gatherDmData());
     showSyncStatus('☁️ Saved');
 }
 
@@ -315,6 +327,7 @@ function applyCampaignRow(row) {
     if (campaign) { document.getElementById('campaignName').value = campaign; localStorage.setItem(LS_DM_CAMPAIGN, campaign); }
     autoCache(); autoCacheVault(); autoCacheChronicle(); renderFearDots(); renderGrid(); renderVaultGrid(); renderChronicle();
     setCurrentTable(row);
+    lastSavedSnapshot = JSON.stringify(gatherDmData());
     showSyncStatus('☁️ Loaded');
 }
 

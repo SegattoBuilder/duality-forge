@@ -32,8 +32,8 @@ export async function renderDashboard(container) {
     container.innerHTML = '<div class="text-center text-zinc-600 text-xs py-8">Loading saves…</div>';
 
     const [tables, characters] = await Promise.all([
-        loadRows(TABLE_DM_TABLES, 'campaign_name, data, autosave_data, autosave_at, archived_at'),
-        loadRows(TABLE_CHARACTERS, 'character_name, table_id, data, autosave_data, autosave_at, archived_at')
+        loadRows(TABLE_DM_TABLES, 'campaign_name, data, archived_at'),
+        loadRows(TABLE_CHARACTERS, 'character_name, table_id, data, archived_at')
     ]);
     cachedTables = tables;
     cachedCharacters = characters;
@@ -178,8 +178,7 @@ function cardHtml(row, type, tableMap) {
     const date = ts ? formatRelativeDate(ts) : '';
     const absDate = ts ? new Date(ts).toLocaleDateString() : '';
     const icon = type === 'dm' ? '⚒️' : '🗡️';
-    const hasAutosave = row.autosave_data && row.autosave_at;
-    const badge = hasAutosave ? '<span class="text-[10px] text-zinc-600">2 saves</span>' : '';
+
 
     let previewHtml = '';
     if (type === 'character' && row.data?.fields) {
@@ -210,7 +209,6 @@ function cardHtml(row, type, tableMap) {
         </div>
         <div class="flex items-center gap-2 mb-1">
             <span class="text-sm text-zinc-500">${date}${absDate && date !== absDate ? ` · ${absDate}` : ''}</span>
-            ${badge}
         </div>
         ${previewHtml}
         ${linkedHtml}
@@ -267,13 +265,6 @@ function showSavePicker(type, row) {
             <div class="text-[10px] font-bold uppercase mb-1" style="color:var(--accent-1)">Save</div>
             <div class="text-[10px] text-zinc-500">${saveDate}</div>
         </button>`;
-        if (row.autosave_data && row.autosave_at) {
-            const autoDate = new Date(row.autosave_at).toLocaleString();
-            saveBtns += `<button data-pick="autosave" class="picker-card picker-card-auto flex-1 text-left">
-                <div class="text-[10px] font-bold text-green-400 uppercase mb-1">Autosave</div>
-                <div class="text-[10px] text-zinc-500">${autoDate}</div>
-            </button>`;
-        }
     }
 
     const archiveBtnHtml = isArchived
@@ -308,8 +299,6 @@ function showSavePicker(type, row) {
 
     if (!isArchived) {
         modal.querySelector('[data-pick="save"]').addEventListener('click', () => { close(); navigateTo(type, row.id); });
-        const autoBtn = modal.querySelector('[data-pick="autosave"]');
-        if (autoBtn) autoBtn.addEventListener('click', () => { close(); navigateTo(type, row.id, true); });
     }
 
     const viewBtn = modal.querySelector('[data-view]');
@@ -365,8 +354,8 @@ function showDeleteConfirm(name, onYes) {
     document.body.appendChild(modal);
 }
 
-function navigateTo(type, rowId, useAutosave = false) {
-    sessionStorage.setItem('dh_dashboard_pick', JSON.stringify({ type, id: rowId, autosave: useAutosave }));
+function navigateTo(type, rowId) {
+    sessionStorage.setItem('dh_dashboard_pick', JSON.stringify({ type, id: rowId }));
     window.location.href = type === 'dm' ? 'dm/' : 'character/';
 }
 

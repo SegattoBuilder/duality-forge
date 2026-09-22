@@ -195,6 +195,14 @@
 - [x] Removed all `is_autosave` references from JS code
 - [x] Backup tables (`_backup_characters_autosave`, `_backup_dm_tables_autosave`) retained
 
+**Unsaved Changes Guard & Autosave Simplification**
+- [x] `beforeunload` dirty check — warns on tab close or navigation when unsaved changes exist (DM + Character)
+- [x] Autosave writes to main `data` column instead of `autosave_data` — single source of truth
+- [x] Removed autosave picker button from dashboard save picker and cloud picker
+- [x] Removed `autosave_data` / `autosave_at` from dashboard fetch queries
+- [x] Snapshot uses `gatherDmData()` / `gatherData()` consistently so dirty check matches after manual save and cloud load
+- [ ] DB cleanup — drop `autosave_data` / `autosave_at` columns (deferred, columns unused but still in schema)
+
 **Table Board** ← _next epic_
 - [ ] Shared board per DM table — DM and players can post notes, schedule, table rules, session recaps
 
@@ -206,12 +214,12 @@ _Identified improvements — not urgent at current scale (~30 users), but good p
 
 **Data Loading**
 - [ ] Community pagination — `select('*')` loads all chapters/adversaries/homebrew unbounded; add `range()`/pagination and server-side filtering
-- [ ] Dashboard metadata-only fetch — currently loads full `data` + `autosave_data` JSON for every row; fetch only names/timestamps/preview fields, load full payload on open
+- [ ] Dashboard metadata-only fetch — currently loads full `data` JSON for every row; fetch only names/timestamps/preview fields, load full payload on open
 - [ ] Compendium cache-first loading — read localStorage/IndexedDB cache before fetching 10 remote JSON files; add version + expiration
 - [ ] Combine compendium JSON — merge 10 separate category files into a single compressed asset
 
 **Search & Rendering**
-- [ ] Precompute compendium search text — normalize and cache searchable strings at load time instead of rebuilding descriptions on every keystroke
+- [ ] Compendium search optimization — require minimum 3 characters before searching; if needed later, precompute normalized search strings at load time instead of rebuilding descriptions on every keystroke
 - [ ] Compendium card index — attach stable ID/index to items during preprocessing; avoid repeated `indexOf()` O(n²) lookups
 - [ ] Community filter debounce — debounce text input and limit visible results; full `innerHTML` grid rebuild on every keystroke is expensive at scale
 - [ ] Event delegation — replace per-card click handlers (dashboard cards, carousel arrows) with delegated container handlers using `data-*` attributes
@@ -222,7 +230,7 @@ _Identified improvements — not urgent at current scale (~30 users), but good p
 
 **Storage & Memory**
 - [ ] IndexedDB for growing collections — community imports parse/rewrite full localStorage arrays synchronously; move to IndexedDB for larger collections
-- [ ] Separate autosave metadata from content — avoid holding duplicate large JSON blobs in memory
+
 
 **CSS & Assets**
 - [ ] Lazy-load theme stylesheets — `themes.css` is ~80KB with repeated rules; split per-mode and load on demand

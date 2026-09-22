@@ -28,21 +28,12 @@ export async function showCloudPicker(opts) {
             <div class="text-[10px] text-zinc-500">${manualDate}</div>
         </button>`;
 
-        let autoBtn = '';
-        if (r.autosave_data && r.autosave_at) {
-            const autoDate = new Date(r.autosave_at).toLocaleString();
-            autoBtn = `<button data-pick-id="${r.id}" data-pick-type="autosave" class="cp-pick picker-card picker-card-auto">
-                <div class="text-[10px] font-bold text-green-400 uppercase mb-1">Autosave</div>
-                <div class="text-[10px] text-zinc-500">${autoDate}</div>
-            </button>`;
-        }
-
         return `<div class="col-span-2 p-4 rounded-xl panel-box">
             <div class="flex items-center justify-between mb-3">
                 <div class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">${safeName}</div>
                 <button data-del-id="${r.id}" class="cp-del text-red-400/60 hover:text-red-400 text-base" title="Delete">🗑</button>
             </div>
-            <div class="flex gap-2">${manualBtn}${autoBtn}</div>
+            <div class="flex gap-2">${manualBtn}</div>
         </div>`;
     }).join('');
 
@@ -53,12 +44,7 @@ export async function showCloudPicker(opts) {
             const row = manualRows.find(r => r.id === id);
             if (!row) { showAlert('Failed to load save.'); return; }
             close();
-            if (pickType === 'autosave' && row.autosave_data) {
-                const autosaveRow = { ...row, data: row.autosave_data };
-                onPick(autosaveRow);
-            } else {
-                onPick(row);
-            }
+            onPick(row);
         });
     });
 
@@ -66,7 +52,7 @@ export async function showCloudPicker(opts) {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const id = btn.dataset.delId;
-            showConfirm('Delete this save and its autosave?', async () => {
+            showConfirm('Delete this save?', async () => {
                 if (opts.onBeforeDelete) await opts.onBeforeDelete([id]);
                 const { error: delErr } = await cloudDeleteRow(table, id);
                 if (delErr) { showAlert('Delete failed: ' + delErr); return; }
