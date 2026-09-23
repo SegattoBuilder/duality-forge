@@ -114,7 +114,7 @@ async function cloudAutoSaveNow() {
     const data = gatherData();
     const charName = data.fields?.charName?.trim();
     const { error } = await sb.from(TABLE_CHARACTERS)
-        .update({ data, character_name: charName || undefined, updated_at: new Date().toISOString() })
+        .update({ data, character_name: charName || undefined, class: data.fields?.charClass || null, level: parseInt(data.fields?.charLevel) || 1, updated_at: new Date().toISOString() })
         .eq('id', currentCharacterRowId);
     if (!error) showSyncStatus();
     await refreshTableApproval();
@@ -159,14 +159,16 @@ async function cloudSave() {
     const charName = data.fields?.charName?.trim();
     if (!charName) { showAlert('Character name is required to save.'); return; }
 
+    const promoted = { class: data.fields?.charClass || null, level: parseInt(data.fields?.charLevel) || 1 };
+
     if (currentCharacterRowId) {
         const { error } = await sb.from(TABLE_CHARACTERS)
-            .update({ data, character_name: charName, updated_at: new Date().toISOString() })
+            .update({ data, character_name: charName, ...promoted, updated_at: new Date().toISOString() })
             .eq('id', currentCharacterRowId);
         if (error) { showAlert('Cloud save failed: ' + error.message); return; }
     } else {
         const { data: row, error } = await sb.from(TABLE_CHARACTERS)
-            .insert({ user_id: getUser().id, character_name: charName, data })
+            .insert({ user_id: getUser().id, character_name: charName, data, ...promoted })
             .select('id').single();
         if (error) { showAlert('Cloud save failed: ' + error.message); return; }
         setCharacterRowId(row.id);
@@ -216,6 +218,7 @@ window.dismissClosedTable = () => {
 // ========== CHARACTER PICKER ==========
 function applyCharacterRow(row) {
     const d = row.data || {};
+    if (!row.data) resetSheet();
     applyData(d);
     const name = d.fields?.charName || row.character_name || '';
     if (name) document.getElementById('charName').value = name;

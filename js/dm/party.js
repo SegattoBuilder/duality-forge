@@ -45,7 +45,7 @@ async function kickMember(characterId) {
 async function fetchMembers() {
     if (!currentTable) return [];
     const sb = getSupabase();
-    const { data } = await sb.from(TABLE_CHARACTERS).select('id, character_name, data, updated_at, table_approved').eq('table_id', currentTable.id);
+    const { data } = await sb.from(TABLE_CHARACTERS).select('id, character_name, class, level, updated_at, table_approved').eq('table_id', currentTable.id);
     return data || [];
 }
 
@@ -57,12 +57,10 @@ async function refreshMembers() {
 }
 
 function renderMemberCard(m, isPending) {
-    const d = m.data || {};
-    const f = d.fields || {};
-    const name = escHtml(f.charName || m.character_name || 'Unnamed');
-    const cls = escHtml(f.charClass || '—');
-    const lvl = f.charLevel || '?';
-    const safeName = escHtmlAttr(f.charName || m.character_name || 'this character');
+    const name = escHtml(m.character_name || 'Unnamed');
+    const cls = escHtml(m.class || '—');
+    const lvl = m.level || '?';
+    const safeName = escHtmlAttr(m.character_name || 'this character');
 
     const actionBtn = isPending
         ? `<div class="flex gap-1">
@@ -97,20 +95,22 @@ function renderMemberList(members) {
 
     // Party summary
     if (approved.length) {
-        const levels = approved.map(m => parseInt(m.data?.fields?.charLevel) || 1);
+        const levels = approved.map(m => parseInt(m.level) || 1);
         const avgLvl = (levels.reduce((a, b) => a + b, 0) / levels.length).toFixed(1);
         const minLvl = Math.min(...levels);
         const maxLvl = Math.max(...levels);
         const avgN = parseFloat(avgLvl);
         const avgTier = avgN >= 8 ? 3 : avgN >= 5 ? 2 : avgN >= 2 ? 1 : 0;
+        const diffTarget = avgTier >= 3 ? '20–25' : avgTier >= 2 ? '15–20' : '10–15';
         const classes = {};
-        approved.forEach(m => { const c = m.data?.fields?.charClass || 'Unknown'; classes[c] = (classes[c] || 0) + 1; });
+        approved.forEach(m => { const c = m.class || 'Unknown'; classes[c] = (classes[c] || 0) + 1; });
         const classStr = Object.entries(classes).map(([c, n]) => n > 1 ? `${n}× ${escHtml(c)}` : escHtml(c));
 
         html += `<div class="col-span-full mb-4 p-3 rounded-xl panel-box">
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex-1"></div>
                 <div class="text-[10px] uppercase tracking-wide font-bold font-[Cinzel]" style="color:var(--accent-1,#d4a017)">Party Summary</div>
-                <button onclick="document.getElementById('partySummaryInfo').classList.toggle('hidden');this.textContent=this.textContent==='i'?'\u2715':'i'" class="info-btn" title="How is this calculated?">i</button>
+                <div class="flex-1 flex justify-end"><button onclick="document.getElementById('partySummaryInfo').classList.toggle('hidden');this.textContent=this.textContent==='i'?'\u2715':'i'" class="info-btn" title="How is this calculated?">i</button></div>
             </div>
             <div id="partySummaryInfo" class="hidden mb-3 p-2 rounded-lg bg-black/30 border border-zinc-800 space-y-2 text-[10px] text-zinc-400">
                 <div><span class="text-zinc-300 font-bold">Group Tier</span> matches the Tier of Play for the party's average level:</div>
@@ -120,7 +120,7 @@ function renderMemberList(members) {
                     <span class="text-zinc-500 font-bold">Tier 2</span><span>Lv 5–7 — Continental champions, world-shattering threats</span>
                     <span class="text-zinc-500 font-bold">Tier 3</span><span>Lv 8–10 — Mythic legends, gods and apocalyptic forces</span>
                 </div>
-                <div class="border-t border-zinc-800 pt-2 mt-1"><span class="text-zinc-300 font-bold">Difficulty Targets</span> — baseline Action Roll difficulties by tier:</div>
+                <div class="border-t border-zinc-800 pt-2 mt-1"><span class="text-zinc-300 font-bold">Difficulty Targets (DC)</span> — baseline Action Roll difficulty by tier:</div>
                 <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 ml-1">
                     <span class="text-zinc-500 font-bold">Tier 0–1</span><span>Standard checks around 10–15</span>
                     <span class="text-zinc-500 font-bold">Tier 2</span><span>Standard checks shift to 15–20</span>
@@ -131,12 +131,23 @@ function renderMemberList(members) {
                     ${minLvl !== maxLvl ? `<div><span class="text-zinc-300 font-bold">Range:</span> Lv ${minLvl}–${maxLvl}. A wide range may affect encounter balance.</div>` : ''}
                 </div>
             </div>
-            <div class="flex flex-wrap gap-1.5">
-                <span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${approved.length} Player${approved.length !== 1 ? 's' : ''}</span>
-                <span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">Avg Lv ${avgLvl}</span>
-                <span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-amber-300">Tier ${avgTier}</span>
-                ${minLvl !== maxLvl ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">Range Lv ${minLvl}–${maxLvl}</span>` : ''}
-                ${classStr.map(c => `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${c}</span>`).join('')}
+            <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1.5">
+                    <div class="text-[9px] text-zinc-500 uppercase tracking-wide font-bold">Party</div>
+                    <div class="flex flex-wrap gap-1">
+                        <span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${approved.length} Player${approved.length !== 1 ? 's' : ''}</span>
+                        ${classStr.map(c => `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${c}</span>`).join('')}
+                    </div>
+                </div>
+                <div class="space-y-1.5">
+                    <div class="text-[9px] text-zinc-500 uppercase tracking-wide font-bold">Group</div>
+                    <div class="flex flex-wrap gap-1">
+                        <span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">Avg Lv ${avgLvl}</span>
+                        <span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">Tier ${avgTier}</span>
+                        <span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">DC ${diffTarget}</span>
+                        ${minLvl !== maxLvl ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">Lv ${minLvl}–${maxLvl}</span>` : ''}
+                    </div>
+                </div>
             </div>
         </div>`;
     }

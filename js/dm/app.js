@@ -227,15 +227,22 @@ window.addEventListener('DOMContentLoaded', async () => {
         [SAVE_KEY, COUNTERS_KEY, FEAR_KEY, CAMPAIGN_KEY, LS_DM_VAULT, LS_DM_VAULT_GROUPS, LS_DM_CHRONICLE, LS_DM_TABLE_ID].forEach(k => localStorage.removeItem(k));
     }
 
-    // Load from localStorage
-    try { setCreatures(JSON.parse(localStorage.getItem(SAVE_KEY)) || []); } catch { setCreatures([]); }
-    try { setActionCounters(JSON.parse(localStorage.getItem(COUNTERS_KEY)) || []); } catch { setActionCounters([]); }
-    setFearFilled(parseInt(localStorage.getItem(FEAR_KEY)) || 0);
+    // If dashboard pick is pending, skip localStorage load — tryDashboardPick will handle it
+    const hasDashboardPick = sessionStorage.getItem('dh_dashboard_pick');
 
-    const savedCampaign = localStorage.getItem(CAMPAIGN_KEY) || '';
-    const cnInput = document.getElementById('campaignName');
-    cnInput.value = savedCampaign;
-    if (savedCampaign) cnInput.style.width = Math.min(savedCampaign.length + 2, 56) + 'ch';
+    // Load from localStorage
+    if (!hasDashboardPick) {
+        try { setCreatures(JSON.parse(localStorage.getItem(SAVE_KEY)) || []); } catch { setCreatures([]); }
+        try { setActionCounters(JSON.parse(localStorage.getItem(COUNTERS_KEY)) || []); } catch { setActionCounters([]); }
+        setFearFilled(parseInt(localStorage.getItem(FEAR_KEY)) || 0);
+    }
+
+    if (!hasDashboardPick) {
+        const savedCampaign = localStorage.getItem(CAMPAIGN_KEY) || '';
+        const cnInput = document.getElementById('campaignName');
+        cnInput.value = savedCampaign;
+        if (savedCampaign) cnInput.style.width = Math.min(savedCampaign.length + 2, 56) + 'ch';
+    }
 
     initActionBar();
     initFearPool();

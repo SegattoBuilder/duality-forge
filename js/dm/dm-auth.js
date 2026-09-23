@@ -111,8 +111,9 @@ async function cloudAutoSaveNow() {
     const data = gatherDmData();
 
     const campaign = data.campaign?.trim();
+    const counts = { creature_count: data.creatures?.length || 0, vault_count: data.vaultCreatures?.length || 0, chronicle_count: data.chronicleEntries?.length || 0 };
     const { error } = await sb.from(TABLE_DM_TABLES)
-        .update({ data, campaign_name: campaign || table.campaign_name, updated_at: new Date().toISOString() })
+        .update({ data, campaign_name: campaign || table.campaign_name, ...counts, updated_at: new Date().toISOString() })
         .eq('id', table.id);
     if (!error) {
         table.data = data;
@@ -155,8 +156,9 @@ async function cloudSave() {
 
     if (table) {
         // Update existing campaign
+        const counts = { creature_count: data.creatures?.length || 0, vault_count: data.vaultCreatures?.length || 0, chronicle_count: data.chronicleEntries?.length || 0 };
         const { error } = await sb.from(TABLE_DM_TABLES)
-            .update({ data, campaign_name: campaign, updated_at: new Date().toISOString() })
+            .update({ data, campaign_name: campaign, ...counts, updated_at: new Date().toISOString() })
             .eq('id', table.id);
         if (error) { showAlert('Cloud save failed: ' + error.message); return; }
         table.campaign_name = campaign;
@@ -164,7 +166,7 @@ async function cloudSave() {
     } else {
         // Create new campaign
         const { data: row, error } = await sb.from(TABLE_DM_TABLES)
-            .insert({ user_id: getUser().id, campaign_name: campaign, data })
+            .insert({ user_id: getUser().id, campaign_name: campaign, data, creature_count: data.creatures?.length || 0, vault_count: data.vaultCreatures?.length || 0, chronicle_count: data.chronicleEntries?.length || 0 })
             .select().single();
         if (error) { showAlert('Cloud save failed: ' + error.message); return; }
         table = row;

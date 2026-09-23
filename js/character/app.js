@@ -61,6 +61,11 @@ window.clearSheet = clearSheet;
 window.newCharacter = newCharacter;
 window.autoCache = autoCache;
 window.toggleSection = toggleSection;
+window._stepLevel = function(delta) {
+    const el = document.getElementById('charLevel');
+    el.value = Math.max(0, Math.min(99, (parseInt(el.value) || 0) + delta));
+    updateThresholds(); autoCache();
+};
 
 // Modern tab switching
 const MODERN_TABS = ['tab-combat', 'tab-cards', 'tab-inventory', 'tab-story', 'tab-compendium'];
@@ -88,6 +93,8 @@ setRestoring(true);
         localStorage.removeItem(SAVE_KEY);
         localStorage.removeItem(LS_CHAR_ROW_ID);
     }
+    // If dashboard pick is pending, skip localStorage load — tryDashboardPick will handle it
+    const hasDashboardPick = sessionStorage.getItem('dh_dashboard_pick');
     // Migrate old key
     if (!localStorage.getItem(SAVE_KEY) && localStorage.getItem(LS_CHAR_SAVE_V1)) {
         localStorage.setItem(SAVE_KEY, localStorage.getItem(LS_CHAR_SAVE_V1));
@@ -100,8 +107,10 @@ setRestoring(true);
             input.onchange = (e) => renderDots(t, e.target.value);
         }
     });
-    const raw = localStorage.getItem(SAVE_KEY);
-    if (raw) loadSheet(true);
+    if (!hasDashboardPick) {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (raw) loadSheet(true);
+    }
     updateThresholds();
     updateAttackBonus();
     updateExportIndicator();

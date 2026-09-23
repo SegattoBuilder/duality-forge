@@ -32,8 +32,8 @@ export async function renderDashboard(container) {
     container.innerHTML = '<div class="text-center text-zinc-600 text-xs py-8">Loading saves…</div>';
 
     const [tables, characters] = await Promise.all([
-        loadRows(TABLE_DM_TABLES, 'campaign_name, data, archived_at'),
-        loadRows(TABLE_CHARACTERS, 'character_name, table_id, data, archived_at')
+        loadRows(TABLE_DM_TABLES, 'campaign_name, creature_count, vault_count, chronicle_count, archived_at'),
+        loadRows(TABLE_CHARACTERS, 'character_name, table_id, class, level, archived_at')
     ]);
     cachedTables = tables;
     cachedCharacters = characters;
@@ -181,17 +181,15 @@ function cardHtml(row, type, tableMap) {
 
 
     let previewHtml = '';
-    if (type === 'character' && row.data?.fields) {
-        const f = row.data.fields;
-        const pills = [f.charClass, f.charLevel ? `Lv ${f.charLevel}` : ''].filter(Boolean)
+    if (type === 'character' && row.class) {
+        const pills = [row.class, row.level ? `Lv ${row.level}` : ''].filter(Boolean)
             .map(t => `<span class="text-[10px] bg-[#2a2418] border border-[#3d362a] rounded px-2 py-0.5 text-zinc-400">${escHtml(t)}</span>`).join('');
         if (pills) previewHtml = `<div class="flex flex-wrap gap-1 mt-2">${pills}</div>`;
-    } else if (type === 'dm' && row.data) {
-        const d = row.data;
+    } else if (type === 'dm') {
         const pills = [
-            d.creatures?.length ? `${d.creatures.length} ⚔` : '',
-            d.vaultCreatures?.length ? `${d.vaultCreatures.length} 📦` : '',
-            d.chronicleEntries?.length ? `${d.chronicleEntries.length} 📜` : ''
+            row.creature_count ? `${row.creature_count} ⚔` : '',
+            row.vault_count ? `${row.vault_count} 📦` : '',
+            row.chronicle_count ? `${row.chronicle_count} 📜` : ''
         ].filter(Boolean)
             .map(t => `<span class="text-[10px] bg-[#2a2418] border border-[#3d362a] rounded px-2 py-0.5 text-zinc-400">${t}</span>`).join('');
         if (pills) previewHtml = `<div class="flex flex-wrap gap-1 mt-2">${pills}</div>`;
@@ -271,7 +269,7 @@ function showSavePicker(type, row) {
         ? `<button data-unarchive class="text-zinc-500 hover:text-[var(--accent-1)] text-sm" title="Unarchive">📤</button>`
         : `<button data-archive class="text-zinc-500 hover:text-[var(--accent-1)] text-sm" title="Archive">📦</button>`;
 
-    const viewBtnHtml = isArchived && row.data
+    const viewBtnHtml = isArchived
         ? `<button data-view class="w-full btn-secondary text-[10px] py-2 rounded-lg">👁 View ${type === 'character' ? 'Character' : 'Table'}</button>` : '';
 
     modal = document.createElement('div');
@@ -302,10 +300,13 @@ function showSavePicker(type, row) {
     }
 
     const viewBtn = modal.querySelector('[data-view]');
-    if (viewBtn) viewBtn.addEventListener('click', () => {
+    if (viewBtn) viewBtn.addEventListener('click', async () => {
         close();
-        if (type === 'character') showArchivedCharDetail(row);
-        else showArchivedTableDetail(row);
+        const fullTable = type === 'dm' ? TABLE_DM_TABLES : TABLE_CHARACTERS;
+        const { data: fullRow } = await supabase.from(fullTable).select('*').eq('id', row.id).single();
+        if (!fullRow || !fullRow.data) return;
+        if (type === 'character') showArchivedCharDetail(fullRow);
+        else showArchivedTableDetail(fullRow);
     });
 
     const archiveBtn = modal.querySelector('[data-archive]');
