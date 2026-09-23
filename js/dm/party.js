@@ -252,5 +252,11 @@ window.viewCharacterDetail = (id) => showCharacterDetail(id);
 window.closeCharDetail = closeCharDetail;
 
 window.copyInviteCode = () => {
-    if (currentTable) navigator.clipboard.writeText(currentTable.id).catch(() => {});
+    if (!currentTable) return;
+    navigator.clipboard.writeText(currentTable.id).then(() => {
+        const btn = document.querySelector('[onclick="copyInviteCode()"]');
+        if (!btn) return;
+        btn.textContent = '✅';
+        setTimeout(() => btn.textContent = '📋', 1500);
+    }).catch(() => {});
 };
