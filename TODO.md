@@ -171,7 +171,7 @@
 **Dashboard (`epic/dashboard`)**
 - [x] Dashboard view — signed-in users see all saves (tables + characters) on landing page
 - [x] Horizontal scrollable card rows per section, newest first
-- [x] Save picker modal — click card to choose Save vs Autosave, with delete option
+- [x] Save picker modal — click card to load, with delete and archive options
 - [x] Character cards show linked table name
 - [x] "+ New" button — creates clean character or table, clears cached data
 - [x] Upload button — auto-detects character vs table JSON, creates row
@@ -198,10 +198,17 @@
 **Unsaved Changes Guard & Autosave Simplification**
 - [x] `beforeunload` dirty check — warns on tab close or navigation when unsaved changes exist (DM + Character)
 - [x] Autosave writes to main `data` column instead of `autosave_data` — single source of truth
-- [x] Removed autosave picker button from dashboard save picker and cloud picker
-- [x] Removed `autosave_data` / `autosave_at` from dashboard fetch queries
-- [x] Snapshot uses `gatherDmData()` / `gatherData()` consistently so dirty check matches after manual save and cloud load
+- [x] Removed autosave picker from dashboard and cloud picker (single save per row)
+- [x] Snapshot uses `gatherDmData()` / `gatherData()` consistently so dirty check matches after save and load
 - [ ] DB cleanup — drop `autosave_data` / `autosave_at` columns (deferred, columns unused but still in schema)
+
+**Dashboard — Archive**
+- [x] Archive tab on dashboard — soft-archive tables and characters with `archived_at` timestamp
+- [x] Archive/unarchive from save picker, read-only detail view for archived saves
+- [x] Archive count badge on tab
+
+**Bug Fixes**
+- [x] Chronicle chapter toggle — expanding one chapter collapsed others without updating arrow state; fixed Quill instance lifecycle on re-render
 
 **Table Board** ← _next epic_
 - [ ] Shared board per DM table — DM and players can post notes, schedule, table rules, session recaps
@@ -251,5 +258,4 @@ _Brainstorm space — no commitment, just possibilities._
 - **Table Scheduling** — DM sets a session schedule, players and DM receive email reminders _(high effort — requires email infrastructure)_
 - **Companion/Pet Tracker** — HP, abilities, notes on character sheet
 - **Font Size System** — CSS custom properties (`--text-micro`, `--text-label`, `--text-small`, `--text-body`, `--text-title`, `--text-hero`) to standardize sizes across components; replace hardcoded values in `components.css` first, then Tailwind inline classes gradually
-- **Archive** — soft-archive tables and characters (e.g. `archived: true` flag) so they hide from the dashboard but can be reviewed, remembered, or resumed later; could be a separate "Archive" tab on the dashboard; DM-side archiving of a table could optionally archive linked characters too, but needs player consent/notification to avoid surprises
 - **Character Portrait** — optional avatar/image URL on the character sheet; could show in nav bar or dashboard card for visual recognition between saves; likely low usage during actual play

@@ -40,11 +40,7 @@ function updateEntryText(id, value) { const ch = _chronicleEntries.find(c => c.i
 function toggleEntry(id) {
     const ch = _chronicleEntries.find(c => c.id === id);
     if (!ch) return;
-    // Save current Quill content before collapsing
-    if (ch.open && _quillInstances[id]) {
-        ch.text = _quillInstances[id].root.innerHTML;
-        delete _quillInstances[id];
-    }
+    saveAllQuillContent();
     ch.open = !ch.open;
     autoCacheChronicle(); renderChronicle();
 }
@@ -179,10 +175,8 @@ export function renderChronicle() {
         list.innerHTML = '<div class="text-center py-20"><div class="text-zinc-600 text-sm italic">No chapters yet. Click "+ Chapter" to start your chronicle.</div></div>';
         return;
     }
-    // Clear old instances
-    for (const id of Object.keys(_quillInstances)) {
-        if (!_chronicleEntries.find(c => c.id === id)) delete _quillInstances[id];
-    }
+    // Clear all Quill instances — they'll be re-created for open chapters below
+    for (const id of Object.keys(_quillInstances)) delete _quillInstances[id];
 
     list.innerHTML = _chronicleEntries.map(ch => {
         const npcs = ch.npcs || [], music = ch.music || [];
