@@ -202,13 +202,33 @@
 - [x] Snapshot uses `gatherDmData()` / `gatherData()` consistently so dirty check matches after save and load
 - [ ] DB cleanup — drop `autosave_data` / `autosave_at` columns (deferred, columns unused but still in schema)
 
+**Promoted DB Columns & Dashboard Performance**
+- [x] `class`, `level` columns on `characters`; `creature_count`, `vault_count`, `chronicle_count` on `dm_tables`
+- [x] Dashboard fetches promoted columns instead of full `data` blobs — archived detail view fetches on demand
+- [x] Cloud save and autosave write promoted columns alongside `data`
+- [x] Party summary reads `level` and `class` from promoted columns instead of `data` blob
+
+**Character Sheet — Level Stepper**
+- [x] Level input replaced with −/+ stepper (readonly, min 0, max 99)
+- [x] DB `level` column as INT, backfilled existing rows
+
 **Dashboard — Archive**
 - [x] Archive tab on dashboard — soft-archive tables and characters with `archived_at` timestamp
 - [x] Archive/unarchive from save picker, read-only detail view for archived saves
 - [x] Archive count badge on tab
 
+**Party**
+- [x] Party summary two-column layout (Party / Group), centered title, DC difficulty target badge
+- [x] Party reads from promoted columns instead of character `data` blobs
+
 **Bug Fixes**
-- [x] Chronicle chapter toggle — expanding one chapter collapsed others without updating arrow state; fixed Quill instance lifecycle on re-render
+- [x] Chronicle chapter toggle — fixed Quill instance lifecycle on re-render
+- [x] New character from dashboard loading stale data — skip localStorage when `dh_dashboard_pick` is pending
+- [x] Party tier always showing Tier 1 — was reading from stale `data` blob instead of promoted `level` column
+- [x] Copy table code feedback — brief checkmark on clipboard copy
+
+**Code Cleanup**
+- [x] Removed dead `dh_dashboard_new` flow — all navigation uses `dh_dashboard_pick`
 
 **Table Board** ← _next epic_
 - [ ] Shared board per DM table — DM and players can post notes, schedule, table rules, session recaps
@@ -221,7 +241,7 @@ _Identified improvements — not urgent at current scale (~30 users), but good p
 
 **Data Loading**
 - [ ] Community pagination — `select('*')` loads all chapters/adversaries/homebrew unbounded; add `range()`/pagination and server-side filtering
-- [ ] Dashboard metadata-only fetch — currently loads full `data` JSON for every row; fetch only names/timestamps/preview fields, load full payload on open
+- [x] Dashboard metadata-only fetch — promoted columns (`class`, `level`, `creature_count`, etc.) replace full `data` blob fetch
 - [ ] Compendium cache-first loading — read localStorage/IndexedDB cache before fetching 10 remote JSON files; add version + expiration
 - [ ] Combine compendium JSON — merge 10 separate category files into a single compressed asset
 

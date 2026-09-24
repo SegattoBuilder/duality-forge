@@ -9,7 +9,6 @@ let lastSavedSnapshot = null;
 let characterPickerShown = false;
 let linkedTable = null;
 let currentCharacterRowId = localStorage.getItem(LS_CHAR_ROW_ID) || null;
-const isNewFromDashboard = sessionStorage.getItem('dh_dashboard_new') === 'character';
 
 function setCharacterRowId(id) {
     currentCharacterRowId = id;
@@ -25,7 +24,6 @@ export function initCharAuth() {
         if (user && !characterPickerShown) {
             characterPickerShown = true;
             if (await tryDashboardPick()) return;
-            if (isNewFromDashboard) return;
             if (currentCharacterRowId) return;
             const localRaw = localStorage.getItem(LS_CHAR_SAVE);
             let hasLocal = false;

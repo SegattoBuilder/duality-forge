@@ -87,12 +87,6 @@ if (!await requireAuth([LS_CHAR_SAVE, LS_CHAR_ROW_ID])) throw 0;
 // Load saved data immediately (module runs after DOM is ready)
 setRestoring(true);
 {
-    // Check if coming from dashboard "New" button
-    if (sessionStorage.getItem('dh_dashboard_new') === 'character') {
-        sessionStorage.removeItem('dh_dashboard_new');
-        localStorage.removeItem(SAVE_KEY);
-        localStorage.removeItem(LS_CHAR_ROW_ID);
-    }
     // If dashboard pick is pending, skip localStorage load — tryDashboardPick will handle it
     const hasDashboardPick = sessionStorage.getItem('dh_dashboard_pick');
     // Migrate old key

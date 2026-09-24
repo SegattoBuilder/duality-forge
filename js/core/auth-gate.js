@@ -7,7 +7,7 @@ export async function requireAuth(localStorageKeys = []) {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.replace('/'); return false; }
 
-    const fromDashboard = sessionStorage.getItem('dh_dashboard_pick') || sessionStorage.getItem('dh_dashboard_new');
+    const fromDashboard = sessionStorage.getItem('dh_dashboard_pick');
     if (fromDashboard) return true;
 
     if (!localStorageKeys.length) return true;

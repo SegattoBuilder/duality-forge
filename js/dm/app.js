@@ -221,12 +221,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     renderThemePicker();
     applyTheme(localStorage.getItem(LS_THEME) || 'gold');
 
-    // Check if coming from dashboard "New" button
-    if (sessionStorage.getItem('dh_dashboard_new') === 'dm') {
-        sessionStorage.removeItem('dh_dashboard_new');
-        [SAVE_KEY, COUNTERS_KEY, FEAR_KEY, CAMPAIGN_KEY, LS_DM_VAULT, LS_DM_VAULT_GROUPS, LS_DM_CHRONICLE, LS_DM_TABLE_ID].forEach(k => localStorage.removeItem(k));
-    }
-
     // If dashboard pick is pending, skip localStorage load — tryDashboardPick will handle it
     const hasDashboardPick = sessionStorage.getItem('dh_dashboard_pick');
 

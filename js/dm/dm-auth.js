@@ -11,7 +11,6 @@ import { setCurrentTable, getCurrentTable, restoreCurrentTable } from './party.j
 let cloudAutoSaveInterval = null;
 let lastSavedSnapshot = null;
 let campaignPickerShown = false;
-const isNewFromDashboard = sessionStorage.getItem('dh_dashboard_new') === 'dm';
 
 function gatherDmData() {
     const campaign = document.getElementById('campaignName').value.trim() || 'My Campaign';
@@ -26,7 +25,6 @@ export function initDmAuth() {
         if (user && !campaignPickerShown) {
             campaignPickerShown = true;
             if (await tryDashboardPick()) return;
-            if (isNewFromDashboard) return;
             if (!hasLocalDmData()) showCampaignPicker();
         }
     });
