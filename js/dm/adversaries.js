@@ -31,7 +31,9 @@ function runAdvSearch() {
     const tierMax = document.getElementById('advTierMax').value ? parseInt(document.getElementById('advTierMax').value) : null;
     const type = document.getElementById('advType').value;
     const statusEl = document.getElementById('advStatus'), resultsEl = document.getElementById('advResults');
-    if (!query && diffMin === null && diffMax === null && tierMin === null && tierMax === null && !type) { resultsEl.innerHTML = ''; statusEl.textContent = `${adversariesData.length} adversaries loaded. Search by name or filter by difficulty.`; return; }
+    const hasFilters = diffMin !== null || diffMax !== null || tierMin !== null || tierMax !== null || !!type;
+    if (!query && !hasFilters) { resultsEl.innerHTML = ''; statusEl.textContent = `${adversariesData.length} adversaries loaded. Search by name or filter by difficulty.`; return; }
+    if (!hasFilters && query.length < 3) { resultsEl.innerHTML = ''; statusEl.textContent = 'Type at least 3 characters to search.'; return; }
     let filtered = adversariesData;
     if (query) filtered = filtered.filter(a => a.name.toLowerCase().includes(query));
     if (diffMin !== null) filtered = filtered.filter(a => (parseInt(a.difficulty) || 0) >= diffMin);

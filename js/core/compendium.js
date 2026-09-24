@@ -152,12 +152,14 @@ function runSearch() {
     let filtered = compendiumData;
     if (activeCategory !== 'all') filtered = filtered.filter(item => item._category === activeCategory);
     if (Object.keys(activeFilters).length > 0) filtered = filtered.filter(itemMatchesFilters);
-    if (query.length > 0) filtered = filtered.filter(item => {
+    const hasFilters = activeCategory !== 'all' || Object.keys(activeFilters).length > 0;
+    if (query.length > 0 && (hasFilters || query.length >= 3)) filtered = filtered.filter(item => {
         const name = getLocStr(item.name).toLowerCase();
         const desc = Array.isArray(item.description) ? item.description.map(d => d.paragraph ? getLocStr(d.paragraph) : (d.list ? d.list.map(li => getLocStr(li)).join(' ') : '')).join(' ').toLowerCase() : (typeof item.description === 'string' ? item.description.toLowerCase() : '');
         return name.includes(query) || desc.includes(query);
     });
-    if (query.length === 0 && activeCategory === 'all' && Object.keys(activeFilters).length === 0) { resultsEl.innerHTML = ''; statusEl.textContent = `${compendiumData.length} entries loaded. Start typing to search.`; return; }
+    if (!hasFilters && query.length === 0) { resultsEl.innerHTML = ''; statusEl.textContent = `${compendiumData.length} entries loaded. Start typing to search.`; return; }
+    if (!hasFilters && query.length < 3) { resultsEl.innerHTML = ''; statusEl.textContent = 'Type at least 3 characters to search.'; return; }
     filtered = sortResults(filtered);
     if (filtered.length === 0) { resultsEl.innerHTML = ''; statusEl.textContent = 'No results found.'; return; }
     const limited = filtered.slice(0, 60);

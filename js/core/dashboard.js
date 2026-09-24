@@ -15,6 +15,7 @@ let cachedTables = [];
 let cachedCharacters = [];
 let activeTab = localStorage.getItem(LS_DASH_TAB) || 'tables';
 let dashContainer = null;
+let tableMap = {};
 
 export function initDashboard(sb, uid, session) {
     supabase = getAuthSupabase() || sb;
@@ -38,7 +39,7 @@ export async function renderDashboard(container) {
     cachedTables = tables;
     cachedCharacters = characters;
 
-    const tableMap = await buildTableMap(tables, characters);
+    tableMap = await buildTableMap(tables, characters);
     const { data: profileRow } = await supabase.from(TABLE_PROFILES).select('id, avatar_url').eq('id', userId).single();
     const avatarUrl = profileRow?.avatar_url || googleAvatar;
 
@@ -84,25 +85,33 @@ export async function renderDashboard(container) {
     wireUploadButton(container);
     wireCommunityButton(container);
     wireGearButton(container);
-    wireDashTabs(container, tableMap);
+    wireDashTabs(container);
 
-    renderActiveTab(container, tableMap);
+    renderActiveTab(container);
 
     const needsWelcome = !profileRow;
     if (needsWelcome) showWelcomeModal();
 }
 
-function wireDashTabs(container, tableMap) {
+function wireDashTabs(container) {
     container.querySelectorAll('.dash-tab').forEach(btn => {
         btn.addEventListener('click', () => {
             activeTab = btn.dataset.tab;
             localStorage.setItem(LS_DASH_TAB, activeTab);
-            renderActiveTab(container, tableMap);
+            renderActiveTab(container);
         });
     });
 }
 
-function renderActiveTab(container, tableMap) {
+function refreshView() {
+    if (!dashContainer) return;
+    const archiveCount = filterByArchived([...cachedTables, ...cachedCharacters], true).length;
+    const archiveTab = dashContainer.querySelector('.dash-tab[data-tab="archive"] .tab-label');
+    if (archiveTab) archiveTab.innerHTML = `📦 Archive${archiveCount ? ` <span class="text-[10px] text-zinc-600">(${archiveCount})</span>` : ''}`;
+    renderActiveTab(dashContainer);
+}
+
+function renderActiveTab(container) {
     container.querySelectorAll('.dash-tab').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.tab === activeTab);
     });
@@ -115,7 +124,7 @@ function renderActiveTab(container, tableMap) {
         if (!rows.length) {
             content.innerHTML = '<div class="text-center py-8"><p class="text-zinc-500 text-sm">No tables yet. Create one to get started!</p></div>';
         } else {
-            content.innerHTML = sectionHtml(null, rows, 'dm', tableMap);
+            content.innerHTML = sectionHtml(null, rows, 'dm');
             wireCards(content, rows, []);
             wireCarouselArrows(content);
         }
@@ -124,7 +133,7 @@ function renderActiveTab(container, tableMap) {
         if (!rows.length) {
             content.innerHTML = '<div class="text-center py-8"><p class="text-zinc-500 text-sm">No characters yet. Create one to get started!</p></div>';
         } else {
-            content.innerHTML = sectionHtml(null, rows, 'character', tableMap);
+            content.innerHTML = sectionHtml(null, rows, 'character');
             wireCards(content, [], rows);
             wireCarouselArrows(content);
         }
@@ -135,8 +144,8 @@ function renderActiveTab(container, tableMap) {
             content.innerHTML = '<div class="text-center py-8"><p class="text-zinc-500 text-sm">No archived saves.</p><p class="text-zinc-600 text-[10px] mt-1">Archive a table or character from its save picker to move it here.</p></div>';
         } else {
             let html = '';
-            if (archivedTables.length) html += sectionHtml('⚒️ Tables', archivedTables, 'dm', tableMap);
-            if (archivedChars.length) html += sectionHtml('🗡️ Characters', archivedChars, 'character', tableMap);
+            if (archivedTables.length) html += sectionHtml('⚒️ Tables', archivedTables, 'dm');
+            if (archivedChars.length) html += sectionHtml('🗡️ Characters', archivedChars, 'character');
             content.innerHTML = html;
             wireCards(content, archivedTables, archivedChars);
             wireCarouselArrows(content);
@@ -158,8 +167,8 @@ async function buildTableMap(tableRows, charRows) {
     return map;
 }
 
-function sectionHtml(title, rows, type, tableMap) {
-    const cards = rows.map(r => cardHtml(r, type, tableMap)).join('');
+function sectionHtml(title, rows, type) {
+    const cards = rows.map(r => cardHtml(r, type)).join('');
     const id = 'carousel-' + type + '-' + Date.now();
     const showArrows = rows.length > 3;
     return `<div class="mb-6">
@@ -172,7 +181,7 @@ function sectionHtml(title, rows, type, tableMap) {
     </div>`;
 }
 
-function cardHtml(row, type, tableMap) {
+function cardHtml(row, type) {
     const name = row.campaign_name || row.character_name || 'Unnamed';
     const ts = row.archived_at || row.updated_at;
     const date = ts ? formatRelativeDate(ts) : '';
@@ -311,23 +320,29 @@ function showSavePicker(type, row) {
 
     const archiveBtn = modal.querySelector('[data-archive]');
     if (archiveBtn) archiveBtn.addEventListener('click', async () => {
-        await supabase.from(table).update({ archived_at: new Date().toISOString() }).eq('id', row.id);
+        const ts = new Date().toISOString();
+        await supabase.from(table).update({ archived_at: ts }).eq('id', row.id);
+        row.archived_at = ts;
         close();
-        renderDashboard(dashContainer);
+        refreshView();
     });
 
     const unarchiveBtn = modal.querySelector('[data-unarchive]');
     if (unarchiveBtn) unarchiveBtn.addEventListener('click', async () => {
         await supabase.from(table).update({ archived_at: null }).eq('id', row.id);
+        row.archived_at = null;
         close();
-        renderDashboard(dashContainer);
+        refreshView();
     });
 
     modal.querySelector('[data-delete]').addEventListener('click', () => {
         close();
         showDeleteConfirm(name, async () => {
             await supabase.from(table).delete().eq('id', row.id);
-            renderDashboard(dashContainer);
+            const cache = type === 'dm' ? cachedTables : cachedCharacters;
+            const idx = cache.findIndex(r => r.id === row.id);
+            if (idx !== -1) cache.splice(idx, 1);
+            refreshView();
         });
     });
 
@@ -685,16 +700,21 @@ function wireUploadButton(container) {
                 if (!type) { showUploadAlert('Could not detect file type. Expected a character or table JSON.'); return; }
                 if (type === 'character') {
                     const name = data.fields?.charName?.trim() || file.name.replace('.json', '');
-                    const { error } = await supabase.from(TABLE_CHARACTERS)
-                        .insert({ user_id: userId, character_name: name, data });
+                    const { data: inserted, error } = await supabase.from(TABLE_CHARACTERS)
+                        .insert({ user_id: userId, character_name: name, data })
+                        .select('id, updated_at, character_name, table_id, class, level, archived_at').single();
                     if (error) { showUploadAlert('Upload failed: ' + error.message); return; }
+                    cachedCharacters.unshift(inserted);
                 } else {
                     const name = data.campaign || file.name.replace('.json', '');
-                    const { error } = await supabase.from(TABLE_DM_TABLES)
-                        .insert({ user_id: userId, campaign_name: name, data });
+                    const { data: inserted, error } = await supabase.from(TABLE_DM_TABLES)
+                        .insert({ user_id: userId, campaign_name: name, data })
+                        .select('id, updated_at, campaign_name, creature_count, vault_count, chronicle_count, archived_at').single();
                     if (error) { showUploadAlert('Upload failed: ' + error.message); return; }
+                    cachedTables.unshift(inserted);
+                    tableMap[inserted.id] = inserted.campaign_name || 'Unnamed';
                 }
-                renderDashboard(container);
+                refreshView();
             } catch { showUploadAlert('Invalid JSON file.'); }
         });
         input.click();
