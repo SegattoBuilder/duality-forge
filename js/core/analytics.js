@@ -1,3 +1,6 @@
+// Service worker for PWA install
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+
 // Cloudflare Web Analytics — shared across all pages
 const s = document.createElement('script');
 s.type = 'module';
