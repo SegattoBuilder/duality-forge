@@ -244,12 +244,13 @@ function wireCarouselArrows(container) {
 }
 
 function wireCards(content, tableRows, charRows) {
+    const tableMap = new Map(tableRows.map(r => [r.id, r]));
+    const charMap = new Map(charRows.map(r => [r.id, r]));
     content.querySelectorAll('.dash-card').forEach(card => {
         card.addEventListener('click', () => {
             const type = card.dataset.type;
             const id = card.dataset.rowId;
-            const rows = type === 'dm' ? tableRows : charRows;
-            const row = rows.find(r => r.id === id);
+            const row = type === 'dm' ? tableMap.get(id) : charMap.get(id);
             if (!row) return;
             showSavePicker(type, row);
         });

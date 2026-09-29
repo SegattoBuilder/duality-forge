@@ -229,6 +229,16 @@
 
 **Code Cleanup**
 - [x] Removed dead `dh_dashboard_new` flow — all navigation uses `dh_dashboard_pick`
+- [x] `LS_DM_VAULT_COLLAPSED` confirmed active — used in `vault.js` for group collapse state
+
+**Quick UX Wins**
+- [x] Compendium + adversaries search — require min 3 characters before searching (filters still work immediately)
+- [x] Dashboard local cache update after mutations — archive/unarchive/delete/upload mutate cached arrays locally instead of refetching
+
+**PWA**
+- [x] `manifest.json` with dark background, 4 icon variants (192+512 × any+maskable), service worker
+- [x] `<meta name="theme-color">` + `<link rel="manifest">` on all pages
+- [ ] Test PWA install on production after merge to main (preview branch may not support install)
 
 **Table Board** ← _next epic_
 - [ ] Shared board per DM table — DM and players can post notes, schedule, table rules, session recaps
@@ -240,20 +250,18 @@
 _Identified improvements — not urgent at current scale (~30 users), but good practice to address as the app grows._
 
 **Data Loading**
+- [x] Community filter debounce — 200ms debounce on text search inputs (chapters, adversaries, homebrew)
+- [x] Compendium search optimization — min 3 chars before searching; stable `_idx` on items replaces O(n) `indexOf()` lookups
+- [x] Compendium card index — stable `_idx` assigned during preprocessing; no more `indexOf()` O(n²) lookups
 - [ ] Community pagination — `select('*')` loads all chapters/adversaries/homebrew unbounded; add `range()`/pagination and server-side filtering
 - [x] Dashboard metadata-only fetch — promoted columns (`class`, `level`, `creature_count`, etc.) replace full `data` blob fetch
 - [ ] Compendium cache-first loading — read localStorage/IndexedDB cache before fetching 10 remote JSON files; add version + expiration
 - [ ] Combine compendium JSON — merge 10 separate category files into a single compressed asset
-
-**Search & Rendering**
-- [ ] Compendium search optimization — require minimum 3 characters before searching; if needed later, precompute normalized search strings at load time instead of rebuilding descriptions on every keystroke
-- [ ] Compendium card index — attach stable ID/index to items during preprocessing; avoid repeated `indexOf()` O(n²) lookups
-- [ ] Community filter debounce — debounce text input and limit visible results; full `innerHTML` grid rebuild on every keystroke is expensive at scale
 - [ ] Event delegation — replace per-card click handlers (dashboard cards, carousel arrows) with delegated container handlers using `data-*` attributes
 
 **Dashboard**
-- [ ] Local cache update after mutations — archive/unarchive/delete/upload currently refetch all data + rebuild full DOM; update cached row locally and rerender only active list
-- [ ] Row lookup Map — replace `rows.find(r => r.id === id)` with `Map` keyed by row ID
+- [x] Local cache update after mutations — archive/unarchive/delete/upload update cached arrays locally and re-render without refetching
+- [x] Row lookup Map — `Map` keyed by row ID replaces `rows.find()`
 
 **Storage & Memory**
 - [ ] IndexedDB for growing collections — community imports parse/rewrite full localStorage arrays synchronously; move to IndexedDB for larger collections

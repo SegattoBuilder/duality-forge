@@ -19,6 +19,7 @@ let _onAddConsumable = null;
 let _onAddDomainCard = null;
 let _onAddGeneral = null;
 let _searchWired = false;
+let _searchDebounce = null;
 
 function getLocStr(obj) {
     if (!obj) return '';
@@ -52,16 +53,17 @@ export async function loadCompendium(opts = {}) {
     _onAddDomainCard = opts.onAddDomainCard || null;
     _onAddGeneral = opts.onAddGeneral || null;
 
-    if (!_searchWired) { document.getElementById('compendiumSearch').addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(runSearch, 200); }); _searchWired = true; }
+    if (!_searchWired) { document.getElementById('compendiumSearch').addEventListener('input', () => { clearTimeout(_searchDebounce); _searchDebounce = setTimeout(runSearch, 200); }); _searchWired = true; }
 
     document.getElementById('compendiumStatus').textContent = 'Fetching compendium data...';
     try {
         const results = await Promise.all(CATEGORIES.map(cat => fetch(GITHUB_RAW + cat + '.json').then(r => r.json()).then(data => { const items = Array.isArray(data) ? data : (data.items || data.entries || Object.values(data)); return items.flatMap(item => splitSubclassTiers(item, cat)); }).catch(() => [])));
         compendiumData = results.flat();
+        compendiumData.forEach((item, i) => item._idx = i);
         if (compendiumData.length) localStorage.setItem(COMPENDIUM_CACHE_KEY, JSON.stringify(compendiumData));
     } catch {
         const cached = localStorage.getItem(COMPENDIUM_CACHE_KEY);
-        if (cached) { try { compendiumData = JSON.parse(cached); } catch {} }
+        if (cached) { try { compendiumData = JSON.parse(cached); compendiumData.forEach((item, i) => item._idx = i); } catch {} }
     }
     document.getElementById('compendiumStatus').textContent = compendiumData.length ? `${compendiumData.length} entries loaded. Start typing to search.` : 'Failed to load compendium data.';
 }
@@ -210,15 +212,14 @@ function renderCompendiumCard(item) {
         if (!Array.isArray(src)) continue;
         body += src.map(f => { const fn = f.name ? getLocStr(f.name) : ''; const fd = f.description ? renderDescBlocks(f.description) : ''; return `<div class="mt-1">${fn ? `<span class="text-[10px] font-bold text-amber-200">${escHtml(fn)}</span> ` : ''}<span class="text-xs text-zinc-400">${fd}</span></div>`; }).join('');
     }
-    const idx = compendiumData.indexOf(item);
-    return `<div class="compendium-card border-t-3 ${catClass} cursor-pointer" style="border-top: 3px solid" onclick="window._openCardModal(${idx})">
+    return `<div class="compendium-card border-t-3 ${catClass} cursor-pointer" style="border-top: 3px solid" onclick="window._openCardModal(${item._idx})">
         <div class="flex items-start justify-between mb-2"><span class="font-black text-sm font-[Cinzel] text-[#f5efe6]">${escHtml(name)}</span><span class="card-category ${catClass} ml-2 whitespace-nowrap">${cat.replace('-', ' ')}</span></div>${body}</div>`;
 }
 
 function addToSheetButton(item) {
     if (!_characterMode) return '';
     const cat = item._category;
-    const idx = compendiumData.indexOf(item);
+    const idx = item._idx;
     if (cat === 'weapons') {
         return `<button onclick="event.stopPropagation(); window._compAddWeapon(${idx})" class="mt-3 w-full btn-primary">🗡️ Add to Weapons</button>`;
     }

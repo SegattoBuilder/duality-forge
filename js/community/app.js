@@ -1207,7 +1207,8 @@ function clearFilters() {
 }
 
 // ========== INIT ==========
-document.getElementById('searchInput').oninput = renderResults;
+let _chDebounce = null, _advDebounce = null, _hbDebounce = null;
+document.getElementById('searchInput').oninput = () => { clearTimeout(_chDebounce); _chDebounce = setTimeout(renderResults, 200); };
 document.getElementById('filterEnv').onchange = renderResults;
 document.getElementById('filterDiff').onchange = renderResults;
 document.getElementById('filterDuration').onchange = renderResults;
@@ -1276,7 +1277,7 @@ initMode();
 applyTheme(localStorage.getItem(LS_THEME) || 'gold');
 initAuth();
 
-document.getElementById('advSearchInput').oninput = renderAdvResults;
+document.getElementById('advSearchInput').oninput = () => { clearTimeout(_advDebounce); _advDebounce = setTimeout(renderAdvResults, 200); };
 document.getElementById('advFilterType').onchange = renderAdvResults;
 document.getElementById('advFilterTierMin').oninput = renderAdvResults;
 document.getElementById('advFilterTierMax').oninput = renderAdvResults;
@@ -1284,7 +1285,7 @@ document.getElementById('advFilterDiffMin').oninput = renderAdvResults;
 document.getElementById('advFilterDiffMax').oninput = renderAdvResults;
 document.getElementById('advSortBy').onchange = renderAdvResults;
 
-document.getElementById('hbSearchInput').oninput = renderHbResults;
+document.getElementById('hbSearchInput').oninput = () => { clearTimeout(_hbDebounce); _hbDebounce = setTimeout(renderHbResults, 200); };
 document.getElementById('hbFilterType').onchange = renderHbResults;
 document.getElementById('hbFilterCategory').onchange = renderHbResults;
 document.getElementById('hbFilterDomain').onchange = renderHbResults;
