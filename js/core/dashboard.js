@@ -51,7 +51,7 @@ export async function renderDashboard(container) {
             <button id="dashNewBtn" class="btn-primary-pill px-4 py-2 text-xs"><span class="tab-icon">➕</span><span class="tab-label">+ Create</span></button>
             <div class="relative">
                 <button id="dashGearBtn" class="btn-primary-pill px-4 py-2 text-xs"><span class="tab-icon">⚙️</span><span class="tab-label">Settings</span></button>
-                <div id="gearMenu" class="hidden absolute right-0 top-12 w-52 dropdown-menu z-50">
+                <div id="gearMenu" class="hidden absolute top-12 right-0 w-52 dropdown-menu z-50">
                     <div class="px-4 py-3 border-b border-[#3d362a]">
                         <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Display Mode</div>
                         <div class="flex gap-2">
@@ -65,15 +65,15 @@ export async function renderDashboard(container) {
                         <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Accent Color</div>
                         <div id="kebabThemeSwatches" class="grid grid-cols-5 gap-2"></div>
                     </div>
+                </div>
             </div>
         </div>
     </div>`;
 
-    const archiveCount = filterByArchived([...tables, ...characters], true).length;
-    const tabBarHtml = `<div class="flex gap-1 mb-6 border-b border-[#3d362a]">
+    const tabBarHtml = `<div class="flex justify-center gap-1 mb-6 border-b border-[#3d362a]">
         <button class="dash-tab tab-btn px-4 py-2 text-xs font-[Cinzel] font-bold uppercase" data-tab="tables"><span class="tab-icon">⚒️</span><span class="tab-label">⚒️ Tables</span></button>
         <button class="dash-tab tab-btn px-4 py-2 text-xs font-[Cinzel] font-bold uppercase" data-tab="characters"><span class="tab-icon">🗡️</span><span class="tab-label">🗡️ Characters</span></button>
-        <button class="dash-tab tab-btn px-4 py-2 text-xs font-[Cinzel] font-bold uppercase" data-tab="archive"><span class="tab-icon">📦</span><span class="tab-label">📦 Archive${archiveCount ? ` <span class="text-[10px] text-zinc-600">(${archiveCount})</span>` : ''}</span></button></button>
+        <button class="dash-tab tab-btn px-4 py-2 text-xs font-[Cinzel] font-bold uppercase" data-tab="archive"><span class="tab-icon">📦</span><span class="tab-label">📦 Archive</span></button>
     </div>
     <div id="dashTabContent"></div>`;
 
@@ -104,9 +104,6 @@ function wireDashTabs(container) {
 
 function refreshView() {
     if (!dashContainer) return;
-    const archiveCount = filterByArchived([...cachedTables, ...cachedCharacters], true).length;
-    const archiveTab = dashContainer.querySelector('.dash-tab[data-tab="archive"] .tab-label');
-    if (archiveTab) archiveTab.innerHTML = `📦 Archive${archiveCount ? ` <span class="text-[10px] text-zinc-600">(${archiveCount})</span>` : ''}`;
     renderActiveTab(dashContainer);
 }
 
@@ -174,7 +171,7 @@ function sectionHtml(title, rows, type) {
         ${title ? `<h3 class="font-[Cinzel] text-sm font-bold uppercase tracking-wide text-zinc-500 mb-3">${title}</h3>` : ''}
         <div class="relative">
             ${showArrows ? `<button data-scroll-left="${id}" class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 w-8 h-8 rounded-full bg-[#1e1b16] border border-[#4a3f30] text-zinc-400 hover:border-[#d4a017] hover:text-[#d4a017] transition-all flex items-center justify-center text-sm">‹</button>` : ''}
-            <div id="${id}" class="flex pb-2" style="gap:0.75rem;overflow:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;max-width:calc(13rem * 3 + 0.75rem * 2)">${cards}</div>
+            <div id="${id}" class="flex pb-2 ${rows.length < 3 ? 'justify-center' : ''}" style="gap:0.75rem;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth">${cards}</div>
             ${showArrows ? `<button data-scroll-right="${id}" class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 w-8 h-8 rounded-full bg-[#1e1b16] border border-[#4a3f30] text-zinc-400 hover:border-[#d4a017] hover:text-[#d4a017] transition-all flex items-center justify-center text-sm">›</button>` : ''}
         </div>
     </div>`;
@@ -668,6 +665,15 @@ function wireGearButton(container) {
         e.stopPropagation();
         const wasHidden = menu.classList.contains('hidden');
         menu.classList.toggle('hidden');
+        if (!menu.classList.contains('hidden')) {
+            const rect = btn.getBoundingClientRect();
+            const menuW = 208;
+            if (rect.right + menuW > window.innerWidth) {
+                menu.style.right = '0'; menu.style.left = 'auto';
+            } else {
+                menu.style.left = '0'; menu.style.right = 'auto';
+            }
+        }
         if (gearMenuHandler) { document.removeEventListener('click', gearMenuHandler); gearMenuHandler = null; }
         if (wasHidden) {
             gearMenuHandler = (ev) => {
