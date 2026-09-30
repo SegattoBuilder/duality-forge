@@ -59,7 +59,7 @@ async function refreshMembers() {
 function renderMemberCard(m, isPending) {
     const name = escHtml(m.character_name || 'Unnamed');
     const cls = escHtml(m.class || '—');
-    const lvl = m.level || '?';
+    const lvl = m.level != null ? m.level : '?';
     const safeName = escHtmlAttr(m.character_name || 'this character');
 
     const actionBtn = isPending

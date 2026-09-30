@@ -16,6 +16,7 @@ let cachedCharacters = [];
 let activeTab = localStorage.getItem(LS_DASH_TAB) || 'tables';
 let dashContainer = null;
 let tableMap = {};
+let partyCountMap = {};
 
 export function initDashboard(sb, uid, session) {
     supabase = getAuthSupabase() || sb;
@@ -40,6 +41,7 @@ export async function renderDashboard(container) {
     cachedCharacters = characters;
 
     tableMap = await buildTableMap(tables, characters);
+    partyCountMap = await buildPartyCountMap(tables);
     const { data: profileRow } = await supabase.from(TABLE_PROFILES).select('id, avatar_url').eq('id', userId).single();
     const avatarUrl = profileRow?.avatar_url || googleAvatar;
 
@@ -163,6 +165,15 @@ async function buildTableMap(tableRows, charRows) {
     return map;
 }
 
+async function buildPartyCountMap(tableRows) {
+    const ids = tableRows.map(r => r.id);
+    if (!ids.length) return {};
+    const { data } = await supabase.from(TABLE_CHARACTERS).select('table_id').in('table_id', ids).eq('table_approved', 'true');
+    const map = {};
+    if (data) data.forEach(r => { map[r.table_id] = (map[r.table_id] || 0) + 1; });
+    return map;
+}
+
 function sectionHtml(title, rows, type) {
     const cards = rows.map(r => cardHtml(r, type)).join('');
     const id = 'carousel-' + type + '-' + Date.now();
@@ -194,7 +205,8 @@ function cardHtml(row, type) {
         const pills = [
             row.creature_count ? `${row.creature_count} ⚔` : '',
             row.vault_count ? `${row.vault_count} 📦` : '',
-            row.chronicle_count ? `${row.chronicle_count} 📜` : ''
+            row.chronicle_count ? `${row.chronicle_count} 📜` : '',
+            partyCountMap[row.id] ? `${partyCountMap[row.id]} 👥` : ''
         ].filter(Boolean)
             .map(t => `<span class="text-[10px] bg-[#2a2418] border border-[#3d362a] rounded px-2 py-0.5 text-zinc-400">${t}</span>`).join('');
         if (pills) previewHtml = `<div class="flex flex-wrap gap-1 mt-2">${pills}</div>`;
