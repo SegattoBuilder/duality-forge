@@ -43,9 +43,9 @@ export async function renderDashboard(container) {
     const { data: profileRow } = await supabase.from(TABLE_PROFILES).select('id, avatar_url').eq('id', userId).single();
     const avatarUrl = profileRow?.avatar_url || googleAvatar;
 
-    const headerHtml = `<div class="flex items-center justify-between mb-6">
-        <button id="dashProfileBtn" class="w-10 h-10 rounded-full border-2 border-transparent bg-[#2a2418] overflow-hidden flex items-center justify-center hover:border-[var(--accent-1)] transition-colors" title="Profile">${avatarUrl ? `<img src="${escHtml(avatarUrl)}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display=''"><span style="display:none" class="text-lg">👤</span>` : '<span class="text-lg">👤</span>'}</button>
-        <div class="flex gap-2">
+    const headerHtml = `<div class="flex flex-wrap items-center justify-between gap-2 mb-6">
+        <button id="dashProfileBtn" class="w-10 h-10 shrink-0 rounded-full border-2 border-transparent bg-[#2a2418] overflow-hidden flex items-center justify-center hover:border-[var(--accent-1)] transition-colors" title="Profile">${avatarUrl ? `<img src="${escHtml(avatarUrl)}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display=''"><span style="display:none" class="text-lg">👤</span>` : '<span class="text-lg">👤</span>'}</button>
+        <div class="flex flex-wrap gap-2">
             <button id="dashCommunityBtn" class="btn-primary-pill px-4 py-2 text-xs"><span class="tab-icon">🔥</span><span class="tab-label">Community</span></button>
             <button id="dashUploadBtn" class="btn-primary-pill px-4 py-2 text-xs"><span class="tab-icon">📜</span><span class="tab-label">Upload</span></button>
             <button id="dashNewBtn" class="btn-primary-pill px-4 py-2 text-xs"><span class="tab-icon">➕</span><span class="tab-label">+ Create</span></button>
@@ -65,7 +65,6 @@ export async function renderDashboard(container) {
                         <div class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold mb-2">Accent Color</div>
                         <div id="kebabThemeSwatches" class="grid grid-cols-5 gap-2"></div>
                     </div>
-                </div>
             </div>
         </div>
     </div>`;
