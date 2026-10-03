@@ -32,8 +32,15 @@ describe('sanitizeHtml', () => {
         expect(sanitizeHtml(html)).toBe(html);
     });
 
-    it('drops inline styles', () => {
-        expect(sanitizeHtml('<span style="position:fixed">x</span>')).toBe('<span>x</span>');
+    it('drops layout styles', () => {
+        expect(sanitizeHtml('<span style="position:fixed; top:0">x</span>')).toBe('<span>x</span>');
+    });
+
+    it('keeps Quill text color and highlight only', () => {
+        const out = sanitizeHtml('<span style="color: rgb(230, 0, 0); background-color: rgb(255, 255, 0); position: fixed">x</span>');
+        expect(out).toContain('color: rgb(230, 0, 0)');
+        expect(out).toContain('background-color: rgb(255, 255, 0)');
+        expect(out).not.toContain('position');
     });
 
     it('returns empty for empty input', () => {

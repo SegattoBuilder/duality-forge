@@ -44,15 +44,33 @@ export function escJs(str) {
         .replace(/\u2029/g, '\\u2029'));
 }
 
-// Rich text (Quill HTML, homebrew descriptions) from users — strips scripts, handlers, javascript: URLs
+// Rich text (Quill HTML, homebrew descriptions) from users — strips scripts, handlers, javascript: URLs.
+// Inline styles are reduced to text color / highlight (Quill color pickers).
 const SANITIZE_OPTS = {
     ALLOWED_TAGS: ['p', 'div', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'blockquote', 'span', 'code', 'pre'],
-    ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'data-list'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'style', 'data-list'],
 };
+
+let _purifyReady = false;
+function getPurify() {
+    const purify = globalThis.DOMPurify;
+    if (!purify?.isSupported) return null;
+    if (!_purifyReady) {
+        purify.addHook('afterSanitizeAttributes', node => {
+            if (!node.hasAttribute?.('style')) return;
+            const { color, backgroundColor } = node.style;
+            node.removeAttribute('style');
+            if (color) node.style.color = color;
+            if (backgroundColor) node.style.backgroundColor = backgroundColor;
+        });
+        _purifyReady = true;
+    }
+    return purify;
+}
 
 export function sanitizeHtml(html) {
     if (!html) return '';
-    const purify = globalThis.DOMPurify;
-    if (!purify?.isSupported) return escHtmlAttr(html);
+    const purify = getPurify();
+    if (!purify) return escHtmlAttr(html);
     return purify.sanitize(String(html), SANITIZE_OPTS);
 }
