@@ -146,15 +146,29 @@
     border-color: rgba(0,0,0,0.08);
 }
 
-/* Domain card selected shimmer */
+/* Domain card selected shimmer — the strong glow lives on a pseudo-element and only its
+   opacity animates (GPU-composited), instead of repainting box-shadow every frame */
 .domain-card-selected {
     background-color: #2a2418 !important;
     border: 1px solid var(--accent-1) !important;
+    position: relative;
+    box-shadow: 0 0 8px color-mix(in srgb, var(--accent-1) 15%, transparent), inset 0 0 6px color-mix(in srgb, var(--accent-1) 8%, transparent);
+}
+.domain-card-selected::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: 0 0 18px color-mix(in srgb, var(--accent-1) 30%, transparent), inset 0 0 12px color-mix(in srgb, var(--accent-1) 15%, transparent);
+    opacity: 0;
     animation: shimmer 3s ease-in-out infinite;
 }
 @keyframes shimmer {
-    0%, 100% { box-shadow: 0 0 8px color-mix(in srgb, var(--accent-1) 15%, transparent), inset 0 0 6px color-mix(in srgb, var(--accent-1) 8%, transparent); }
-    50% { box-shadow: 0 0 18px color-mix(in srgb, var(--accent-1) 30%, transparent), inset 0 0 12px color-mix(in srgb, var(--accent-1) 15%, transparent); }
+    50% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .domain-card-selected::after { animation: none; opacity: 0.5; }
 }
 
 /* Tracker Dots — orb/gem effect (shared) */
@@ -195,8 +209,11 @@
     box-shadow: 0 0 8px #7b2fa880, inset 0 -2px 4px #00000040;
 }
 
-/* Modal */
-.modal-overlay { backdrop-filter: blur(4px); background: rgba(0,0,0,0.85); }
+/* Modal — blur only on desktop; on phones the 85% overlay already hides the page */
+.modal-overlay { background: rgba(0,0,0,0.85); }
+@media (hover: hover) and (min-width: 1024px) {
+    .modal-overlay { backdrop-filter: blur(4px); }
+}
 .modal-panel {
     background: linear-gradient(145deg, #252118, #1e1b16);
     border: 1px solid #4a3f30;

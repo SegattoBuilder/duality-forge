@@ -954,3 +954,9 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 20' fill='none'%3E%3Cpath d='M10 10 Q30 4 50 10 Q70 16 90 10 L95 10' stroke='%238B6914' stroke-width='1' stroke-linecap='round' opacity='0.6'/%3E%3Cpath d='M105 10 Q120 4 140 10 Q160 16 180 10 L190 10' stroke='%238B6914' stroke-width='1' stroke-linecap='round' opacity='0.6'/%3E%3Cpath d='M92 4 L100 10 L92 16 M108 4 L100 10 L108 16' stroke='%23B8860B' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='100' cy='10' r='2.5' fill='%23B8860B'/%3E%3Cpath d='M0 10 L8 10 M192 10 L200 10' stroke='%238B6914' stroke-width='0.5' opacity='0.4'/%3E%3C/svg%3E");
     background-size: contain; background-repeat: no-repeat; background-position: center;
 }
+
+/* Fantasy dots: CSS drop-shadow filters are costly with many dots (DM tracker) on phones —
+   keep the glow on desktop only */
+@media (hover: none), (max-width: 1023px) {
+    [data-mode="fantasy"] .dot[class*="filled-"] { filter: none; }
+}

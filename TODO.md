@@ -259,7 +259,7 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 - [x] Chronicle load via `quill.clipboard.dangerouslyPasteHTML(DOMPurify.sanitize(html))` instead of `quill.root.innerHTML` (`chronicle.js:132`)
 - [x] Inline handler args escaped with `escJs` (party deny/kick, vault groups, creature ids)
 - [ ] Remove data interpolation inside inline `onclick="fn('${x}')"` — party deny/kick (`party.js:68,70`) is exploitable by a player's character name; migrate to `data-*` + delegated listeners
-- [ ] Pin third-party script versions + `integrity` (SRI); add `/_headers` with CSP (`connect-src 'self' *.supabase.co`)
+- [x] Pin third-party script versions + `integrity` (SRI); add `/_headers` with CSP (`connect-src 'self' *.supabase.co`)
 
 **P0 — Supabase RLS / DB** _(SQL in `supabase/migrations/` — run manually in SQL Editor)_
 - [x] **Run `001_security_hardening.sql`** (applied 2026-10-03, snapshot `backup_20261003`) — safe before app deploy:
@@ -280,8 +280,8 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 - [x] Verified: RLS enabled on all tables (backups have no policies → inaccessible); `profiles` owner-only; rating CHECK 1–5 exists; chapter environment/difficulty/duration enum CHECKs exist
 
 **P0 — Cloudflare Functions**
-- [ ] `/api/report` — rate limit (Cloudflare rule or Turnstile), `type` allowlist, truncate fields, reject bodies > 4KB (protects KV free-tier writes)
-- [ ] `/api/reports` — admin key via header (not query string) + constant-time compare, or put behind Cloudflare Access
+- [x] `/api/report` — rate limit (Cloudflare rule or Turnstile), `type` allowlist, truncate fields, reject bodies > 4KB (protects KV free-tier writes)
+- [x] `/api/reports` — admin key via header (not query string) + constant-time compare, or put behind Cloudflare Access
 - [ ] `delete-account.js` — check intermediate fetch results before deleting the auth user
 
 **P1 — Data loss / correctness**
@@ -324,12 +324,12 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 - [ ] `gear.js` `autoResizeTextareas` — listeners added on every expand (leak); bind once or use `field-sizing: content`
 - [ ] Vault drag-scroll — `requestAnimationFrame` loop instead of 16ms `setInterval` per `dragover`
 - [ ] Touch reorder — HTML5 drag & drop doesn't work on phones; pointer events or up/down buttons
-- [ ] Remove `backdrop-blur` on nav and modal overlay (or desktop-only)
-- [ ] `.domain-card-selected` infinite `box-shadow` animation → animate `opacity` on pseudo-element
-- [ ] Fantasy mode `filter: drop-shadow` on every dot → single cheap shadow
-- [ ] Replace fixed full-screen `feTurbulence` noise with tiny tiled PNG/WebP
-- [ ] `defer` supabase-js; Quill 2 on both DM + community (community uses 1.3.7 — HTML incompatibility); lazy-load Quill on first chronicle/share open
-- [ ] `/_headers` cache rules (images/fonts long, js/css short + revalidate); service worker stale-while-revalidate for same-origin assets
+- [x] Remove `backdrop-blur` on nav and modal overlay (or desktop-only)
+- [x] `.domain-card-selected` infinite `box-shadow` animation → animate `opacity` on pseudo-element
+- [x] Fantasy mode `filter: drop-shadow` on every dot → single cheap shadow
+- [ ] ~~Replace fixed full-screen `feTurbulence` noise~~ — re-evaluated: rasterized once and cached, low cost; keep
+- [x] `defer` supabase-js; Quill 2 on both DM + community (community uses 1.3.7 — HTML incompatibility); lazy-load Quill on first chronicle/share open
+- [x] `/_headers` cache rules (images/fonts long, js/css short + revalidate); service worker stale-while-revalidate for same-origin assets
 - [ ] Fix stale Cinzel preload (`v23` → current); drop unused Inter 300/800 weights; consistent `display=swap`
 - [ ] Compress `icon-512` / `logo.png` PNGs (~300KB each)
 

@@ -122,3 +122,14 @@ select {
 
 /* Picked save loading — hide content (not the nav) so cached data from another save doesn't flash */
 html.save-loading body > :not(nav) { visibility: hidden; }
+
+/* Phones/tablets: the fixed nav's backdrop blur re-renders on every scroll frame; the nav
+   background is already 95% opaque, so drop the blur there */
+@media (hover: none), (max-width: 1023px) {
+    .backdrop-blur { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+    /* Without the blur, 95% opacity lets content show through — use the solid mode colour */
+    nav.backdrop-blur { background-color: #1a1714 !important; }
+    [data-mode="light"] nav.backdrop-blur { background-color: #f5f0e8 !important; }
+    [data-mode="scifi"] nav.backdrop-blur { background-color: #0a0e1a !important; }
+    [data-mode="fantasy"] nav.backdrop-blur { background-color: #1a1208 !important; }
+}
