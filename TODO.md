@@ -319,7 +319,8 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 
 **P1 — Mobile performance**
 - [x] Debounce `autoCache` 300–500ms; skip search inputs; remove duplicate per-field calls (`character/app.js:124`, `gear.js:174`)
-- [ ] Debounce chronicle/tracker notes caching; chronicle re-renders only the changed chapter, keeps Quill instances
+- [ ] **DM debounce** (external feedback 2026-10-03, high impact): tracker notes (`updateNotes`), chronicle title/NPC/music inputs and vault notes still write localStorage on every keystroke — reuse the character sheet's debounced `autoCache` pattern (400ms + flush on `pagehide`/hidden). Character sheet already done (`dd65119`)
+- [ ] Chronicle re-renders only the changed chapter, keeps Quill instances
 - [ ] Tracker dot click — toggle classes instead of re-rendering whole card
 - [ ] `gear.js` `autoResizeTextareas` — listeners added on every expand (leak); bind once or use `field-sizing: content`
 - [ ] Vault drag-scroll — `requestAnimationFrame` loop instead of 16ms `setInterval` per `dragover`
@@ -345,7 +346,10 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 **P2 — Structure & cleanliness**
 - [ ] `core/cloud-sync.js` — `createCloudSync({ table, nameColumn, gather, apply, toRow })` replaces duplicated logic in `dm-auth.js` / `char-auth.js` (~180 lines); home for P1 save fixes
 - [ ] `core/dialog.js` (native `<dialog>`, Promise-based confirm/alert/prompt) + `core/toast.js` — replaces ~8 dialog and 4 toast implementations
-- [ ] `data-action` event delegation module-by-module — removes 229 `window.*` globals and ~350 inline handlers
+- [ ] `data-action` event delegation module-by-module — removes 229 `window.*` globals and ~350 inline handlers (external feedback 2026-10-03 rated high impact)
+  - Main wins: CSP can drop `'unsafe-inline'` (blocks injected inline scripts), no globals, simpler modules
+  - Speed gain comes when combined with targeted DOM updates (toggle a dot instead of re-rendering the card) — inline handlers themselves are cheap
+  - Order: DM tracker/vault (most re-rendering) → character gear/cards → community → dashboard
 - [ ] `community/app.js` — `communityResource()` factory for chapters/adversaries/homebrew; split files; use core auth
 - [ ] `dm/creature-card.js` — shared card rendering for tracker + vault
 - [ ] Split `dashboard.js` (cards / save-picker / account / menus) and `tracker.js`
