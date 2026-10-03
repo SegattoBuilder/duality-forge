@@ -19,7 +19,14 @@
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/themes.css">
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js" integrity="sha384-WgXwGL6fUsYJWNaKJgVbrJKGRQwc1vieh2oy4kw9nXqpNDz3tdSsqEYUgeHD/NuF" crossorigin="anonymous"></script>
+    <script>
+        // Returning user (saved session): hide the sign-in form until the session check finishes,
+        // so the dashboard doesn't flash the login screen first
+        try { if (localStorage.getItem('sb-wddswshfpefxfnzdhhrm-auth-token')) document.documentElement.classList.add('returning'); } catch (e) {}
+        setTimeout(function () { document.documentElement.classList.remove('returning'); }, 5000);
+    </script>
     <style>
+        html.returning #signInForm, html.returning #landingSubtitle { visibility: hidden; }
         #signInForm input:-webkit-autofill,
         #signInForm input:-webkit-autofill:hover,
         #signInForm input:-webkit-autofill:focus {
@@ -148,6 +155,7 @@
         }
 
         function showSignIn() {
+            document.documentElement.classList.remove('returning');
             signInForm.classList.remove('hidden');
             dashboardView.classList.add('hidden');
             document.getElementById('signOutRow').classList.add('hidden');
@@ -161,6 +169,7 @@
             document.getElementById('signOutRow').classList.remove('hidden');
             showDashboard();
         }
+        document.documentElement.classList.remove('returning');
 
         // Listen for password recovery redirect
         sb.auth.onAuthStateChange((event, session) => {
