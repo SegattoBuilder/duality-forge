@@ -338,7 +338,9 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 - [ ] Evaluate new, better-maintained source (more structured data); confirm license/terms (SRD is under the Darrington Press Community Gaming License)
 - [ ] Single data adapter module (`js/core/srd.js`) — one place maps source format → app format, so swapping sources doesn't touch compendium/cards/tracker
 - [ ] Pin source to a commit/tag instead of `main` (upstream changes can't silently break the app); cache-first with version key
-- [ ] Decide: fetch from third party at runtime vs. mirror to `/data/` on Pages
+- [ ] Decide: fetch from third party at runtime vs. own copy (Cloudflare Pages `/data/` preferred over Supabase Storage — unlimited free bandwidth, edge-cached; Supabase egress is shared with auth/saves). ~560KB raw / ~100KB gzipped
+- [ ] Owner to check Darrington Press Community Gaming License terms before hosting a copy — **deferred, dedicated branch** (decided 2026-10-03)
+- [ ] Interim (perf batch): pin current sources to a commit SHA + cache-first on device
 
 **P2 — Structure & cleanliness**
 - [ ] `core/cloud-sync.js` — `createCloudSync({ table, nameColumn, gather, apply, toRow })` replaces duplicated logic in `dm-auth.js` / `char-auth.js` (~180 lines); home for P1 save fixes
