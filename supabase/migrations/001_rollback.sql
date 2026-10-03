@@ -58,7 +58,7 @@ END;
 $function$;
 alter function public.update_homebrew_rating() reset search_path;
 
--- Restore counters from snapshot (change schema name if your snapshot date differs)
+-- Restore counters from snapshot — set the schema to the backup taken before 001 (backup_20261003)
 update public.community_chapters c set avg_rating = b.avg_rating, rating_count = b.rating_count, import_count = b.import_count
   from backup_20261003.community_chapters b where b.id = c.id;
 update public.community_adversaries c set avg_rating = b.avg_rating, rating_count = b.rating_count, import_count = b.import_count

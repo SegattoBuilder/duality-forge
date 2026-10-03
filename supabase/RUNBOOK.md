@@ -4,7 +4,7 @@ All SQL runs manually in **Supabase Dashboard → SQL Editor** (paste whole file
 
 ## Every change
 
-1. **Snapshot** — run `backup/snapshot.sql` (update the date in the schema name).
+1. **Snapshot** — run `backup/snapshot.sql` (creates a new timestamped `backup_YYYYMMDD_HHMI` schema).
    Check the final result: `live` = `backup` for every table.
 2. **Apply** the migration.
 3. **Smoke test** (checklist below).

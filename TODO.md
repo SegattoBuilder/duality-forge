@@ -269,8 +269,8 @@ _Full review of security, correctness, performance and structure. Ordered by pri
   - `characters` guard: owner can't self-approve; DM can only change `table_approved` (was able to rewrite player `data` and `user_id`)
   - `get_table_names(ids)` RPC for players
 - [x] **Run `001b_chapter_id_defaults.sql`** (applied 2026-10-03) — chapter ratings/imports were failing: `id` had no default
-- [ ] Drop `backup_20261003` schema after ~1 week without issues (2026-10-10)
-- [ ] **Run `002_close_dm_tables_read.sql`** — ONLY after app using `get_table_names()` is live on main. Closes `dm_tables` SELECT `using(true)` (all campaigns readable with anon key) + removes duplicate policies
+- [ ] Drop `backup_20261003` and `backup_20261003_b` schemas after ~1 week without issues (2026-10-10)
+- [x] **Run `002_close_dm_tables_read.sql`** (applied 2026-10-03 after main deploy, snapshot `backup_20261003_b`; verified: signed-in user sees only own tables) — ONLY after app using `get_table_names()` is live on main. Closes `dm_tables` SELECT `using(true)` (all campaigns readable with anon key) + removes duplicate policies
 - [ ] `author_nickname` set server-side from `profiles` (prevents impersonation)
 - [ ] `*_imports` / `*_ratings` public read exposes who imported/rated what — restrict to own rows if counts are enough
 - [ ] `characters.table_approved` is `text` with values `null/'false'/'true'/'denied'/'kicked'` — convert to enum or add CHECK
