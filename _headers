@@ -1,0 +1,23 @@
+# Cloudflare Pages response headers — https://developers.cloudflare.com/pages/configuration/headers/
+
+# CSP: only our own code + the CDNs we use may run, and data may only be sent to our
+# Supabase project. 'unsafe-inline' is needed until inline onclick="" handlers are replaced.
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://wddswshfpefxfnzdhhrm.supabase.co wss://wddswshfpefxfnzdhhrm.supabase.co https://raw.githubusercontent.com https://cloudflareinsights.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+
+# Images rarely change — cache a week, refresh in the background
+/images/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+# Pinned third-party code bundled in the repo
+/js/vendor/*
+  Cache-Control: public, max-age=86400
+
+# App JS/CSS keep the default (revalidate every load) so a deploy never mixes old and new modules
+
+/api/*
+  Cache-Control: no-store
