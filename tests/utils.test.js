@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateId, computeDotToggle, validateShareFields, escHtml, escHtmlAttr } from '../js/core/utils.js';
+import { generateId, computeDotToggle, validateShareFields, escHtml, escHtmlAttr, escJs } from '../js/core/utils.js';
 
 describe('generateId', () => {
     it('uses default prefix', () => {
@@ -90,6 +90,16 @@ describe('escHtml', () => {
 
     it('converts numbers to string', () => {
         expect(escHtml(42)).toBe('42');
+        expect(escHtml(0)).toBe('0');
+    });
+
+    it('escapes quotes so attribute values cannot be broken out of', () => {
+        expect(escHtml('x" onmouseover="alert(1)')).toBe('x&quot; onmouseover=&quot;alert(1)');
+        expect(escHtml("x' onload='y")).toBe('x&#39; onload=&#39;y');
+    });
+
+    it('neutralizes img onerror payload', () => {
+        expect(escHtml('<img src=x onerror=alert(1)>')).toBe('&lt;img src=x onerror=alert(1)&gt;');
     });
 });
 
@@ -102,12 +112,49 @@ describe('escHtmlAttr', () => {
         expect(escHtmlAttr('a&b')).toBe('a&amp;b');
     });
 
-    it('does not escape angle brackets', () => {
-        expect(escHtmlAttr('<b>')).toBe('<b>');
+    it('escapes angle brackets and apostrophes', () => {
+        expect(escHtmlAttr("<b>'")).toBe('&lt;b&gt;&#39;');
+    });
+
+    it('keeps zero', () => {
+        expect(escHtmlAttr(0)).toBe('0');
+    });
+
+    it('does not apply bold formatting', () => {
+        expect(escHtmlAttr('**x**')).toBe('**x**');
     });
 
     it('returns empty for falsy', () => {
         expect(escHtmlAttr(null)).toBe('');
         expect(escHtmlAttr('')).toBe('');
+    });
+});
+
+describe('escJs', () => {
+    // Simulates what the browser does: decode HTML entities in the attribute, then run as JS
+    const decode = (str) => str.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const roundTrip = (value) => new Function(`return '${decode(escJs(value))}'`)();
+
+    it('keeps plain values', () => {
+        expect(escJs('abc-123')).toBe('abc-123');
+    });
+
+    it('cannot break out of a single-quoted handler argument', () => {
+        const payload = "x');alert(1);//";
+        expect(roundTrip(payload)).toBe(payload);
+    });
+
+    it('round-trips quotes, backslashes and newlines', () => {
+        const value = 'a\\b "c" \'d\'\nnext';
+        expect(roundTrip(value)).toBe(value);
+    });
+
+    it('output contains no raw quotes or angle brackets', () => {
+        expect(escJs(`'"<>`)).not.toMatch(/['"<>]/);
+    });
+
+    it('returns empty for null/undefined', () => {
+        expect(escJs(null)).toBe('');
+        expect(escJs(undefined)).toBe('');
     });
 });

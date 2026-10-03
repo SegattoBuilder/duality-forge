@@ -23,7 +23,7 @@
 <script>
     (function(){
         var t = localStorage.getItem('dh_active_tab');
-        if (t && t !== 'tab-combat') {
+        if (t && /^tab-[a-z]+$/.test(t) && t !== 'tab-combat') {
             var s = document.createElement('style');
             s.id = 'tab-cloak';
             s.textContent = '#tab-combat{display:none!important}#'+t+'{display:block!important}#btn-tab-combat.active{background:#2a2418;color:#6b5d4d;border-color:#3d362a}#btn-'+t+'{background:linear-gradient(135deg,var(--accent-4),var(--accent-3))!important;color:#fff!important;border-color:transparent!important}';

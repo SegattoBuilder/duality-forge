@@ -1,4 +1,4 @@
-import { escHtml } from './utils.js';
+import { escHtml, sanitizeHtml } from './utils.js';
 
 const TIER_DEFS = [
     { key: 'tier2', label: 'Tier 2', levels: '2–4', options: [
@@ -62,12 +62,12 @@ export function renderCharacterDetailHtml(row) {
 
     const renderCard = (c) => {
         const domainBadge = c.domain ? `<span class="text-[9px] uppercase font-bold text-zinc-500">${escHtml(c.domain)}</span>` : '';
-        const levelBadge = c.level ? `<span class="text-[9px] text-zinc-600">Lv${c.level}</span>` : '';
+        const levelBadge = c.level ? `<span class="text-[9px] text-zinc-600">Lv${escHtml(c.level)}</span>` : '';
         const starred = selectedNames.includes((c.name || '').toLowerCase());
         return `<div class="p-3 rounded-lg border ${starred ? 'border-[#d4a017]/50 bg-[#d4a017]/5' : 'border-zinc-800 bg-black/20'}">
             <div class="flex items-center gap-2 mb-1">${starred ? '<span class="text-[#d4a017] text-xs">★</span>' : ''}<span class="text-xs font-bold text-[#f5efe6]">${escHtml(c.name)}</span></div>
             <div class="flex gap-2">${domainBadge}${levelBadge}</div>
-            ${c.feature ? `<div class="text-[10px] text-zinc-400 mt-1 leading-relaxed char-detail-feature">${c.feature}</div>` : ''}
+            ${c.feature ? `<div class="text-[10px] text-zinc-400 mt-1 leading-relaxed char-detail-feature">${sanitizeHtml(c.feature)}</div>` : ''}
         </div>`;
     };
 
@@ -88,7 +88,7 @@ export function renderCharacterDetailHtml(row) {
 
     const armorsHtml = (d.armors || []).map(a => {
         const eq = a.equipped ? '★ ' : '';
-        return `<div class="flex items-center gap-2 text-xs"><span class="text-[#d4a017]">${eq}</span><span class="text-[#f5efe6] ${a.equipped ? 'font-bold' : ''}">${escHtml(a.name)}</span><span class="text-zinc-500">Major ${a.major || 0} / Severe ${a.severe || 0}</span></div>`;
+        return `<div class="flex items-center gap-2 text-xs"><span class="text-[#d4a017]">${eq}</span><span class="text-[#f5efe6] ${a.equipped ? 'font-bold' : ''}">${escHtml(a.name)}</span><span class="text-zinc-500">Major ${escHtml(a.major || 0)} / Severe ${escHtml(a.severe || 0)}</span></div>`;
     }).join('');
 
     const gearHtml = (d.gear || []).map(g => `<div class="text-xs"><span class="text-[#f5efe6] font-bold">${escHtml(g.name)}</span>${g.bonus ? ` <span class="text-[#d4a017]">${escHtml(g.bonus)}</span>` : ''}${g.desc ? `<div class="text-[11px] text-zinc-400 leading-relaxed">${escHtml(g.desc)}</div>` : ''}</div>`).join('');

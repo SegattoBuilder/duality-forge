@@ -250,13 +250,14 @@
 _Full review of security, correctness, performance and structure. Ordered by priority. Items already in the Performance backlog below are not repeated._
 
 **P0 — Security (cross-user XSS → session token theft from localStorage)**
-- [ ] Fix escapers in `utils.js` — single `escapeHtml` covering `& < > " '`; move `**bold**` formatting out of the escaper into `formatInline`; update `utils.test.js` (currently locks in unsafe behavior)
-- [ ] Vendor DOMPurify — sanitize rich text: community chapter `content.text` (`community/app.js:332`), homebrew `desc`/`feature`, card `feature` in `cards.js` and `character-detail.js`
-- [ ] Escape all community chapter fields — `disposition`, NPC/music fields (`community/app.js:324-340`); `environment`/`difficulty`/`duration` already enum-constrained in DB but escape anyway
-- [ ] Escape music cue `href` and avatar `src` attributes (`community/app.js:351`, `dashboard.js:446,503`)
-- [ ] Escape creature/card/gear names rendered via `innerHTML` (`tracker.js:523,535`, `vault.js:131,170`, `cards.js:165,199-212`, `gear.js` input values)
-- [ ] `showConfirm` / `showAlert` use `textContent` only (`auth.js:298`); callers passing markup switch to plain text
-- [ ] Chronicle load via `quill.clipboard.dangerouslyPasteHTML(DOMPurify.sanitize(html))` instead of `quill.root.innerHTML` (`chronicle.js:132`)
+- [x] Fix escapers in `utils.js` — single `escapeHtml` covering `& < > " '`; move `**bold**` formatting out of the escaper into `formatInline`; update `utils.test.js` (currently locks in unsafe behavior)
+- [x] Vendor DOMPurify — sanitize rich text: community chapter `content.text` (`community/app.js:332`), homebrew `desc`/`feature`, card `feature` in `cards.js` and `character-detail.js`
+- [x] Escape all community chapter fields — `disposition`, NPC/music fields (`community/app.js:324-340`); `environment`/`difficulty`/`duration` already enum-constrained in DB but escape anyway
+- [x] Escape music cue `href` and avatar `src` attributes (`community/app.js:351`, `dashboard.js:446,503`)
+- [x] Escape creature/card/gear names rendered via `innerHTML` (`tracker.js:523,535`, `vault.js:131,170`, `cards.js:165,199-212`, `gear.js` input values)
+- [x] `showConfirm` / `showAlert` use `textContent` only (`auth.js:298`); callers passing markup switch to plain text
+- [x] Chronicle load via `quill.clipboard.dangerouslyPasteHTML(DOMPurify.sanitize(html))` instead of `quill.root.innerHTML` (`chronicle.js:132`)
+- [x] Inline handler args escaped with `escJs` (party deny/kick, vault groups, creature ids)
 - [ ] Remove data interpolation inside inline `onclick="fn('${x}')"` — party deny/kick (`party.js:68,70`) is exploitable by a player's character name; migrate to `data-*` + delegated listeners
 - [ ] Pin third-party script versions + `integrity` (SRI); add `/_headers` with CSP (`connect-src 'self' *.supabase.co`)
 
@@ -290,7 +291,7 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 - [ ] `safeJson(key, fallback)` helper — corrupt `dh_sheet` bricks the character sheet (`save.js:146`)
 - [ ] Character `app.js` — register `DOMContentLoaded` before `await requireAuth()` (init can be missed)
 - [ ] DM gear menu throws on every click — `#authMenu` doesn't exist (`dm-auth.js:240`); remove ~130 dead lines (190-318, 372-401)
-- [ ] Rate-limit cooldown shows raw HTML and never ticks (`auth.js:310` → `showAlert` uses `textContent`)
+- [x] Rate-limit cooldown shows raw HTML and never ticks (`auth.js:310` → `showAlert` uses `textContent`)
 - [ ] Dashboard archive/unarchive/delete update UI even when write fails (`dashboard.js:333-350`)
 - [ ] Community imports write directly to other pages' localStorage keys with hardcoded strings — use constants + `storage` listener or pending-import queue
 - [ ] Global `unhandledrejection` + `onerror` reporting on all pages (currently only support page)
@@ -348,7 +349,7 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 - [ ] README — autosave interval says 5 min, code is 15 min
 
 **P3 — Tests**
-- [ ] Escaper tests with quote/apostrophe/attribute payloads
+- [x] Escaper tests with quote/apostrophe/attribute payloads
 - [ ] CloudSync tests with fake Supabase (stale `updated_at`, failed save stays dirty, no double insert)
 - [ ] `safeJson` tests; Pages Functions tests with mocked `fetch`/env
 - [ ] Static check: every inline `on*=` handler name is defined and every `getElementById` id exists on the page

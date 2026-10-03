@@ -293,9 +293,12 @@ function ensureModal(id, html) {
     return modal;
 }
 
-export function showConfirm(message, onYes, onNo) {
+// `extra` (optional): trusted static HTML appended below the message, e.g. a checkbox
+export function showConfirm(message, onYes, onNo, extra) {
     const modal = ensureModal('customConfirmModal', `<div class="modal-panel p-6 w-full max-w-sm text-center"><p id="customConfirmMsg" class="text-sm text-[#f5efe6] mb-5 font-[Cinzel]"></p><div class="flex gap-3"><button id="customConfirmYes" class="flex-1 btn-action text-xs py-3 rounded-xl font-bold uppercase text-white">Yes</button><button id="customConfirmNo" class="flex-1 bg-[#2a2418] border border-[#3d362a] text-xs py-3 rounded-xl font-bold uppercase text-[#a89880]">No</button></div></div>`);
-    document.getElementById('customConfirmMsg').innerHTML = message;
+    const msgEl = document.getElementById('customConfirmMsg');
+    msgEl.textContent = message;
+    if (extra) msgEl.insertAdjacentHTML('beforeend', extra);
     modal.classList.remove('hidden');
     const cleanup = () => { modal.classList.add('hidden'); };
     document.getElementById('customConfirmYes').onclick = () => { cleanup(); if (onYes) onYes(); };
@@ -307,7 +310,12 @@ function showCooldown(msg) {
     const match = msg.match(/(\d+)\s*seconds/);
     let secs = match ? parseInt(match[1]) : 60;
     if (cooldownInterval) clearInterval(cooldownInterval);
-    showAlert(`⏳ Please wait <span id="cooldownTimer" style="color:var(--accent-1)">${secs}s</span> before trying again.`);
+    showAlert('⏳ Please wait ');
+    const timer = document.createElement('span');
+    timer.id = 'cooldownTimer';
+    timer.style.color = 'var(--accent-1)';
+    timer.textContent = secs + 's';
+    document.getElementById('customAlertMsg').append(timer, ' before trying again.');
     cooldownInterval = setInterval(() => {
         secs--;
         const el = document.getElementById('cooldownTimer');

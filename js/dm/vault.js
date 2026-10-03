@@ -1,4 +1,4 @@
-import { escHtml, escHtmlAttr, generateId } from '../core/utils.js';
+import { escHtml, escHtmlAttr, escJs, generateId } from '../core/utils.js';
 import { getNextName, switchTab } from './app.js';
 import { creatures, autoCache, renderGrid, editCharacterCard, editCustomCard, editEnemyCard, renderCard, adversariesData } from './tracker.js';
 import { showConfirm, getUser, getProfile, getSupabase, showAlert, showPrompt } from '../core/auth.js';
@@ -60,10 +60,10 @@ function deployToTracker(id, asIs) {
 function deployGroupToTracker(group) {
     const members = getGroupMembers(_vaultCreatures, _vaultGroups, group);
     if (!members.length) return;
-    const label = group === '__ungrouped' ? 'all ungrouped creatures' : `all creatures from &quot;${escHtml(group)}&quot;`;
+    const label = group === '__ungrouped' ? 'all ungrouped creatures' : `all creatures from "${group}"`;
     const gObj = _vaultGroups.find(g => g.name === group);
     const extra = gObj?.disposable ? `<label class="flex items-center gap-2 mt-3 cursor-pointer"><input type="checkbox" id="deployDeleteGroup" class="accent-[#d4a017]" checked><span class="text-xs text-zinc-400">Delete group after deploy</span></label>` : '';
-    showConfirm(`Deploy ${label} to tracker?${extra}`, () => {
+    showConfirm(`Deploy ${label} to tracker?`, () => {
         const deleteGroup = gObj?.disposable && document.getElementById('deployDeleteGroup')?.checked;
         members.forEach(c => {
             Object.assign(c, resetCreatureStats(c));
@@ -76,7 +76,7 @@ function deployGroupToTracker(group) {
         }
         autoCache(); autoCacheVault(); renderGrid(); renderVaultGrid();
         switchTab('tracker');
-    });
+    }, undefined, extra);
 }
 
 // ========== VAULT CREATURE MANAGEMENT ==========
@@ -118,7 +118,7 @@ function adjustVaultMax(creatureId, type, delta) {
 function renderVaultDots(creature, type) {
     const max = creature[type + 'Max'], filled = creature[type + 'Filled'];
     let html = '';
-    for (let i = 0; i < max; i++) html += `<div class="dot ${type}-dot ${i < filled ? 'filled-' + type : ''}" onclick="window._toggleVaultDot('${creature.id}', '${type}', ${i})"></div>`;
+    for (let i = 0; i < max; i++) html += `<div class="dot ${type}-dot ${i < filled ? 'filled-' + type : ''}" onclick="window._toggleVaultDot('${escJs(creature.id)}', '${type}', ${i})"></div>`;
     return html;
 }
 
@@ -128,8 +128,8 @@ function flipVaultCard(creatureId) {
     if (!creature) return;
     const el = document.getElementById('v-' + creature.id);
     if (!el) return;
-    el.innerHTML = `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2"><span class="text-zinc-600 text-sm">📝</span><span class="font-black text-sm uppercase font-[Cinzel] text-[#f5efe6]">${creature.name}</span></div><button onclick="window._flipVaultBack('${creature.id}')" class="btn-icon text-[10px] uppercase tracking-wide font-bold">← Back</button></div>
-        <textarea oninput="window._updateVaultNotes('${creature.id}', this.value)" placeholder="Add notes..." class="w-full h-40 input-field resize-none placeholder-zinc-700 text-xs text-[#e8e0d4]">${escHtml(creature.notes || '')}</textarea>`;
+    el.innerHTML = `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2"><span class="text-zinc-600 text-sm">📝</span><span class="font-black text-sm uppercase font-[Cinzel] text-[#f5efe6]">${escHtml(creature.name)}</span></div><button onclick="window._flipVaultBack('${escJs(creature.id)}')" class="btn-icon text-[10px] uppercase tracking-wide font-bold">← Back</button></div>
+        <textarea oninput="window._updateVaultNotes('${escJs(creature.id)}', this.value)" placeholder="Add notes..." class="w-full h-40 input-field resize-none placeholder-zinc-700 text-xs text-[#e8e0d4]">${escHtml(creature.notes || '')}</textarea>`;
 }
 function flipVaultBack(creatureId) { const c = _vaultCreatures.find(c => c.id === creatureId); if (c) renderVaultCard(c); }
 function updateVaultNotes(creatureId, value) { const c = _vaultCreatures.find(c => c.id === creatureId); if (c) { c.notes = value; autoCacheVault(); } }
@@ -137,7 +137,7 @@ function updateVaultNotes(creatureId, value) { const c = _vaultCreatures.find(c 
 // ========== VAULT CARD RENDERING ==========
 function buildVaultCardInner(creature) {
     const dead = isCreatureDead(creature);
-    const adjBtn = (type, delta) => `<button onclick="window._adjustVaultMax('${creature.id}', '${type}', ${delta})" class="w-4 h-4 flex items-center justify-center rounded bg-[#2a2418] border border-[#3d362a] text-zinc-500 hover:text-white text-[10px] leading-none">${delta < 0 ? '−' : '+'}</button>`;
+    const adjBtn = (type, delta) => `<button onclick="window._adjustVaultMax('${escJs(creature.id)}', '${type}', ${delta})" class="w-4 h-4 flex items-center justify-center rounded bg-[#2a2418] border border-[#3d362a] text-zinc-500 hover:text-white text-[10px] leading-none">${delta < 0 ? '−' : '+'}</button>`;
     const dotRow = (type, label, color) => {
         const max = creature[type + 'Max'] || 0;
         if (max === 0) return '';
@@ -159,19 +159,19 @@ function buildVaultCardInner(creature) {
             ${features.length ? `<div class="space-y-1.5 mt-2">${features.map(f => `<div><div class="text-xs font-bold text-amber-200">${escHtml(f.name || '')}</div><div class="text-xs text-[#e8e0d4]">${escHtml(f.text || '')}</div></div>`).join('')}</div>` : ''}</div>`;
     }
     let editBtn = '';
-    if (ed && (ed.type === 'Custom' || ed.type === 'Enemy (Edited)')) editBtn = `<button onclick="window._editVaultCustomCard('${creature.id}')" class="btn-icon" title="Edit">✏️</button>`;
-    else if (ed && ed.type === 'Character') editBtn = `<button onclick="window._editVaultCharacterCard('${creature.id}')" class="btn-icon" title="Edit">✏️</button>`;
-    else if (!ed) editBtn = `<button onclick="window._editVaultCharacterCard('${creature.id}')" class="btn-icon" title="Edit">✏️</button>`;
-    else editBtn = `<button onclick="window._editVaultEnemyCard('${creature.id}')" class="btn-icon" title="Edit">✏️</button>`;
+    if (ed && (ed.type === 'Custom' || ed.type === 'Enemy (Edited)')) editBtn = `<button onclick="window._editVaultCustomCard('${escJs(creature.id)}')" class="btn-icon" title="Edit">✏️</button>`;
+    else if (ed && ed.type === 'Character') editBtn = `<button onclick="window._editVaultCharacterCard('${escJs(creature.id)}')" class="btn-icon" title="Edit">✏️</button>`;
+    else if (!ed) editBtn = `<button onclick="window._editVaultCharacterCard('${escJs(creature.id)}')" class="btn-icon" title="Edit">✏️</button>`;
+    else editBtn = `<button onclick="window._editVaultEnemyCard('${escJs(creature.id)}')" class="btn-icon" title="Edit">✏️</button>`;
 
     const isSrd = ed && adversariesData.some(a => a.name === creature.name);
-    const shareBtn = getUser() && ed && !isSrd ? `<button onclick="window._shareVaultCreature('${creature.id}')" class="text-emerald-500 hover:text-emerald-300 transition-colors text-sm" title="Share to Community">↪</button>` : '';
+    const shareBtn = getUser() && ed && !isSrd ? `<button onclick="window._shareVaultCreature('${escJs(creature.id)}')" class="text-emerald-500 hover:text-emerald-300 transition-colors text-sm" title="Share to Community">↪</button>` : '';
 
-    return `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2">${dead ? '<span class="text-red-500 text-sm">💀</span>' : '<span class="text-zinc-600 text-sm">📦</span>'}<span class="font-black text-sm uppercase font-[Cinzel] ${dead ? 'text-zinc-600 line-through' : 'text-[#f5efe6]'}">${creature.name}</span></div>
-        <div class="flex items-center gap-2">${shareBtn}<button onclick="window._copyVaultCreature('${creature.id}')" class="btn-icon" title="Duplicate">➕</button>${editBtn}<button onclick="window._flipVaultCard('${creature.id}')" class="btn-icon" title="Notes">📝</button><button onclick="window._removeVaultCreature('${creature.id}', event)" class="btn-remove" title="Remove">✕</button></div></div>
+    return `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2">${dead ? '<span class="text-red-500 text-sm">💀</span>' : '<span class="text-zinc-600 text-sm">📦</span>'}<span class="font-black text-sm uppercase font-[Cinzel] ${dead ? 'text-zinc-600 line-through' : 'text-[#f5efe6]'}">${escHtml(creature.name)}</span></div>
+        <div class="flex items-center gap-2">${shareBtn}<button onclick="window._copyVaultCreature('${escJs(creature.id)}')" class="btn-icon" title="Duplicate">➕</button>${editBtn}<button onclick="window._flipVaultCard('${escJs(creature.id)}')" class="btn-icon" title="Notes">📝</button><button onclick="window._removeVaultCreature('${escJs(creature.id)}', event)" class="btn-remove" title="Remove">✕</button></div></div>
         ${evasion > 0 && !ed ? `<div class="flex flex-wrap gap-1.5 mb-3 pb-2.5 border-b border-[#2a2418]"><span class="text-[10px] bg-[#1a2a3b] border border-[#2a3d5a] rounded px-1.5 py-0.5 text-blue-300">Evasion ${evasion}</span></div>` : ''}
         ${dotRow('hp', 'HP', 'text-red-400')}${dotRow('stress', 'Stress', 'text-purple-400')}${dotRow('hope', 'Hope', 'text-amber-400')}${dotRow('armor', 'Armor', 'text-blue-400')}${enemyInfo}
-        <div class="mt-3 pt-3 border-t border-[#2a2418] flex gap-2"><button onclick="window._deployToTracker('${creature.id}', false)" class="flex-1 btn-primary-pill py-2">⚔️ Deploy</button><button onclick="window._deployToTracker('${creature.id}', true)" class="flex-1 btn-outline py-2">⚔️ As-Is</button></div>`;
+        <div class="mt-3 pt-3 border-t border-[#2a2418] flex gap-2"><button onclick="window._deployToTracker('${escJs(creature.id)}', false)" class="flex-1 btn-primary-pill py-2">⚔️ Deploy</button><button onclick="window._deployToTracker('${escJs(creature.id)}', true)" class="flex-1 btn-outline py-2">⚔️ As-Is</button></div>`;
 }
 
 function renderVaultCard(creature) {
@@ -328,18 +328,18 @@ export function renderVaultGrid() {
         const collapsed = !!_collapsedGroups[group];
         const section = document.createElement('div');
         section.className = 'col-span-full';
-        section.innerHTML = `<div class="flex items-center gap-2 mb-3 mt-4 first:mt-0 cursor-pointer select-none rounded-lg px-2 py-1 transition-colors" onclick="window._toggleVaultGroupCollapse('${escHtmlAttr(group)}')"
+        section.innerHTML = `<div class="flex items-center gap-2 mb-3 mt-4 first:mt-0 cursor-pointer select-none rounded-lg px-2 py-1 transition-colors" onclick="window._toggleVaultGroupCollapse('${escJs(group)}')"
             ondragover="event.preventDefault(); event.dataTransfer.dropEffect='move'; this.classList.add('vault-group-drop-over')"
             ondragleave="this.classList.remove('vault-group-drop-over')"
-            ondrop="window._onGroupDrop(event, '${escHtmlAttr(group)}')">
+            ondrop="window._onGroupDrop(event, '${escJs(group)}')">
             <span class="text-zinc-500 text-xs transition-transform ${collapsed ? '' : 'rotate-90'}" style="display:inline-block">▶</span>
             <span class="font-[Cinzel] text-xs uppercase tracking-widest font-bold" style="color: var(--accent-1)">${escHtml(group)}</span>
             <span class="text-[10px] text-zinc-600">(${members.length})</span>
             ${disposable ? '<span class="text-[10px] text-zinc-700" title="Disposable">🗑</span>' : ''}
-            <button onclick="event.stopPropagation(); window._renameVaultGroup('${escHtmlAttr(group)}')" class="btn-icon text-[10px]" title="Rename">✏️</button>
-            <button onclick="event.stopPropagation(); window._removeVaultGroup('${escHtmlAttr(group)}')" class="btn-remove text-[10px]" title="Remove group">✕</button>
+            <button onclick="event.stopPropagation(); window._renameVaultGroup('${escJs(group)}')" class="btn-icon text-[10px]" title="Rename">✏️</button>
+            <button onclick="event.stopPropagation(); window._removeVaultGroup('${escJs(group)}')" class="btn-remove text-[10px]" title="Remove group">✕</button>
             <div class="flex-1 border-t border-[#3d362a]"></div>
-            ${members.length ? `<button onclick="event.stopPropagation(); window._deployGroupToTracker('${escHtmlAttr(group)}')" class="btn-primary-pill whitespace-nowrap">⚔️ Deploy All</button>` : ''}
+            ${members.length ? `<button onclick="event.stopPropagation(); window._deployGroupToTracker('${escJs(group)}')" class="btn-primary-pill whitespace-nowrap">⚔️ Deploy All</button>` : ''}
         </div>`;
         grid.appendChild(section);
         if (!collapsed) {

@@ -1,5 +1,5 @@
 import { getUser, getSupabase, showConfirm, showAlert } from '../core/auth.js';
-import { escHtml, escHtmlAttr } from '../core/utils.js';
+import { escHtml, escJs } from '../core/utils.js';
 import { TABLE_DM_TABLES, TABLE_CHARACTERS, LS_DM_TABLE_ID } from '../core/constants.js';
 import { renderCharacterDetailHtml } from '../core/character-detail.js';
 
@@ -60,16 +60,16 @@ function renderMemberCard(m, isPending) {
     const name = escHtml(m.character_name || 'Unnamed');
     const cls = escHtml(m.class || '—');
     const lvl = m.level != null ? m.level : '?';
-    const safeName = escHtmlAttr(m.character_name || 'this character');
+    const safeName = escJs(m.character_name || 'this character');
 
     const actionBtn = isPending
         ? `<div class="flex gap-1">
-            <button onclick="event.stopPropagation(); approvePartyMember('${m.id}')" class="btn-approve" title="Approve">✓</button>
-            <button onclick="event.stopPropagation(); denyPartyMember('${m.id}','${safeName}')" class="btn-deny" title="Deny">✕</button>
+            <button onclick="event.stopPropagation(); approvePartyMember('${escJs(m.id)}')" class="btn-approve" title="Approve">✓</button>
+            <button onclick="event.stopPropagation(); denyPartyMember('${escJs(m.id)}','${safeName}')" class="btn-deny" title="Deny">✕</button>
         </div>`
-        : `<button onclick="event.stopPropagation(); kickPartyMember('${m.id}','${safeName}')" class="btn-deny btn-deny-dim" title="Kick">✕</button>`;
+        : `<button onclick="event.stopPropagation(); kickPartyMember('${escJs(m.id)}','${safeName}')" class="btn-deny btn-deny-dim" title="Kick">✕</button>`;
 
-    return `<div class="option-card cursor-pointer" onclick="viewCharacterDetail('${m.id}')">
+    return `<div class="option-card cursor-pointer" onclick="viewCharacterDetail('${escJs(m.id)}')">
         <div class="flex items-start justify-between">
             <div>
                 <div class="text-sm font-bold text-[#f5efe6] font-[Cinzel]">${name}</div>
@@ -241,11 +241,11 @@ window.refreshPartyMembers = refreshMembers;
 window.approvePartyMember = (id) => approveMember(id);
 
 window.denyPartyMember = (id, name) => {
-    showConfirm(`Deny ${escHtml(name)}? They will be removed from the table.`, () => denyMember(id));
+    showConfirm(`Deny ${name}? They will be removed from the table.`, () => denyMember(id));
 };
 
 window.kickPartyMember = (id, name) => {
-    showConfirm(`Kick ${escHtml(name)} from the table?`, () => kickMember(id));
+    showConfirm(`Kick ${name} from the table?`, () => kickMember(id));
 };
 
 window.viewCharacterDetail = (id) => showCharacterDetail(id);

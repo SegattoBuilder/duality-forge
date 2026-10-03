@@ -3,6 +3,7 @@ import { autoCache } from './save.js';
 import { toggleCard } from './ui.js';
 import { showConfirm, showAlert, getSupabase, getUser, getProfile } from '../core/auth.js';
 import { TABLE_COMMUNITY_HOMEBREW } from '../core/constants.js';
+import { escHtml, escHtmlAttr, sanitizeHtml } from '../core/utils.js';
 import { t, domainColor as _domainColor, parseItem, escAttr, buildFeatureHtml, validateShareFields, validateDomainCardFields, validateGeneralCardFields, cardSortComparator, flattenClasses, flattenSubclasses } from './cards-logic.js';
 
 export function openCardDetail(id) {
@@ -152,20 +153,20 @@ function displayResults(data) {
 
         const addedBadge = alreadyAdded ? '<span class="text-[9px] bg-zinc-700 text-zinc-400 px-2 py-0.5 rounded">✓ Added</span>' : '';
         const domainBadge = isDomainCards
-            ? `<img src="${dc.icon}" class="domain-icon-badge" alt="${item.domain}">
-               <span class="text-[10px] font-bold uppercase px-1 rounded" style="color:${dc.text}">${item.domain}</span>
-               <span class="text-[10px] text-zinc-500">Lvl ${item.level} · Recall ${item.recallCost}</span>`
+            ? `<img src="${dc.icon}" class="domain-icon-badge" alt="${escHtml(item.domain)}">
+               <span class="text-[10px] font-bold uppercase px-1 rounded" style="color:${dc.text}">${escHtml(item.domain)}</span>
+               <span class="text-[10px] text-zinc-500">Lvl ${escHtml(item.level)} · Recall ${escHtml(item.recallCost)}</span>`
             : '';
         const showDesc = !['communities.json','ancestries.json','classes.json'].includes(category);
 
         div.innerHTML = `
-            ${label ? `<div class="text-xs font-bold uppercase ${tierColor} mb-1">${label}${item._classInfo ? ` <span class="text-zinc-500 text-[10px] normal-case">(${item._classInfo})</span>` : ''}</div>` : ''}
+            ${label ? `<div class="text-xs font-bold uppercase ${tierColor} mb-1">${label}${item._classInfo ? ` <span class="text-zinc-500 text-[10px] normal-case">(${escHtml(item._classInfo)})</span>` : ''}</div>` : ''}
             ${domainBadge ? `<div class="flex gap-2 items-center mb-1">${domainBadge}</div>` : ''}
             <div class="flex items-center gap-2 mb-1">
-                <span class="text-sm font-black uppercase" ${dc ? `style="color:${dc.text}"` : 'class="text-indigo-300"'}>${name}</span>
+                <span class="text-sm font-black uppercase" ${dc ? `style="color:${dc.text}"` : 'class="text-indigo-300"'}>${escHtml(name)}</span>
                 ${addedBadge}
             </div>
-            ${showDesc ? `<p class="text-xs text-zinc-400 line-clamp-3 leading-relaxed">${desc}</p>` : ''}
+            ${showDesc ? `<p class="text-xs text-zinc-400 line-clamp-3 leading-relaxed">${sanitizeHtml(desc)}</p>` : ''}
             ${feature ? `<p class="text-xs text-zinc-300 mt-1 leading-relaxed">${feature}</p>` : ''}
         `;
         container.appendChild(div);
@@ -191,26 +192,26 @@ export function addCardToSheet(opts) {
 
     const collapsed = opts.collapsed || false;
     const html = `
-    <div class="sheet-card relative mb-2" style="border-left-color:${dc ? '#3d362a' : 'var(--accent-1)'}; ${dc ? `border-top: 2px solid ${dc.border};` : ''}" id="${id}" data-card-name="${cardKey}" data-level="${level || 0}" data-domain-border="${dc ? dc.border : ''}" data-collapsed="${collapsed}">
+    <div class="sheet-card relative mb-2" style="border-left-color:${dc ? '#3d362a' : 'var(--accent-1)'}; ${dc ? `border-top: 2px solid ${dc.border};` : ''}" id="${id}" data-card-name="${escHtml(cardKey)}" data-level="${escHtml(level || 0)}" data-domain-border="${dc ? dc.border : ''}" data-collapsed="${collapsed}">
         <div class="flex justify-between items-center">
             <div class="flex items-center gap-1.5 cursor-pointer card-toggle" data-id="${id}">
                 <span class="collapse-btn text-zinc-500 text-xs" data-id="${id}">${collapsed ? '▶' : '▼'}</span>
                 ${isDomain ? `<button class="text-zinc-600 hover:text-yellow-400 text-base leading-none domain-sel-btn" data-id="${id}" id="${id}-sel" title="Select for loadout">☆</button>` : ''}
-                ${dc ? `<img src="${dc.icon}" class="domain-icon-badge" alt="${domain}">` : ''}
-                <span class="text-xs font-black uppercase" ${dc ? `style="color:${dc.text}"` : ''}>${name}</span>
+                ${dc ? `<img src="${dc.icon}" class="domain-icon-badge" alt="${escHtml(domain)}">` : ''}
+                <span class="text-xs font-black uppercase" ${dc ? `style="color:${dc.text}"` : ''}>${escHtml(name)}</span>
             </div>
             <div class="flex items-center gap-2">
-                ${isDomain ? `<span class="text-[10px] font-bold uppercase" style="color:${dc.text}">${domain}</span>` : ''}
-                ${isDomain ? `<span class="text-[10px] text-zinc-500 whitespace-nowrap">Lvl ${level} | Recall ${recallCost}</span>` : ''}
-                ${!isDomain ? `<span class="text-[10px] text-zinc-500 uppercase">${CATEGORY_LABELS[category] || category}</span>` : ''}
+                ${isDomain ? `<span class="text-[10px] font-bold uppercase" style="color:${dc.text}">${escHtml(domain)}</span>` : ''}
+                ${isDomain ? `<span class="text-[10px] text-zinc-500 whitespace-nowrap">Lvl ${escHtml(level)} | Recall ${escHtml(recallCost)}</span>` : ''}
+                ${!isDomain ? `<span class="text-[10px] text-zinc-500 uppercase">${CATEGORY_LABELS[category] || escHtml(category)}</span>` : ''}
                 ${isHomebrew ? `<button class="text-zinc-500 hover:text-[#d4a017] transition-colors text-xs card-edit-hb" data-id="${id}" title="Edit card">✏️</button><button class="text-emerald-500 hover:text-emerald-300 transition-colors text-sm card-share" data-id="${id}" title="Share to Community">↪</button>` : ''}
                 <button class="btn-remove card-remove" data-id="${id}">✕</button>
             </div>
         </div>
         <div id="${id}-body" class="mt-2" ${collapsed ? 'style="display:none"' : ''}>
-            ${opts.classInfo ? `<div class="flex flex-wrap gap-1.5 mb-2">${opts.classInfo.split(' / ').map(d => `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-400">${d}</span>`).join('')}</div>` : ''}
-            ${desc ? `<div class="text-xs text-zinc-500 leading-relaxed">${desc}</div>` : ''}
-            ${feature ? `<div class="leading-relaxed mb-1 text-xs">${feature.replace(/text-zinc-200/g, 'text-amber-400')}</div>` : ''}
+            ${opts.classInfo ? `<div class="flex flex-wrap gap-1.5 mb-2">${opts.classInfo.split(' / ').map(d => `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-400">${escHtml(d)}</span>`).join('')}</div>` : ''}
+            ${desc ? `<div class="text-xs text-zinc-500 leading-relaxed">${sanitizeHtml(desc)}</div>` : ''}
+            ${feature ? `<div class="leading-relaxed mb-1 text-xs">${sanitizeHtml(feature).replace(/text-zinc-200/g, 'text-amber-400')}</div>` : ''}
         </div>
     </div>
     `;
@@ -469,8 +470,8 @@ export function openEditCard(id) {
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
-                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Level</label><input id="editCardLevel" type="number" min="1" max="10" class="w-full input-field" value="${cd.level || ''}"></div>
-                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Recall Cost</label><input id="editCardRecall" type="number" min="0" max="10" class="w-full input-field" value="${cd.recallCost || ''}"></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Level</label><input id="editCardLevel" type="number" min="1" max="10" class="w-full input-field" value="${escHtmlAttr(cd.level)}"></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Recall Cost</label><input id="editCardRecall" type="number" min="0" max="10" class="w-full input-field" value="${escHtmlAttr(cd.recallCost)}"></div>
             </div>
             <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Description</label><textarea id="editCardDesc" rows="3" class="w-full input-field resize-y">${escAttr(cd.desc ? cd.desc.replace(/<[^>]*>/g, '') : '')}</textarea></div>`;
     } else {

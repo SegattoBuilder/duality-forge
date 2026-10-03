@@ -1,7 +1,7 @@
 import SUPABASE_CONFIG from '../core/config.js';
 import { TABLE_COMMUNITY_CHAPTERS, TABLE_COMMUNITY_CHAPTER_RATINGS, TABLE_COMMUNITY_CHAPTER_IMPORTS, TABLE_COMMUNITY_ADVERSARIES, TABLE_COMMUNITY_ADVERSARY_RATINGS, TABLE_COMMUNITY_ADVERSARY_IMPORTS, TABLE_COMMUNITY_HOMEBREW, TABLE_COMMUNITY_HOMEBREW_RATINGS, TABLE_COMMUNITY_HOMEBREW_IMPORTS, LS_THEME } from '../core/constants.js';
 import { initMode, applyTheme } from '../core/theme.js';
-import { generateId, escHtml as esc } from '../core/utils.js';
+import { generateId, escHtml as esc, sanitizeHtml } from '../core/utils.js';
 import { renderStars, parseFeatureText, filterChapters, filterAdversaries, filterHomebrew } from './community-logic.js';
 import { requireAuth } from '../core/auth-gate.js';
 
@@ -182,9 +182,9 @@ function renderResults() {
             </div>
             ${ch.description ? `<p class="text-[11px] text-zinc-500 mb-3 line-clamp-2">${esc(ch.description)}</p>` : ''}
             <div class="flex flex-wrap gap-1.5 mb-3">
-                ${ch.environment ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.environment}</span>` : ''}
-                ${ch.difficulty ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.difficulty}</span>` : ''}
-                ${ch.duration ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.duration}</span>` : ''}
+                ${ch.environment ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${esc(ch.environment)}</span>` : ''}
+                ${ch.difficulty ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${esc(ch.difficulty)}</span>` : ''}
+                ${ch.duration ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${esc(ch.duration)}</span>` : ''}
                 <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">Lv ${ch.level_min}–${ch.level_max}</span>
                 <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.party_size_min}–${ch.party_size_max} players</span>
             </div>
@@ -214,9 +214,9 @@ function renderMyShares() {
             </div>
             ${ch.description ? `<p class="text-[11px] text-zinc-500 mb-3 line-clamp-2">${esc(ch.description)}</p>` : ''}
             <div class="flex flex-wrap gap-1.5 mb-3">
-                ${ch.environment ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.environment}</span>` : ''}
-                ${ch.difficulty ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.difficulty}</span>` : ''}
-                ${ch.duration ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.duration}</span>` : ''}
+                ${ch.environment ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${esc(ch.environment)}</span>` : ''}
+                ${ch.difficulty ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${esc(ch.difficulty)}</span>` : ''}
+                ${ch.duration ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${esc(ch.duration)}</span>` : ''}
                 <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">Lv ${ch.level_min}–${ch.level_max}</span>
                 <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.party_size_min}–${ch.party_size_max} players</span>
             </div>
@@ -279,7 +279,7 @@ function renderMyShares() {
                 <div class="flex flex-wrap gap-1.5 mb-3">
                     <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${isDomain ? 'Domain Card' : esc(hb.card_category || 'General')}</span>
                     ${isDomain && cd.domain ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${esc(cd.domain)}</span>` : ''}
-                    ${isDomain && cd.level ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">Lv ${cd.level}</span>` : ''}
+                    ${isDomain && cd.level ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">Lv ${esc(cd.level)}</span>` : ''}
                 </div>
                 <div class="flex items-center justify-between text-[10px] text-zinc-600 mb-3">
                     <span>${stars} (${hb.rating_count || 0}) · 📥 ${hb.import_count || 0}</span>
@@ -321,15 +321,15 @@ function openPreview(id) {
             <div class="text-[10px] text-zinc-500">by ${esc(ch.author_nickname || 'Unknown')} · v${ch.version} · ${new Date(ch.created_at).toLocaleDateString()}</div>
         </div>
         <div class="flex flex-wrap gap-1.5">
-            ${ch.environment ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.environment}</span>` : ''}
-            ${ch.difficulty ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.difficulty}</span>` : ''}
-            ${ch.duration ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.duration}</span>` : ''}
+            ${ch.environment ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${esc(ch.environment)}</span>` : ''}
+            ${ch.difficulty ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${esc(ch.difficulty)}</span>` : ''}
+            ${ch.duration ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${esc(ch.duration)}</span>` : ''}
             <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">Lv ${ch.level_min}–${ch.level_max}</span>
             <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${ch.party_size_min}–${ch.party_size_max} players</span>
         </div>
         ${ch.description ? `<p class="text-xs text-zinc-400 italic">${esc(ch.description)}</p>` : ''}
         <div class="border-t border-[#3d362a] pt-4">
-            <div class="prose-dark text-sm text-[#e8e0d4] leading-relaxed">${content.text || '<span class="text-zinc-600 italic">No content</span>'}</div>
+            <div class="prose-dark text-sm text-[#e8e0d4] leading-relaxed">${sanitizeHtml(content.text) || '<span class="text-zinc-600 italic">No content</span>'}</div>
         </div>`;
 
     if (content.npcs?.length) {
@@ -337,7 +337,7 @@ function openPreview(id) {
         content.npcs.forEach(npc => {
             html += `<div class="text-xs text-zinc-400"><span class="text-[#f5efe6] font-bold">${esc(npc.name || 'Unnamed')}</span>`;
             if (npc.faction) html += ` · ${esc(npc.faction)}`;
-            if (npc.disposition) html += ` · <span class="${npc.disposition === 'Friendly' ? 'text-green-400' : npc.disposition === 'Hostile' ? 'text-red-400' : 'text-amber-400'}">${npc.disposition}</span>`;
+            if (npc.disposition) html += ` · <span class="${npc.disposition === 'Friendly' ? 'text-green-400' : npc.disposition === 'Hostile' ? 'text-red-400' : 'text-amber-400'}">${esc(npc.disposition)}</span>`;
             if (npc.notes) html += ` — ${esc(npc.notes)}`;
             html += `</div>`;
         });
@@ -400,7 +400,7 @@ function openEdit(id) {
         fresh.className = 'chronicle-editor';
         parent.appendChild(fresh);
         editQuill = new Quill(fresh, { theme: 'snow', placeholder: 'Chapter content...', modules: { toolbar: QUILL_TOOLBAR } });
-        if (content.text) editQuill.root.innerHTML = content.text;
+        if (content.text) editQuill.clipboard.dangerouslyPasteHTML(sanitizeHtml(content.text), 'silent');
     }, 50);
 }
 
@@ -877,8 +877,8 @@ function openEditHb(id) {
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-3 mt-3">
-                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Level</label><input id="editHbLevel" type="number" min="1" max="10" class="w-full input-field" value="${cd.level || ''}"></div>
-                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Recall Cost</label><input id="editHbRecall" type="number" min="0" max="10" class="w-full input-field" value="${cd.recallCost || ''}"></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Level</label><input id="editHbLevel" type="number" min="1" max="10" class="w-full input-field" value="${esc(cd.level)}"></div>
+                <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Recall Cost</label><input id="editHbRecall" type="number" min="0" max="10" class="w-full input-field" value="${esc(cd.recallCost)}"></div>
             </div>`;
     } else {
         fieldsEl.innerHTML = `
@@ -982,13 +982,13 @@ function openHbPreview(id) {
             <span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${isDomain ? 'Domain Card' : esc(hb.card_category || 'General')}</span>
             ${isDomain && cd.domain ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${esc(cd.domain)}</span>` : ''}
             ${isDomain && cd.type ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${esc(cd.type)}</span>` : ''}
-            ${isDomain && cd.level ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">Level ${cd.level}</span>` : ''}
-            ${isDomain && cd.recallCost !== undefined ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">Recall ${cd.recallCost}</span>` : ''}
+            ${isDomain && cd.level ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">Level ${esc(cd.level)}</span>` : ''}
+            ${isDomain && cd.recallCost !== undefined ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">Recall ${esc(cd.recallCost)}</span>` : ''}
         </div>
         <div class="border-t border-[#3d362a] pt-4">
             <div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-2">Card: ${esc(cd.name || '')}</div>
-            ${cd.desc ? `<div class="text-xs text-zinc-400 mb-2">${cd.desc}</div>` : ''}
-            ${cd.feature ? `<div class="text-xs text-[#e8e0d4] leading-relaxed">${cd.feature}</div>` : ''}
+            ${cd.desc ? `<div class="text-xs text-zinc-400 mb-2">${sanitizeHtml(cd.desc)}</div>` : ''}
+            ${cd.feature ? `<div class="text-xs text-[#e8e0d4] leading-relaxed">${sanitizeHtml(cd.feature)}</div>` : ''}
         </div>
         <div class="border-t border-[#3d362a] pt-4 flex items-center justify-between">
             <div><span class="text-[10px] text-zinc-500 uppercase font-bold">Your Rating:</span> <span id="hbPreviewStars">${renderInteractiveHbStars(hb.id, myRating)}</span></div>
@@ -1101,8 +1101,8 @@ function renderHbResults() {
                 <span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${isDomain ? 'Domain Card' : esc(hb.card_category || 'General')}</span>
                 ${isDomain && cd.domain ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${esc(cd.domain)}</span>` : ''}
                 ${isDomain && cd.type ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">${esc(cd.type)}</span>` : ''}
-                ${isDomain && cd.level ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">Lv ${cd.level}</span>` : ''}
-                ${isDomain && cd.recallCost !== undefined ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">Recall ${cd.recallCost}</span>` : ''}
+                ${isDomain && cd.level ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">Lv ${esc(cd.level)}</span>` : ''}
+                ${isDomain && cd.recallCost !== undefined ? `<span class="text-[9px] bg-[#2a2418] text-zinc-400 px-2 py-0.5 rounded-full">Recall ${esc(cd.recallCost)}</span>` : ''}
             </div>
             <div class="flex items-center justify-between text-[10px] text-zinc-600">
                 <span>by ${esc(hb.author_nickname || 'Unknown')}</span>

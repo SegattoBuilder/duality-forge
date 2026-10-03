@@ -1,3 +1,4 @@
+import { escHtmlAttr } from '../core/utils.js';
 import { autoCache } from './save.js';
 import { showConfirm } from '../core/auth.js';
 import { TRAIT_OPTIONS, resolveEquipped, equipStar, equipOpacity, normalizeGearInput } from './gear-logic.js';
@@ -67,17 +68,17 @@ export function addWeapon(data) {
         <div class="flex items-center gap-2">
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <button class="equip-star text-lg leading-none cursor-pointer" title="Equip">${equipStar(equipped)}</button>
-            <input type="text" value="${d.name}" placeholder="Weapon Name" class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
+            <input type="text" value="${escHtmlAttr(d.name)}" placeholder="Weapon Name" class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
             <button class="btn-remove wep-remove" title="Remove">✕</button>
         </div>
         <div class="gear-details mt-2">
             <div class="grid grid-cols-4 gap-2 text-zinc-500">
                 <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">TRAIT</div><select class="wep-trait w-full gear-input" data-autocache>${TRAIT_OPTIONS}</select></div>
-                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">RANGE</div><input type="text" value="${d.range}" placeholder="—" class="gear-input" data-autocache></div>
-                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">DAMAGE</div><input type="text" value="${d.dmg}" placeholder="—" class="gear-input" data-autocache></div>
+                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">RANGE</div><input type="text" value="${escHtmlAttr(d.range)}" placeholder="—" class="gear-input" data-autocache></div>
+                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">DAMAGE</div><input type="text" value="${escHtmlAttr(d.dmg)}" placeholder="—" class="gear-input" data-autocache></div>
                 <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">ATK BONUS</div><div class="wep-atk w-full bg-gray-800 border border-gray-700 rounded py-1.5 text-center font-bold text-indigo-400 text-sm">—</div></div>
             </div>
-            <div class="mt-2"><div class="text-[10px] text-zinc-600 mb-1">FEATURE</div><textarea placeholder="Weapon feature..." class="w-full gear-input text-left px-3 resize-none overflow-hidden" rows="1" data-autocache>${d.feature}</textarea></div>
+            <div class="mt-2"><div class="text-[10px] text-zinc-600 mb-1">FEATURE</div><textarea placeholder="Weapon feature..." class="w-full gear-input text-left px-3 resize-none overflow-hidden" rows="1" data-autocache>${escHtmlAttr(d.feature)}</textarea></div>
         </div>
     </div>`;
     container.insertAdjacentHTML('beforeend', html);
@@ -151,16 +152,16 @@ export function addArmor(data) {
         <div class="flex items-center gap-2">
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <button class="equip-star text-lg leading-none cursor-pointer" title="Equip">${equipStar(equipped)}</button>
-            <input type="text" value="${d.name}" placeholder="Armor Name" class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
+            <input type="text" value="${escHtmlAttr(d.name)}" placeholder="Armor Name" class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
             <button class="btn-remove arm-remove" title="Remove">✕</button>
         </div>
         <div class="gear-details mt-2">
             <div class="grid grid-cols-3 gap-2 text-zinc-500">
-                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">MAJOR</div><input type="number" value="${d.major}" placeholder="0" class="arm-major w-full gear-input text-sm" data-autocache></div>
-                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">SEVERE</div><input type="number" value="${d.severe}" placeholder="0" class="arm-severe w-full gear-input text-sm" data-autocache></div>
-                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">SCORE</div><input type="text" value="${d.score}" placeholder="0" class="w-full gear-input text-sm" data-autocache></div>
+                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">MAJOR</div><input type="number" value="${escHtmlAttr(d.major)}" placeholder="0" class="arm-major w-full gear-input text-sm" data-autocache></div>
+                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">SEVERE</div><input type="number" value="${escHtmlAttr(d.severe)}" placeholder="0" class="arm-severe w-full gear-input text-sm" data-autocache></div>
+                <div class="text-center"><div class="text-[10px] text-zinc-600 mb-1">SCORE</div><input type="text" value="${escHtmlAttr(d.score)}" placeholder="0" class="w-full gear-input text-sm" data-autocache></div>
             </div>
-            <div class="mt-2"><div class="text-[10px] text-zinc-600 mb-1">FEATURE</div><textarea placeholder="Armor feature..." class="w-full gear-input text-left px-3 resize-none overflow-hidden" rows="1" data-autocache>${d.feature}</textarea></div>
+            <div class="mt-2"><div class="text-[10px] text-zinc-600 mb-1">FEATURE</div><textarea placeholder="Armor feature..." class="w-full gear-input text-left px-3 resize-none overflow-hidden" rows="1" data-autocache>${escHtmlAttr(d.feature)}</textarea></div>
         </div>
     </div>`;
     container.insertAdjacentHTML('beforeend', html);
@@ -235,10 +236,10 @@ export function addItem(data) {
     <div class="gear-slot" id="${id}" data-collapsed="false">
         <div class="flex items-center gap-2">
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
-            <input type="text" value="${d.name}" placeholder="Item name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
+            <input type="text" value="${escHtmlAttr(d.name)}" placeholder="Item name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
             <button class="btn-remove item-remove" title="Remove">✕</button>
         </div>
-        <div class="gear-details mt-1"><textarea placeholder="Description..." class="w-full bg-transparent border-b border-zinc-800 px-1 py-1 text-xs outline-none text-zinc-400 resize-none overflow-hidden" rows="1" data-autocache>${d.desc}</textarea></div>
+        <div class="gear-details mt-1"><textarea placeholder="Description..." class="w-full bg-transparent border-b border-zinc-800 px-1 py-1 text-xs outline-none text-zinc-400 resize-none overflow-hidden" rows="1" data-autocache>${escHtmlAttr(d.desc)}</textarea></div>
     </div>`;
     container.insertAdjacentHTML('beforeend', html);
     const el = document.getElementById(id);
@@ -278,11 +279,11 @@ export function addConsumable(data) {
     <div class="gear-slot" id="${id}" data-collapsed="false">
         <div class="flex items-center gap-2">
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
-            <input type="text" value="${d.name}" placeholder="Consumable name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
-            <input type="text" value="${d.qty}" placeholder="x1" class="w-10 bg-transparent text-center text-sm outline-none border-b border-zinc-800" data-autocache>
+            <input type="text" value="${escHtmlAttr(d.name)}" placeholder="Consumable name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
+            <input type="text" value="${escHtmlAttr(d.qty)}" placeholder="x1" class="w-10 bg-transparent text-center text-sm outline-none border-b border-zinc-800" data-autocache>
             <button class="btn-remove cons-remove" title="Remove">✕</button>
         </div>
-        <div class="gear-details mt-1"><textarea placeholder="Effect..." class="w-full bg-transparent border-b border-zinc-800 px-1 py-1 text-xs outline-none text-zinc-400 resize-none overflow-hidden" rows="1" data-autocache>${d.desc}</textarea></div>
+        <div class="gear-details mt-1"><textarea placeholder="Effect..." class="w-full bg-transparent border-b border-zinc-800 px-1 py-1 text-xs outline-none text-zinc-400 resize-none overflow-hidden" rows="1" data-autocache>${escHtmlAttr(d.desc)}</textarea></div>
     </div>`;
     container.insertAdjacentHTML('beforeend', html);
     const el = document.getElementById(id);
@@ -323,11 +324,11 @@ export function addGearItem(name, bonus, desc, collapsed) {
     <div class="gear-slot" id="${id}" data-collapsed="false">
         <div class="flex items-center gap-2">
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
-            <input type="text" value="${g.name}" placeholder="Item name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
-            <input type="text" value="${g.bonus}" placeholder="Bonus" class="w-20 bg-transparent border-b border-zinc-700 text-sm text-center outline-none" data-autocache>
+            <input type="text" value="${escHtmlAttr(g.name)}" placeholder="Item name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
+            <input type="text" value="${escHtmlAttr(g.bonus)}" placeholder="Bonus" class="w-20 bg-transparent border-b border-zinc-700 text-sm text-center outline-none" data-autocache>
             <button class="btn-remove gear-remove">✕</button>
         </div>
-        <div class="gear-details mt-1"><textarea placeholder="Description..." class="w-full bg-transparent border border-zinc-800 rounded px-2 py-1.5 text-xs outline-none resize-none h-12" data-autocache>${g.desc}</textarea></div>
+        <div class="gear-details mt-1"><textarea placeholder="Description..." class="w-full bg-transparent border border-zinc-800 rounded px-2 py-1.5 text-xs outline-none resize-none h-12" data-autocache>${escHtmlAttr(g.desc)}</textarea></div>
     </div>`;
     container.insertAdjacentHTML('beforeend', html);
     const el = document.getElementById(id);

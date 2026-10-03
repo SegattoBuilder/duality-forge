@@ -1,4 +1,4 @@
-import { escHtml, escHtmlAttr, generateId } from '../core/utils.js';
+import { escHtml, escHtmlAttr, escJs, generateId } from '../core/utils.js';
 import { SAVE_KEY, FEAR_KEY, COUNTERS_KEY, getNextName, hasNameConflict, isVaultActive } from './app.js';
 import { vaultCreatures, stashToVault } from './vault.js';
 import { showConfirm, showAlert } from '../core/auth.js';
@@ -76,13 +76,13 @@ function buildCounterCard(c) {
     const atZero = c.value === 0;
     return `<div id="${c.id}" class="creature-card flex flex-col w-48" style="border-top-color: var(--accent-1); padding: 12px;${atZero ? ' box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-1) 40%, transparent);' : ''}">
         <div class="flex justify-between items-center mb-2">
-            <input value="${escHtmlAttr(c.label)}" onchange="window._renameCounter('${c.id}', this.value)" class="bg-transparent font-bold text-[11px] uppercase font-[Cinzel] text-[#f5efe6] outline-none border-b border-transparent w-full mr-2" style="focus:border-color:var(--accent-1)">
-            <button onclick="window._removeCounter('${c.id}')" class="btn-remove text-xs flex-shrink-0">✕</button>
+            <input value="${escHtmlAttr(c.label)}" onchange="window._renameCounter('${escJs(c.id)}', this.value)" class="bg-transparent font-bold text-[11px] uppercase font-[Cinzel] text-[#f5efe6] outline-none border-b border-transparent w-full mr-2" style="focus:border-color:var(--accent-1)">
+            <button onclick="window._removeCounter('${escJs(c.id)}')" class="btn-remove text-xs flex-shrink-0">✕</button>
         </div>
         <div class="flex items-center justify-center gap-3">
-            <button onclick="window._stepCounter('${c.id}', -1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#3d362a] text-zinc-300 hover:text-white text-sm font-bold">−</button>
+            <button onclick="window._stepCounter('${escJs(c.id)}', -1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#3d362a] text-zinc-300 hover:text-white text-sm font-bold">−</button>
             <span class="text-2xl font-black font-[Cinzel] min-w-[2rem] text-center ${atZero ? '' : 'text-[#f5efe6]'}" style="${atZero ? 'color: var(--accent-1)' : ''}">${c.value}</span>
-            <button onclick="window._stepCounter('${c.id}', 1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#3d362a] text-zinc-300 hover:text-white text-sm font-bold">+</button>
+            <button onclick="window._stepCounter('${escJs(c.id)}', 1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#2a2418] border border-[#3d362a] text-zinc-300 hover:text-white text-sm font-bold">+</button>
         </div>
     </div>`;
 }
@@ -479,7 +479,7 @@ function adjustMax(creatureId, type, delta) {
 function renderDots(creature, type) {
     const max = creature[type + 'Max'], filled = creature[type + 'Filled'];
     let html = '';
-    for (let i = 0; i < max; i++) html += `<div class="dot ${type}-dot ${i < filled ? 'filled-' + type : ''}" onclick="window._toggleDot('${creature.id}', '${type}', ${i})"></div>`;
+    for (let i = 0; i < max; i++) html += `<div class="dot ${type}-dot ${i < filled ? 'filled-' + type : ''}" onclick="window._toggleDot('${escJs(creature.id)}', '${type}', ${i})"></div>`;
     return html;
 }
 
@@ -495,7 +495,7 @@ export function renderCard(creature) {
 
 // ========== CARD INNER HTML ==========
 function buildCardInner(creature, dead) {
-    const adjBtn = (type, delta) => `<button onclick="window._adjustMax('${creature.id}', '${type}', ${delta})" class="w-4 h-4 flex items-center justify-center rounded bg-[#2a2418] border border-[#3d362a] text-zinc-500 hover:text-white text-[10px] leading-none">${delta < 0 ? '−' : '+'}</button>`;
+    const adjBtn = (type, delta) => `<button onclick="window._adjustMax('${escJs(creature.id)}', '${type}', ${delta})" class="w-4 h-4 flex items-center justify-center rounded bg-[#2a2418] border border-[#3d362a] text-zinc-500 hover:text-white text-[10px] leading-none">${delta < 0 ? '−' : '+'}</button>`;
     const dotRow = (type, label, color) => {
         const max = creature[type + 'Max'] || 0;
         if (max === 0) return '';
@@ -518,10 +518,10 @@ function buildCardInner(creature, dead) {
         </div>`;
     }
     const typeIcon = dead ? '<span class="text-red-500 text-sm">💀</span>' : (ed ? (ed.type === 'Custom' ? '<span class="text-zinc-600 text-sm">⚙️</span>' : ed.type === 'Enemy (Edited)' ? '<span class="text-zinc-600 text-sm">👹⚙️</span>' : ed.type === 'Character' ? '<span class="text-zinc-600 text-sm">⚔️</span>' : '<span class="text-zinc-600 text-sm">👹</span>') : '<span class="text-zinc-600 text-sm">⚔️</span>');
-    const editBtn = ed && (ed.type === 'Custom' || ed.type === 'Enemy (Edited)') ? `<button onclick="window._editCustomCard('${creature.id}')" class="btn-icon" title="Edit">✏️</button>` : (ed && ed.type !== 'Character' ? `<button onclick="window._editEnemyCard('${creature.id}')" class="btn-icon" title="Edit">✏️</button>` : `<button onclick="window._editCharacterCard('${creature.id}')" class="btn-icon" title="Edit">✏️</button>`);
+    const editBtn = ed && (ed.type === 'Custom' || ed.type === 'Enemy (Edited)') ? `<button onclick="window._editCustomCard('${escJs(creature.id)}')" class="btn-icon" title="Edit">✏️</button>` : (ed && ed.type !== 'Character' ? `<button onclick="window._editEnemyCard('${escJs(creature.id)}')" class="btn-icon" title="Edit">✏️</button>` : `<button onclick="window._editCharacterCard('${escJs(creature.id)}')" class="btn-icon" title="Edit">✏️</button>`);
 
-    return `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2">${typeIcon}<span class="font-black text-sm uppercase font-[Cinzel] ${dead ? 'text-zinc-600 line-through' : 'text-[#f5efe6]'}">${creature.name}</span></div>
-        <div class="flex items-center gap-2"><button onclick="window._copyCreature('${creature.id}')" class="btn-icon" title="Duplicate">➕</button><button onclick="window._stashToVault('${creature.id}')" class="btn-icon" title="Stash to Vault">📦</button>${editBtn}<button onclick="window._flipCard('${creature.id}')" class="btn-icon" title="Notes">📝</button><button onclick="window._removeCreature('${creature.id}', event)" class="btn-remove" title="Remove">✕</button></div></div>
+    return `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2">${typeIcon}<span class="font-black text-sm uppercase font-[Cinzel] ${dead ? 'text-zinc-600 line-through' : 'text-[#f5efe6]'}">${escHtml(creature.name)}</span></div>
+        <div class="flex items-center gap-2"><button onclick="window._copyCreature('${escJs(creature.id)}')" class="btn-icon" title="Duplicate">➕</button><button onclick="window._stashToVault('${escJs(creature.id)}')" class="btn-icon" title="Stash to Vault">📦</button>${editBtn}<button onclick="window._flipCard('${escJs(creature.id)}')" class="btn-icon" title="Notes">📝</button><button onclick="window._removeCreature('${escJs(creature.id)}', event)" class="btn-remove" title="Remove">✕</button></div></div>
         ${evasion > 0 && !ed ? `<div class="flex flex-wrap gap-1.5 mb-3 pb-2.5 border-b border-[#2a2418]"><span class="text-[10px] bg-[#1a2a3b] border border-[#2a3d5a] rounded px-1.5 py-0.5 text-blue-300">Evasion ${evasion}</span></div>` : ''}
         ${dotRow('hp', 'HP', 'text-red-400')}${dotRow('stress', 'Stress', 'text-purple-400')}${dotRow('hope', 'Hope', 'text-amber-400')}${dotRow('armor', 'Armor', 'text-blue-400')}${enemyInfo}`;
 }
@@ -532,8 +532,8 @@ function flipCard(creatureId) {
     if (!creature) return;
     const el = document.getElementById(creature.id);
     if (!el) return;
-    el.innerHTML = `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2"><span class="text-zinc-600 text-sm">📝</span><span class="font-black text-sm uppercase font-[Cinzel] text-[#f5efe6]">${creature.name}</span></div><button onclick="window._flipBack('${creature.id}')" class="btn-icon text-[10px] uppercase tracking-wide font-bold">← Back</button></div>
-        <textarea oninput="window._updateNotes('${creature.id}', this.value)" placeholder="Add notes..." class="w-full h-40 input-field resize-none placeholder-zinc-700 text-xs text-[#e8e0d4]">${escHtml(creature.notes || '')}</textarea>`;
+    el.innerHTML = `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2"><span class="text-zinc-600 text-sm">📝</span><span class="font-black text-sm uppercase font-[Cinzel] text-[#f5efe6]">${escHtml(creature.name)}</span></div><button onclick="window._flipBack('${escJs(creature.id)}')" class="btn-icon text-[10px] uppercase tracking-wide font-bold">← Back</button></div>
+        <textarea oninput="window._updateNotes('${escJs(creature.id)}', this.value)" placeholder="Add notes..." class="w-full h-40 input-field resize-none placeholder-zinc-700 text-xs text-[#e8e0d4]">${escHtml(creature.notes || '')}</textarea>`;
 }
 function flipBack(creatureId) { const c = _creatures.find(c => c.id === creatureId); if (c) renderCard(c); }
 function updateNotes(creatureId, value) { const c = _creatures.find(c => c.id === creatureId); if (c) { c.notes = value; autoCache(); } }

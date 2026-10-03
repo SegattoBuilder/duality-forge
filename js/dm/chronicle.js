@@ -1,4 +1,4 @@
-import { escHtml, escHtmlAttr, generateId } from '../core/utils.js';
+import { escHtml, escHtmlAttr, generateId, sanitizeHtml } from '../core/utils.js';
 import { showConfirm, getUser, getProfile, getSupabase, showAlert } from '../core/auth.js';
 import { LS_DM_CHRONICLE, TABLE_COMMUNITY_CHAPTERS } from '../core/constants.js';
 const CHRONICLE_KEY = LS_DM_CHRONICLE;
@@ -129,7 +129,7 @@ function initQuillEditor(chId, content) {
         placeholder: 'Write your notes here...',
         modules: { toolbar: QUILL_TOOLBAR }
     });
-    if (content) quill.root.innerHTML = content;
+    if (content) quill.clipboard.dangerouslyPasteHTML(sanitizeHtml(content), 'silent');
     let debounce = null;
     quill.on('text-change', () => {
         clearTimeout(debounce);

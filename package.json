@@ -8,7 +8,8 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "vitest": "^3.2.1",
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "jsdom": "^30.1.1",
+    "vitest": "^3.2.1"
   }
 }
