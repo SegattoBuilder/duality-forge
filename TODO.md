@@ -262,12 +262,14 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 - [ ] Pin third-party script versions + `integrity` (SRI); add `/_headers` with CSP (`connect-src 'self' *.supabase.co`)
 
 **P0 — Supabase RLS / DB** _(SQL in `supabase/migrations/` — run manually in SQL Editor)_
-- [ ] **Run `001_security_hardening.sql`** — safe before app deploy:
+- [x] **Run `001_security_hardening.sql`** (applied 2026-10-03, snapshot `backup_20261003`) — safe before app deploy:
   - Rating triggers `SECURITY DEFINER` (chapter/adversary averages never updated for non-author ratings) + backfill
   - `import_count` maintained by trigger on `*_imports` (client increment blocked by RLS) + backfill
   - Guard trigger: clients can't write `avg_rating` / `rating_count` / `import_count`
   - `characters` guard: owner can't self-approve; DM can only change `table_approved` (was able to rewrite player `data` and `user_id`)
   - `get_table_names(ids)` RPC for players
+- [x] **Run `001b_chapter_id_defaults.sql`** (applied 2026-10-03) — chapter ratings/imports were failing: `id` had no default
+- [ ] Drop `backup_20261003` schema after ~1 week without issues (2026-10-10)
 - [ ] **Run `002_close_dm_tables_read.sql`** — ONLY after app using `get_table_names()` is live on main. Closes `dm_tables` SELECT `using(true)` (all campaigns readable with anon key) + removes duplicate policies
 - [ ] `author_nickname` set server-side from `profiles` (prevents impersonation)
 - [ ] `*_imports` / `*_ratings` public read exposes who imported/rated what — restrict to own rows if counts are enough
@@ -296,6 +298,10 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 - [ ] Community imports write directly to other pages' localStorage keys with hardcoded strings — use constants + `storage` listener or pending-import queue
 - [ ] Global `unhandledrejection` + `onerror` reporting on all pages (currently only support page)
 - [ ] Define `window._markCloudDirty` (called in `vault.js:26`, `chronicle.js:16`, never defined) — or replace with dirty flag in CloudSync
+
+**P1 — Bugs found during 2026-10-03 maintenance window**
+- [ ] Switching DM campaigns (open old → create new / go back) shows the previous campaign's data until refresh — risk of saving wrong data into a campaign. Check bfcache (`pageshow` persisted) and localStorage-before-pick load order
+- [ ] Kicked/denied player isn't told on load — only after 15-min autosave runs `refreshTableApproval`; `loadLinkedTable(..., 'kicked')` may treat status as approved (`approved || false`). Run approval check on sheet load
 
 **P1 — Supabase egress / free tier**
 - [x] Single Supabase client via `getSupabase()` — 4 clients today (`auth.js`, `auth-gate.js`, `index.html`, `community/app.js`) race on token refresh → random sign-outs
