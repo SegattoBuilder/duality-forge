@@ -2,6 +2,7 @@ import { getUser, getSupabase, showConfirm, showAlert } from '../core/auth.js';
 import { escHtml, escJs } from '../core/utils.js';
 import { TABLE_DM_TABLES, TABLE_CHARACTERS, LS_DM_TABLE_ID } from '../core/constants.js';
 import { renderCharacterDetailHtml } from '../core/character-detail.js';
+import { setUrlParam } from '../core/nav.js';
 
 let currentTable = null;
 
@@ -10,13 +11,14 @@ export function setCurrentTable(t) {
     currentTable = t ? { id: t.id, campaign_name: t.campaign_name } : null;
     if (currentTable) localStorage.setItem(LS_DM_TABLE_ID, JSON.stringify(currentTable));
     else localStorage.removeItem(LS_DM_TABLE_ID);
+    setUrlParam('t', currentTable?.id);
 }
 
 export async function restoreCurrentTable() {
     if (currentTable) return;
     const raw = localStorage.getItem(LS_DM_TABLE_ID);
     if (!raw) return;
-    try { const t = JSON.parse(raw); if (t?.id) currentTable = { id: t.id, campaign_name: t.campaign_name }; } catch { /* ignore */ }
+    try { const t = JSON.parse(raw); if (t?.id) { currentTable = { id: t.id, campaign_name: t.campaign_name }; setUrlParam('t', t.id); } } catch { /* ignore */ }
 }
 
 // ========== MEMBER ACTIONS ==========

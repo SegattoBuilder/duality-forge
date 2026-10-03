@@ -2,6 +2,7 @@ import { SAVE_KEY, THEME_KEY, setRestoring } from './state.js';
 import { LS_CHAR_ACTIVE_TAB, LS_CHAR_SAVE_V1, LS_CHAR_ROW_ID, LS_CHAR_SAVE } from '../core/constants.js';
 import { requireAuth } from '../core/auth-gate.js';
 import { whenReady } from '../core/utils.js';
+import { pickFromUrl, reloadOnBackForwardRestore } from '../core/nav.js';
 import { applyTheme, initMode } from './theme.js';
 import { toggleSection } from './ui.js';
 import { renderDots, updateThresholds, updateAttackBonus } from './trackers.js';
@@ -81,6 +82,9 @@ window.switchModernTab = function(tabId) {
     localStorage.setItem(LS_CHAR_ACTIVE_TAB, tabId);
     if (tabId === 'tab-combat') resizePendingTextareas();
 };
+
+reloadOnBackForwardRestore();
+pickFromUrl('character', 'c', localStorage.getItem(LS_CHAR_ROW_ID));
 
 // Auth gate — block access if no session or no local data
 if (!await requireAuth([LS_CHAR_SAVE, LS_CHAR_ROW_ID])) throw 0;

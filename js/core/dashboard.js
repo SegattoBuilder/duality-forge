@@ -381,7 +381,7 @@ function showDeleteConfirm(name, onYes) {
 
 function navigateTo(type, rowId) {
     sessionStorage.setItem('dh_dashboard_pick', JSON.stringify({ type, id: rowId }));
-    window.location.href = type === 'dm' ? 'dm/' : 'character/';
+    window.location.href = type === 'dm' ? `dm/?t=${encodeURIComponent(rowId)}` : `character/?c=${encodeURIComponent(rowId)}`;
 }
 
 function showArchivedCharDetail(row) {

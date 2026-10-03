@@ -3,6 +3,7 @@ import { escHtml } from '../core/utils.js';
 import { showCloudPicker } from '../core/cloud-picker.js';
 import { TOAST_DURATION, AUTOSAVE_INTERVAL, TABLE_CHARACTERS, LS_CHAR_SAVE, LS_CHAR_ROW_ID } from '../core/constants.js';
 import { gatherData, applyData, autoCache, resetSheet } from './save.js';
+import { setUrlParam } from '../core/nav.js';
 
 let cloudAutoSaveInterval = null;
 let lastSavedSnapshot = null;
@@ -22,9 +23,11 @@ function setCharacterRowId(id) {
     currentCharacterRowId = id;
     if (id) localStorage.setItem(LS_CHAR_ROW_ID, id);
     else localStorage.removeItem(LS_CHAR_ROW_ID);
+    setUrlParam('c', id);
 }
 
 export function initCharAuth() {
+    if (!sessionStorage.getItem('dh_dashboard_pick')) setUrlParam('c', currentCharacterRowId);
     onAuthChange(() => renderTableLink());
     onAuthChange(user => { if (user) startCloudAutoSave(); else stopCloudAutoSave(); });
     onAuthChange(async user => {
@@ -32,7 +35,7 @@ export function initCharAuth() {
         if (user && !characterPickerShown) {
             characterPickerShown = true;
             if (await tryDashboardPick()) return;
-            if (currentCharacterRowId) return;
+            if (currentCharacterRowId) { syncTableLink(); return; }
             const localRaw = localStorage.getItem(LS_CHAR_SAVE);
             let hasLocal = false;
             try { const d = JSON.parse(localRaw); hasLocal = d && (d.fields?.charName || (d.cards && d.cards.length)); } catch {}
@@ -247,7 +250,8 @@ function applyCharacterRow(row) {
     setCharacterRowId(row.id);
     lastSavedSnapshot = JSON.stringify(gatherData());
     linkedTable = null;
-    if (row.table_id) loadLinkedTable(row.table_id, row.table_approved);
+    if (row.table_id && (row.table_approved === 'kicked' || row.table_approved === 'denied')) refreshTableApproval();
+    else if (row.table_id) loadLinkedTable(row.table_id, row.table_approved);
     else if (!row.table_id && row.table_approved === null) { linkedTable = { _closed: true }; renderTableLink(); }
     else renderTableLink();
     showSyncStatus();
@@ -273,6 +277,15 @@ function startNewCharacter() {
 
 // ========== TABLE LINK / UNLINK ==========
 
+// On page load: show the table link, or tell the player they were kicked/denied
+async function syncTableLink() {
+    if (!currentCharacterRowId) return;
+    const { data } = await getSupabase().from(TABLE_CHARACTERS).select('table_id, table_approved').eq('id', currentCharacterRowId).single();
+    if (!data) return;
+    if (data.table_approved === 'kicked' || data.table_approved === 'denied' || !data.table_id) { await refreshTableApproval(); return; }
+    await loadLinkedTable(data.table_id, data.table_approved);
+}
+
 async function loadLinkedTable(tableId, approved) {
     const sb = getSupabase();
     if (!sb) return;
@@ -280,7 +293,7 @@ async function loadLinkedTable(tableId, approved) {
     const data = rows?.[0];
     if (data) {
         linkedTable = data;
-        linkedTable._approved = approved || false;
+        linkedTable._approved = approved === 'true';
     } else {
         linkedTable = null;
     }

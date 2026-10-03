@@ -1,5 +1,6 @@
 import { initAuth, onAuthChange, getUser, getSupabase, showAlert, showConfirm } from '../core/auth.js';
-import { escHtml, escHtmlAttr } from '../core/utils.js';
+import { escHtml, escHtmlAttr, readJson } from '../core/utils.js';
+import { pickFromUrl, reloadOnBackForwardRestore } from '../core/nav.js';
 import { LS_DM_CREATURES, LS_DM_FEAR, LS_DM_COUNTERS, LS_DM_CAMPAIGN, LS_DM_ACTIONBAR, LS_DM_FEARPOOL, LS_DM_TITLE, LS_DM_ACTIVE_TAB, LS_DM_VAULT, LS_DM_VAULT_GROUPS, LS_DM_CHRONICLE, LS_DM_TABLE_ID, LS_THEME, TABLE_DM_TABLES } from '../core/constants.js';
 import { requireAuth } from '../core/auth-gate.js';
 import { initMode, setMode, toggleMode, applyTheme, renderThemePicker } from '../core/theme.js';
@@ -208,7 +209,10 @@ window.toggleTitle = toggleTitle;
 window.newCampaign = newCampaign;
 
 // ========== INIT ==========
+reloadOnBackForwardRestore();
+
 window.addEventListener('DOMContentLoaded', async () => {
+    pickFromUrl('dm', 't', readJson(LS_DM_TABLE_ID)?.id);
     if (!await requireAuth([LS_DM_CREATURES, LS_DM_CAMPAIGN, LS_DM_VAULT, LS_DM_CHRONICLE, LS_DM_COUNTERS])) return;
     // Migrate old DM-specific mode key to shared key
     const oldMode = localStorage.getItem('dh_dm_mode');

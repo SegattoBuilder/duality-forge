@@ -300,8 +300,9 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 - [ ] Define `window._markCloudDirty` (called in `vault.js:26`, `chronicle.js:16`, never defined) — or replace with dirty flag in CloudSync
 
 **P1 — Bugs found during 2026-10-03 maintenance window**
-- [ ] Switching DM campaigns (open old → create new / go back) shows the previous campaign's data until refresh — risk of saving wrong data into a campaign. Check bfcache (`pageshow` persisted) and localStorage-before-pick load order
-- [ ] Kicked/denied player isn't told on load — only after 15-min autosave runs `refreshTableApproval`; `loadLinkedTable(..., 'kicked')` may treat status as approved (`approved || false`). Run approval check on sheet load
+- [x] Switching DM campaigns (open old → create new / go back) shows the previous campaign's data until refresh — risk of saving wrong data into a campaign. Check bfcache (`pageshow` persisted) and localStorage-before-pick load order
+- [x] Kicked/denied player isn't told on load — only after 15-min autosave runs `refreshTableApproval`; `loadLinkedTable(..., 'kicked')` may treat status as approved (`approved || false`). Run approval check on sheet load
+- [ ] Community homebrew — "create card" button missing (create/share currently only from character sheet?)
 
 **P1 — Supabase egress / free tier**
 - [x] Single Supabase client via `getSupabase()` — 4 clients today (`auth.js`, `auth-gate.js`, `index.html`, `community/app.js`) race on token refresh → random sign-outs
