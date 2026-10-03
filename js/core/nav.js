@@ -22,3 +22,25 @@ export function setUrlParam(param, value) {
 export function reloadOnBackForwardRestore() {
     window.addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); });
 }
+
+// Hide page content while a picked save loads, so the previous save's cached data doesn't flash
+export function hideUntilLoaded(timeoutMs = 6000) {
+    document.documentElement.classList.add('save-loading');
+    setTimeout(showLoaded, timeoutMs);
+}
+
+export function showLoaded() {
+    document.documentElement.classList.remove('save-loading');
+}
+
+// The picked save couldn't be opened — reload with the local copy and explain why
+export function pickFailed(message) {
+    sessionStorage.setItem('dh_flash', message);
+    location.replace(location.pathname);
+}
+
+export function takeFlash() {
+    const msg = sessionStorage.getItem('dh_flash');
+    if (msg) sessionStorage.removeItem('dh_flash');
+    return msg;
+}

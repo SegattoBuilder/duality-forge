@@ -119,3 +119,6 @@ select {
 /* Darken zinc text utilities for better readability */
 .text-zinc-500 { color: #52524e !important; }
 .text-zinc-600 { color: #62605c !important; }
+
+/* Picked save loading — hide content (not the nav) so cached data from another save doesn't flash */
+html.save-loading body > :not(nav) { visibility: hidden; }

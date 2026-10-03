@@ -2,7 +2,7 @@ import { SAVE_KEY, THEME_KEY, setRestoring } from './state.js';
 import { LS_CHAR_ACTIVE_TAB, LS_CHAR_SAVE_V1, LS_CHAR_ROW_ID, LS_CHAR_SAVE } from '../core/constants.js';
 import { requireAuth } from '../core/auth-gate.js';
 import { whenReady } from '../core/utils.js';
-import { pickFromUrl, reloadOnBackForwardRestore } from '../core/nav.js';
+import { pickFromUrl, reloadOnBackForwardRestore, hideUntilLoaded, takeFlash } from '../core/nav.js';
 import { applyTheme, initMode } from './theme.js';
 import { toggleSection } from './ui.js';
 import { renderDots, updateThresholds, updateAttackBonus } from './trackers.js';
@@ -14,7 +14,7 @@ import { autoCache, saveSheet, loadSheet, clearSheet, resetSheet, updateExportIn
 import { initCharAuth } from './char-auth.js';
 import { initAuth } from '../core/auth.js';
 import { loadCompendium } from '../core/compendium.js';
-import { showConfirm } from '../core/auth.js';
+import { showConfirm, showAlert } from '../core/auth.js';
 
 // Expose to global for inline handlers
 window.updateThresholds = updateThresholds;
@@ -85,6 +85,7 @@ window.switchModernTab = function(tabId) {
 
 reloadOnBackForwardRestore();
 pickFromUrl('character', 'c', localStorage.getItem(LS_CHAR_ROW_ID));
+if (sessionStorage.getItem('dh_dashboard_pick')) hideUntilLoaded();
 
 // Auth gate — block access if no session or no local data
 if (!await requireAuth([LS_CHAR_SAVE, LS_CHAR_ROW_ID])) throw 0;
@@ -140,6 +141,8 @@ whenReady(async () => {
 
     initCharAuth();
     await initAuth();
+    const flash = takeFlash();
+    if (flash) showAlert(flash);
     if (typeof window._ensureCharacterPicker === 'function') window._ensureCharacterPicker();
     loadCompendium({ characterMode: true, onAddWeapon: addWeapon, onAddArmor: addArmor, onAddItem: addItem, onAddConsumable: addConsumable, onAddGear: addGearItem, onAddInventory: addInventoryItem, onAddDomainCard: addCardToSheet, onAddGeneral: addCardToSheet });
 

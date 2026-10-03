@@ -3,7 +3,7 @@ import { escHtml } from '../core/utils.js';
 import { showCloudPicker } from '../core/cloud-picker.js';
 import { TOAST_DURATION, AUTOSAVE_INTERVAL, TABLE_CHARACTERS, LS_CHAR_SAVE, LS_CHAR_ROW_ID } from '../core/constants.js';
 import { gatherData, applyData, autoCache, resetSheet } from './save.js';
-import { setUrlParam } from '../core/nav.js';
+import { setUrlParam, showLoaded, pickFailed } from '../core/nav.js';
 
 let cloudAutoSaveInterval = null;
 let lastSavedSnapshot = null;
@@ -62,10 +62,11 @@ async function tryDashboardPick() {
         if (pick.type !== 'character' || !pick.id) return false;
         const sb = getSupabase();
         const { data: row } = await sb.from(TABLE_CHARACTERS).select('*').eq('id', pick.id).single();
-        if (!row) return false;
+        if (!row) { pickFailed("Couldn't open that character — it may have been deleted, or it isn't yours."); return true; }
         applyCharacterRow(row);
         return true;
     } catch { return false; }
+    finally { showLoaded(); }
 }
 
 let syncAnimationTimer = null;

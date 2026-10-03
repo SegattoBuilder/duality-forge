@@ -6,6 +6,7 @@ import { vaultCreatures, setVaultCreatures, vaultGroups, setVaultGroups, autoCac
 import { chronicleEntries, setChronicleEntries, autoCacheChronicle, renderChronicle } from './chronicle.js';
 import { switchTab } from './app.js';
 import { setCurrentTable, getCurrentTable, restoreCurrentTable } from './party.js';
+import { showLoaded, pickFailed } from '../core/nav.js';
 
 let cloudAutoSaveInterval = null;
 let lastSavedSnapshot = null;
@@ -56,10 +57,11 @@ async function tryDashboardPick() {
         if (pick.type !== 'dm' || !pick.id) return false;
         const sb = getSupabase();
         const { data: row } = await sb.from(TABLE_DM_TABLES).select('*').eq('id', pick.id).single();
-        if (!row) return false;
+        if (!row) { pickFailed("Couldn't open that campaign — it may have been deleted, or it isn't yours."); return true; }
         applyCampaignRow(row);
         return true;
     } catch { return false; }
+    finally { showLoaded(); }
 }
 
 let syncAnimationTimer = null;
