@@ -1,1 +1,5 @@
+# Rebuild Tailwind CSS from the class names used in HTML/JS and include it in the commit
+npm run build:css --silent
+git add css/tailwind.css
+
 npm test

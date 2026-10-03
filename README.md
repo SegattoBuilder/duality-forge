@@ -27,7 +27,7 @@ A unified web toolkit for tabletop RPGs — combining DM tools and a digital cha
 - **Cloudflare Web Analytics** — privacy-friendly page analytics
 
 ## Tech Stack
-- Vanilla JS (ES modules), Tailwind CSS (CDN), no build step
+- Vanilla JS (ES modules), Tailwind CSS (prebuilt `css/tailwind.css`, committed), no build step on deploy
 - Supabase for auth + cloud storage
 - Cloudflare Pages for hosting, KV for feedback reports
 
@@ -48,10 +48,16 @@ duality-forge/
 ```
 
 ## Local Development
-No build step required. Serve with any static file server:
 ```bash
-npx serve .
+npm ci            # once per machine — dev tools (Tailwind CLI, tests, git hooks)
+npx serve .       # any static file server works
 ```
+
+**Styling:** Tailwind classes are compiled into `css/tailwind.css` (committed, so Cloudflare Pages
+needs no build step). The pre-commit hook rebuilds it automatically. To see new classes while
+developing, run `npm run build:css` (or `npx tailwindcss -c tailwind.config.js -i css/tailwind.src.css -o css/tailwind.css --watch`).
+
+**Tests:** `npm test`
 
 ## License
 Fan-made tool for tabletop RPGs. Not affiliated with or endorsed by Darrington Press or Critical Role.

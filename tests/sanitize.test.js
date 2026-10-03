@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
-import { createRequire } from 'module';
+import DOMPurify from '../js/vendor/purify.min.js';
 
 // Browsers load the vendored UMD file as an ES module, which sets globalThis.DOMPurify.
-// Node loads it as CommonJS instead, so expose it the same way here.
-globalThis.DOMPurify = createRequire(import.meta.url)('../js/vendor/purify.min.js');
+// Vitest's module wrapper defines `module`, so the UMD exports instead — expose it the same way.
+globalThis.DOMPurify = DOMPurify;
 import { sanitizeHtml } from '../js/core/utils.js';
 
 describe('sanitizeHtml', () => {

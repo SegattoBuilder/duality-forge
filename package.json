@@ -1,15 +1,18 @@
 {
   "private": true,
   "name": "duality-forge",
-  "description": "Dev tooling only — no production dependencies",
+  "description": "Dev tooling only \u2014 no production dependencies",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepare": "husky"
+    "prepare": "husky",
+    "build:css": "tailwindcss -c tailwind.config.js -i css/tailwind.src.css -o css/tailwind.css --minify"
   },
   "devDependencies": {
     "husky": "^9.1.7",
     "jsdom": "^30.1.1",
+    "tailwindcss": "3.4.17",
     "vitest": "^3.2.1"
-  }
+  },
+  "type": "module"
 }

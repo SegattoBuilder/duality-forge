@@ -330,7 +330,7 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 - [ ] ~~Replace fixed full-screen `feTurbulence` noise~~ — re-evaluated: rasterized once and cached, low cost; keep
 - [x] `defer` supabase-js; Quill 2 on both DM + community (community uses 1.3.7 — HTML incompatibility); lazy-load Quill on first chronicle/share open
 - [x] `/_headers` cache rules (images/fonts long, js/css short + revalidate); service worker stale-while-revalidate for same-origin assets
-- [ ] Fix stale Cinzel preload (`v23` → current); drop unused Inter 300/800 weights; consistent `display=swap`
+- [x] Fix stale Cinzel preload (`v23` → current); drop unused Inter 300/800 weights; consistent `display=swap`
 - [ ] Compress `icon-512` / `logo.png` PNGs (~300KB each)
 
 **P1 — SRD data source migration** _(to discuss)_
@@ -389,7 +389,7 @@ _Identified improvements — not urgent at current scale (~30 users), but good p
 
 **CSS & Assets**
 - [ ] Lazy-load theme stylesheets — `themes.css` is ~80KB with repeated rules; split per-mode and load on demand
-- [ ] Self-host Tailwind — replace CDN runtime with built/minified output for production
+- [x] Self-host Tailwind — replace CDN runtime with built/minified output for production
 - [ ] Font optimization — `font-display: swap`, preload only critical fonts, defer non-critical assets
 - [ ] Reduced-motion support — disable decorative SVG backgrounds, drop shadows, and animations under `prefers-reduced-motion`
 
@@ -401,6 +401,8 @@ _Identified improvements — not urgent at current scale (~30 users), but good p
 ## 💡 Ideas / Someday
 
 _Brainstorm space — no commitment, just possibilities._
+
+- **Separate `/dashboard/`** — `/` becomes a public landing page (features, screenshots, SEO) and the app lives at `/dashboard/`. Not needed for the sign-in flash (fixed); costs one redirect for returning users. Pairs well with the Tailwind build (both touch every page)
 
 - **Community Discovery** — contextual "Browse Community" links from Compendium/Adversary tabs; optional toggle to show community homebrew alongside SRD data
 - **Table Scheduling** — DM sets a session schedule, players and DM receive email reminders _(high effort — requires email infrastructure)_
