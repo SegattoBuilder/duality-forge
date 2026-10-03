@@ -71,11 +71,10 @@
     </div>
 
     <script type="module">
-        import SUPABASE_CONFIG from './js/core/config.js';
-        import { hasConsent, initAuth } from './js/core/auth.js';
+        import { hasConsent, initAuth, getSupabase } from './js/core/auth.js';
         import { initDashboard, renderDashboard } from './js/core/dashboard.js';
 
-        const sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        const sb = getSupabase();
         const signInForm = document.getElementById('signInForm');
         const dashboardView = document.getElementById('dashboardView');
 

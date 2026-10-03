@@ -38,7 +38,10 @@ export async function initAuth() {
         if (event === 'PASSWORD_RECOVERY') {
             showPasswordUpdatePrompt();
         }
-        setUser(session?.user || null);
+        const user = session?.user || null;
+        // INITIAL_SESSION / TOKEN_REFRESHED / tab refocus re-send the same user — don't re-run every callback
+        if (user?.id === currentUser?.id && event !== 'USER_UPDATED') { currentUser = user; return; }
+        setUser(user);
     });
 }
 
@@ -271,11 +274,11 @@ export async function cloudSaveRow(table, matchFields, data) {
     return { error: error?.message || null, id: rowId || null };
 }
 
-export async function cloudLoadRows(table, orderBy = 'updated_at') {
+export async function cloudLoadRows(table, orderBy = 'updated_at', columns = '*') {
     if (!currentUser) return { rows: [], error: 'Not signed in' };
     const { data: rows, error } = await getSupabase()
         .from(table)
-        .select('*')
+        .select(columns)
         .eq('user_id', currentUser.id)
         .order(orderBy, { ascending: false });
     return { rows: rows || [], error: error?.message || null };

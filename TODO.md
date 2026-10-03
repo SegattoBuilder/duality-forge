@@ -284,13 +284,13 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 
 **P1 — Data loss / correctness**
 - [ ] Save conflict detection — update with `.eq('updated_at', loadedTs)`; 0 rows → "cloud is newer: keep mine / take theirs"
-- [ ] Autosave snapshot set only after successful save (`char-auth.js:98`, `dm-auth.js:94`) — failed saves currently never retry
-- [ ] In-flight save lock — double-click Save before row exists creates duplicate rows
-- [ ] DM autosave drops `partyMembers` that manual save includes (`dm-auth.js:109-148`)
-- [ ] Deleting the currently loaded row from cloud picker leaves stale row ID → silent data loss
-- [ ] `safeJson(key, fallback)` helper — corrupt `dh_sheet` bricks the character sheet (`save.js:146`)
-- [ ] Character `app.js` — register `DOMContentLoaded` before `await requireAuth()` (init can be missed)
-- [ ] DM gear menu throws on every click — `#authMenu` doesn't exist (`dm-auth.js:240`); remove ~130 dead lines (190-318, 372-401)
+- [x] Autosave snapshot set only after successful save (`char-auth.js:98`, `dm-auth.js:94`) — failed saves currently never retry
+- [x] In-flight save lock — double-click Save before row exists creates duplicate rows
+- [x] DM autosave drops `partyMembers` that manual save includes (`dm-auth.js:109-148`)
+- [x] Deleting the currently loaded row from cloud picker leaves stale row ID → silent data loss
+- [x] `safeJson(key, fallback)` helper — corrupt `dh_sheet` bricks the character sheet (`save.js:146`)
+- [x] Character `app.js` — register `DOMContentLoaded` before `await requireAuth()` (init can be missed)
+- [x] DM gear menu throws on every click — `#authMenu` doesn't exist (`dm-auth.js:240`); remove ~130 dead lines (190-318, 372-401)
 - [x] Rate-limit cooldown shows raw HTML and never ticks (`auth.js:310` → `showAlert` uses `textContent`)
 - [ ] Dashboard archive/unarchive/delete update UI even when write fails (`dashboard.js:333-350`)
 - [ ] Community imports write directly to other pages' localStorage keys with hardcoded strings — use constants + `storage` listener or pending-import queue
@@ -298,20 +298,20 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 - [ ] Define `window._markCloudDirty` (called in `vault.js:26`, `chronicle.js:16`, never defined) — or replace with dirty flag in CloudSync
 
 **P1 — Supabase egress / free tier**
-- [ ] Single Supabase client via `getSupabase()` — 4 clients today (`auth.js`, `auth-gate.js`, `index.html`, `community/app.js`) race on token refresh → random sign-outs
-- [ ] `setUser` — no-op when user id unchanged; merge multiple `onAuthChange` registrations per page
-- [ ] Community `onAuthStateChange` — ignore `INITIAL_SESSION` / `TOKEN_REFRESHED` (currently loads everything twice + hourly)
-- [ ] Cloud picker — `select('id, updated_at, name')`, fetch `data` only for the picked row (`auth.js:276`)
+- [x] Single Supabase client via `getSupabase()` — 4 clients today (`auth.js`, `auth-gate.js`, `index.html`, `community/app.js`) race on token refresh → random sign-outs
+- [x] `setUser` — no-op when user id unchanged; merge multiple `onAuthChange` registrations per page
+- [x] Community `onAuthStateChange` — ignore `INITIAL_SESSION` / `TOKEN_REFRESHED` (currently loads everything twice + hourly)
+- [x] Cloud picker — `select('id, updated_at, name')`, fetch `data` only for the picked row (`auth.js:276`)
 - [ ] Community lists — select card columns only, fetch full content on open
-- [ ] DM save — `select('character_name, class, level')` instead of full `data` (`dm-auth.js:144`); `.insert().select('id, campaign_name')`
-- [ ] `setCurrentTable` — persist `{id, campaign_name}` only, not full row (`party.js:9`)
+- [x] DM save — `select('character_name, class, level')` instead of full `data` (`dm-auth.js:144`); `.insert().select('id, campaign_name')`
+- [x] `setCurrentTable` — persist `{id, campaign_name}` only, not full row (`party.js:9`)
 - [ ] Dashboard — `Promise.all` independent queries; reuse `getProfile()`
 - [ ] Adversaries cache — add TTL/version (never refreshes today); build SRD name `Set` once (`vault.js:166`)
 - [ ] `cards.js` — reuse compendium's in-memory data instead of refetching GitHub files
-- [ ] Save on `visibilitychange → hidden` when dirty (phones rarely fire `beforeunload`); `pagehide` instead of `beforeunload` for bfcache
+- [x] Save on `visibilitychange → hidden` when dirty (phones rarely fire `beforeunload`); `pagehide` instead of `beforeunload` for bfcache
 
 **P1 — Mobile performance**
-- [ ] Debounce `autoCache` 300–500ms; skip search inputs; remove duplicate per-field calls (`character/app.js:124`, `gear.js:174`)
+- [x] Debounce `autoCache` 300–500ms; skip search inputs; remove duplicate per-field calls (`character/app.js:124`, `gear.js:174`)
 - [ ] Debounce chronicle/tracker notes caching; chronicle re-renders only the changed chapter, keeps Quill instances
 - [ ] Tracker dot click — toggle classes instead of re-rendering whole card
 - [ ] `gear.js` `autoResizeTextareas` — listeners added on every expand (leak); bind once or use `field-sizing: content`
@@ -345,7 +345,7 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 - [ ] CSS tokens — ~15-20 custom properties per mode (`--surface-*`, `--text-*`, `--border`); target `themes.css` 80KB → ~20KB, drop `!important`; replace hardcoded `#d4a017` with `var(--accent-1)`
 - [ ] Delete `js/character/theme.js` re-export; stop saving `theme` in `gatherData`; `signOut` shouldn't clear `dh_theme`
 - [ ] Remove unused exports/globals (`cloudSaveRow`, `hasConsent`, DM `saveSession`/`loadSession`/`newCampaign`/`clearAll`)
-- [ ] `cloud-picker.js` — show load errors as errors, not "No saves found"
+- [x] `cloud-picker.js` — show load errors as errors, not "No saves found"
 - [ ] README — autosave interval says 5 min, code is 15 min
 
 **P3 — Tests**

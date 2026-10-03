@@ -1,5 +1,22 @@
 import '../vendor/purify.min.js';
 
+// Run fn once the DOM is parsed — also works if DOMContentLoaded already fired
+// (modules with top-level await can finish after it)
+export function whenReady(fn) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn, { once: true });
+    else fn();
+}
+
+// Read JSON from localStorage; corrupt or missing data returns the fallback instead of throwing
+export function readJson(key, fallback = null) {
+    try {
+        const raw = localStorage.getItem(key);
+        return raw == null ? fallback : JSON.parse(raw);
+    } catch {
+        return fallback;
+    }
+}
+
 export function generateId(prefix = 'c') {
     return prefix + '-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
 }

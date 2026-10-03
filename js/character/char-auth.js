@@ -9,6 +9,14 @@ let lastSavedSnapshot = null;
 let characterPickerShown = false;
 let linkedTable = null;
 let currentCharacterRowId = localStorage.getItem(LS_CHAR_ROW_ID) || null;
+let savePromise = null;
+
+// Serialize saves: a second save waits for the first (prevents duplicate inserts on double-click)
+function runSave(fn) {
+    const next = (savePromise || Promise.resolve()).then(fn, fn);
+    savePromise = next.finally(() => { if (savePromise === next) savePromise = null; });
+    return next;
+}
 
 function setCharacterRowId(id) {
     currentCharacterRowId = id;
@@ -87,22 +95,24 @@ function onBeforeUnload(e) {
     if (isDirty()) { e.preventDefault(); e.returnValue = ''; }
 }
 
+function onVisibilityChange() {
+    if (document.visibilityState === 'hidden' && getUser() && isDirty()) runSave(cloudAutoSaveNow);
+}
+
 function startCloudAutoSave() {
     if (cloudAutoSaveInterval) return;
     lastSavedSnapshot = JSON.stringify(gatherData());
     window.addEventListener('beforeunload', onBeforeUnload);
-    cloudAutoSaveInterval = setInterval(async () => {
-        if (!getUser()) return;
-        const current = JSON.stringify(gatherData());
-        if (current === lastSavedSnapshot) return;
-        lastSavedSnapshot = current;
-        await cloudAutoSaveNow();
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    cloudAutoSaveInterval = setInterval(() => {
+        if (getUser() && isDirty()) runSave(cloudAutoSaveNow);
     }, AUTOSAVE_INTERVAL);
 }
 
 function stopCloudAutoSave() {
     if (cloudAutoSaveInterval) { clearInterval(cloudAutoSaveInterval); cloudAutoSaveInterval = null; }
     window.removeEventListener('beforeunload', onBeforeUnload);
+    document.removeEventListener('visibilitychange', onVisibilityChange);
     lastSavedSnapshot = null;
 }
 
@@ -110,11 +120,15 @@ async function cloudAutoSaveNow() {
     if (!currentCharacterRowId) return;
     const sb = getSupabase();
     const data = gatherData();
+    const snapshot = JSON.stringify(data);
     const charName = data.fields?.charName?.trim();
-    const { error } = await sb.from(TABLE_CHARACTERS)
+    const { data: rows, error } = await sb.from(TABLE_CHARACTERS)
         .update({ data, character_name: charName || undefined, class: data.fields?.charClass || null, level: parseInt(data.fields?.charLevel) || 1, updated_at: new Date().toISOString() })
-        .eq('id', currentCharacterRowId);
-    if (!error) showSyncStatus();
+        .eq('id', currentCharacterRowId)
+        .select('id');
+    if (error || !rows?.length) return;
+    lastSavedSnapshot = snapshot;
+    showSyncStatus();
     await refreshTableApproval();
 }
 
@@ -150,28 +164,37 @@ async function refreshTableApproval() {
 }
 
 // ========== CLOUD SAVE / LOAD ==========
-async function cloudSave() {
+function cloudSave() {
     if (!getUser()) return;
+    return runSave(cloudSaveNow);
+}
+
+async function cloudSaveNow() {
     const sb = getSupabase();
     const data = gatherData();
+    const snapshot = JSON.stringify(data);
     const charName = data.fields?.charName?.trim();
     if (!charName) { showAlert('Character name is required to save.'); return; }
 
     const promoted = { class: data.fields?.charClass || null, level: parseInt(data.fields?.charLevel) || 1 };
 
     if (currentCharacterRowId) {
-        const { error } = await sb.from(TABLE_CHARACTERS)
+        const { data: rows, error } = await sb.from(TABLE_CHARACTERS)
             .update({ data, character_name: charName, ...promoted, updated_at: new Date().toISOString() })
-            .eq('id', currentCharacterRowId);
+            .eq('id', currentCharacterRowId)
+            .select('id');
         if (error) { showAlert('Cloud save failed: ' + error.message); return; }
-    } else {
+        // Row was deleted (e.g. from another device) — save as a new character instead of losing data
+        if (!rows?.length) setCharacterRowId(null);
+    }
+    if (!currentCharacterRowId) {
         const { data: row, error } = await sb.from(TABLE_CHARACTERS)
             .insert({ user_id: getUser().id, character_name: charName, data, ...promoted })
             .select('id').single();
         if (error) { showAlert('Cloud save failed: ' + error.message); return; }
         setCharacterRowId(row.id);
     }
-    lastSavedSnapshot = JSON.stringify(gatherData());
+    lastSavedSnapshot = snapshot;
     renderTableLink();
     showSyncStatus();
 }

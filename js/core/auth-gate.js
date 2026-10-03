@@ -1,7 +1,7 @@
-import SUPABASE_CONFIG from './config.js';
+import { getSupabase } from './auth.js';
 
 export async function requireAuth(localStorageKeys = []) {
-    const sb = window.supabase?.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+    const sb = getSupabase();
     if (!sb) { window.location.replace('/'); return false; }
 
     const { data: { session } } = await sb.auth.getSession();

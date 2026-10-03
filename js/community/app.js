@@ -1,13 +1,13 @@
-import SUPABASE_CONFIG from '../core/config.js';
 import { TABLE_COMMUNITY_CHAPTERS, TABLE_COMMUNITY_CHAPTER_RATINGS, TABLE_COMMUNITY_CHAPTER_IMPORTS, TABLE_COMMUNITY_ADVERSARIES, TABLE_COMMUNITY_ADVERSARY_RATINGS, TABLE_COMMUNITY_ADVERSARY_IMPORTS, TABLE_COMMUNITY_HOMEBREW, TABLE_COMMUNITY_HOMEBREW_RATINGS, TABLE_COMMUNITY_HOMEBREW_IMPORTS, LS_THEME } from '../core/constants.js';
 import { initMode, applyTheme } from '../core/theme.js';
 import { generateId, escHtml as esc, sanitizeHtml } from '../core/utils.js';
 import { renderStars, parseFeatureText, filterChapters, filterAdversaries, filterHomebrew } from './community-logic.js';
 import { requireAuth } from '../core/auth-gate.js';
+import { getSupabase } from '../core/auth.js';
 
 if (!await requireAuth()) throw 0;
 
-const sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+const sb = getSupabase();
 let chapters = [];
 let myShares = [];
 let adversaries = [];
@@ -76,7 +76,10 @@ async function initAuth() {
     if (session) { currentUser = session.user; hideSignInGate(); await loadUserData(); loadAllContent(); }
     else showSignInGate();
     sb.auth.onAuthStateChange((_, session) => {
-        currentUser = session?.user || null;
+        const user = session?.user || null;
+        // Same user re-sent on startup, token refresh and tab refocus — content is already loaded
+        if (user?.id === currentUser?.id) { currentUser = user; return; }
+        currentUser = user;
         if (currentUser) { hideSignInGate(); loadUserData(); loadAllContent(); }
         else showSignInGate();
     });

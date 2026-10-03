@@ -7,8 +7,8 @@ let currentTable = null;
 
 export function getCurrentTable() { return currentTable; }
 export function setCurrentTable(t) {
-    currentTable = t;
-    if (t) localStorage.setItem(LS_DM_TABLE_ID, JSON.stringify(t));
+    currentTable = t ? { id: t.id, campaign_name: t.campaign_name } : null;
+    if (currentTable) localStorage.setItem(LS_DM_TABLE_ID, JSON.stringify(currentTable));
     else localStorage.removeItem(LS_DM_TABLE_ID);
 }
 
@@ -16,7 +16,7 @@ export async function restoreCurrentTable() {
     if (currentTable) return;
     const raw = localStorage.getItem(LS_DM_TABLE_ID);
     if (!raw) return;
-    try { currentTable = JSON.parse(raw); } catch { /* ignore */ }
+    try { const t = JSON.parse(raw); if (t?.id) currentTable = { id: t.id, campaign_name: t.campaign_name }; } catch { /* ignore */ }
 }
 
 // ========== MEMBER ACTIONS ==========

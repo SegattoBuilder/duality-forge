@@ -1,4 +1,4 @@
-import { cloudLoadRows, cloudDeleteRow, showConfirm, showAlert } from './auth.js';
+import { cloudLoadRows, cloudDeleteRow, getSupabase, showConfirm, showAlert } from './auth.js';
 import { escHtml } from './utils.js';
 
 export async function showCloudPicker(opts) {
@@ -9,8 +9,13 @@ export async function showCloudPicker(opts) {
 
     list.innerHTML = '<div class="col-span-2 text-center text-zinc-600 text-xs py-4">Loading...</div>';
 
-    const { rows, error } = await cloudLoadRows(table);
-    if (error || !rows.length) {
+    // List only needs names/dates — full save data is fetched for the picked row
+    const { rows, error } = await cloudLoadRows(table, 'updated_at', `id, updated_at, ${nameColumn}`);
+    if (error) {
+        list.innerHTML = `<div class="col-span-2 text-center text-red-400 text-xs py-4">Couldn't load saves: ${escHtml(error)}</div>`;
+        return;
+    }
+    if (!rows.length) {
         list.innerHTML = `<div class="col-span-2 text-center text-zinc-600 text-xs py-4">${escHtml(emptyText)}</div>`;
         return;
     }
@@ -38,11 +43,11 @@ export async function showCloudPicker(opts) {
     }).join('');
 
     list.querySelectorAll('.cp-pick').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             const id = btn.dataset.pickId;
-            const pickType = btn.dataset.pickType;
-            const row = manualRows.find(r => r.id === id);
-            if (!row) { showAlert('Failed to load save.'); return; }
+            if (!manualRows.some(r => r.id === id)) { showAlert('Failed to load save.'); return; }
+            const { data: row, error: loadErr } = await getSupabase().from(table).select('*').eq('id', id).single();
+            if (loadErr || !row) { showAlert('Failed to load save.'); return; }
             close();
             onPick(row);
         });

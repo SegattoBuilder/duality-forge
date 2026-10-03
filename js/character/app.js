@@ -1,6 +1,7 @@
 import { SAVE_KEY, THEME_KEY, setRestoring } from './state.js';
 import { LS_CHAR_ACTIVE_TAB, LS_CHAR_SAVE_V1, LS_CHAR_ROW_ID, LS_CHAR_SAVE } from '../core/constants.js';
 import { requireAuth } from '../core/auth-gate.js';
+import { whenReady } from '../core/utils.js';
 import { applyTheme, initMode } from './theme.js';
 import { toggleSection } from './ui.js';
 import { renderDots, updateThresholds, updateAttackBonus } from './trackers.js';
@@ -111,7 +112,7 @@ setRestoring(true);
     setRestoring(false);
 }
 
-window.addEventListener('DOMContentLoaded', async () => {
+whenReady(async () => {
     initMode();
     applyTheme(localStorage.getItem(THEME_KEY) || 'gold');
 
@@ -121,8 +122,14 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    document.addEventListener('input', () => { updateThresholds(); updateAttackBonus(); autoCache(); });
-    document.addEventListener('change', () => { updateThresholds(); updateAttackBonus(); autoCache(); });
+    // Search/filter controls aren't sheet data — don't recompute or cache on them
+    const NON_SHEET_INPUTS = '#compendiumSearch, #cardSearch, #domainFilter, #levelFilter, #categoryFilters, #contextFilters';
+    const onSheetEdit = (e) => {
+        if (e.target.closest?.(NON_SHEET_INPUTS)) return;
+        updateThresholds(); updateAttackBonus(); autoCache();
+    };
+    document.addEventListener('input', onSheetEdit);
+    document.addEventListener('change', onSheetEdit);
 
     const savedTab = localStorage.getItem(LS_CHAR_ACTIVE_TAB);
     if (savedTab && MODERN_TABS.includes(savedTab)) switchModernTab(savedTab);

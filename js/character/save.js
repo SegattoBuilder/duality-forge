@@ -9,11 +9,34 @@ import { applyTheme } from './theme.js';
 import { showConfirm } from '../core/auth.js';
 import { buildExportFilename, migrateWeapons, migrateArmor, DEFAULT_RESET } from './save-logic.js';
 import { getToastStyles } from '../core/theme.js';
+import { readJson } from '../core/utils.js';
+
+// Debounced: typing writes once after a short pause instead of on every keystroke.
+// Pending writes are flushed when the tab is hidden or closed.
+const AUTOCACHE_DELAY = 400;
+let autoCacheTimer = null;
 
 export function autoCache() {
     if (_restoring) return;
+    clearTimeout(autoCacheTimer);
+    autoCacheTimer = setTimeout(flushAutoCache, AUTOCACHE_DELAY);
+}
+
+export function flushAutoCache() {
+    if (!autoCacheTimer) return;
+    clearTimeout(autoCacheTimer);
+    autoCacheTimer = null;
+    if (_restoring) return;
     localStorage.setItem(SAVE_KEY, JSON.stringify(gatherData()));
 }
+
+function cancelAutoCache() {
+    clearTimeout(autoCacheTimer);
+    autoCacheTimer = null;
+}
+
+window.addEventListener('pagehide', flushAutoCache);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushAutoCache(); });
 
 export function gatherData() {
     const data = {
@@ -141,12 +164,14 @@ export function loadSheet(silent) {
         input.click();
         return;
     }
-    const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return;
-    applyData(JSON.parse(raw));
+    const data = readJson(SAVE_KEY);
+    if (!data || typeof data !== 'object') return;
+    try { applyData(data); }
+    catch (err) { console.error('Saved sheet could not be loaded', err); showToast('Saved sheet data was unreadable — starting fresh. Cloud saves are unaffected.'); }
 }
 
 export function resetSheet() {
+    cancelAutoCache();
     localStorage.removeItem(SAVE_KEY);
     FIELD_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.value = el.type === 'number' ? '0' : ''; });
     Object.entries(DEFAULT_RESET).forEach(([id, val]) => { const el = document.getElementById(id); if (el) el.value = val; });
