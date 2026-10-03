@@ -1,7 +1,7 @@
 import { initAuth, getUser, getProfile, getSupabase, onAuthChange, showConfirm, showAlert } from '../core/auth.js';
 import { escHtml } from '../core/utils.js';
 import { showCloudPicker } from '../core/cloud-picker.js';
-import { TOAST_DURATION, AUTOSAVE_INTERVAL, TABLE_CHARACTERS, TABLE_DM_TABLES, LS_CHAR_SAVE, LS_CHAR_ROW_ID } from '../core/constants.js';
+import { TOAST_DURATION, AUTOSAVE_INTERVAL, TABLE_CHARACTERS, LS_CHAR_SAVE, LS_CHAR_ROW_ID } from '../core/constants.js';
 import { gatherData, applyData, autoCache, resetSheet } from './save.js';
 
 let cloudAutoSaveInterval = null;
@@ -253,7 +253,8 @@ function startNewCharacter() {
 async function loadLinkedTable(tableId, approved) {
     const sb = getSupabase();
     if (!sb) return;
-    const { data } = await sb.from(TABLE_DM_TABLES).select('id, campaign_name').eq('id', tableId).single();
+    const { data: rows } = await sb.rpc('get_table_names', { ids: [tableId] });
+    const data = rows?.[0];
     if (data) {
         linkedTable = data;
         linkedTable._approved = approved || false;
@@ -290,7 +291,9 @@ async function submitTableLink() {
     const code = document.getElementById('tableLinkInput').value.trim();
     if (!code) { showAlert('Enter a table code.'); return; }
     const sb = getSupabase();
-    const { data: table, error: lookupErr } = await sb.from(TABLE_DM_TABLES).select('id, campaign_name').eq('id', code).single();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(code);
+    const { data: rows, error: lookupErr } = isUuid ? await sb.rpc('get_table_names', { ids: [code] }) : { data: null };
+    const table = rows?.[0];
     if (lookupErr || !table) { showAlert('Table not found. Check the code and try again.'); return; }
     if (!currentCharacterRowId) {
         const data = gatherData();

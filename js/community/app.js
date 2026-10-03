@@ -498,7 +498,6 @@ async function importChapter(id) {
     if (importErr) { showToast('Import failed: ' + importErr.message, 'error'); return; }
 
     // Increment import count
-    await sb.from(TABLE_COMMUNITY_CHAPTERS).update({ import_count: (ch.import_count || 0) + 1 }).eq('id', id);
     ch.import_count = (ch.import_count || 0) + 1;
 
     userImports[id] = ch.version;
@@ -702,7 +701,6 @@ async function addAdvToVault(id) {
     if (importErr) { showToast('Add failed: ' + importErr.message, 'error'); return; }
 
     // Increment add count
-    await sb.from(TABLE_COMMUNITY_ADVERSARIES).update({ import_count: (adv.import_count || 0) + 1 }).eq('id', id);
     adv.import_count = (adv.import_count || 0) + 1;
 
     // Store in vault via localStorage
@@ -1048,7 +1046,6 @@ async function importHomebrew(id) {
     if (importErr) { showToast('Import failed: ' + importErr.message, 'error'); return; }
 
     // Increment count
-    await sb.from(TABLE_COMMUNITY_HOMEBREW).update({ import_count: (hb.import_count || 0) + 1 }).eq('id', id);
     hb.import_count = (hb.import_count || 0) + 1;
 
     // Store in character sheet localStorage

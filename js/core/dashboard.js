@@ -159,7 +159,7 @@ async function buildTableMap(tableRows, charRows) {
         if (c.table_id && !map[c.table_id]) missingIds.push(c.table_id);
     }
     if (missingIds.length) {
-        const { data } = await supabase.from(TABLE_DM_TABLES).select('id, campaign_name').in('id', [...new Set(missingIds)]);
+        const { data } = await supabase.rpc('get_table_names', { ids: [...new Set(missingIds)] });
         if (data) for (const r of data) map[r.id] = r.campaign_name || 'Unnamed';
     }
     return map;
