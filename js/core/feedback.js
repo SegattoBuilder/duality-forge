@@ -18,7 +18,9 @@ export function submitBugReport(inputEl, radioName, formEl, toastEl) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type, message: msg, page: location.pathname })
-    }).then(() => {
+    }).then((res) => {
+        if (res.status === 429) { showAlert('Too many reports from this connection — please try again later.'); return; }
+        if (!res.ok) { showAlert('Failed to send report. Try again later.'); return; }
         inputEl.value = '';
         document.querySelectorAll(`input[name="${radioName}"]`).forEach(r => r.checked = false);
         if (formEl) formEl.classList.add('hidden');
