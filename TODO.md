@@ -245,6 +245,116 @@
 
 ---
 
+## 🔍 Code Review Findings (2026-10)
+
+_Full review of security, correctness, performance and structure. Ordered by priority. Items already in the Performance backlog below are not repeated._
+
+**P0 — Security (cross-user XSS → session token theft from localStorage)**
+- [ ] Fix escapers in `utils.js` — single `escapeHtml` covering `& < > " '`; move `**bold**` formatting out of the escaper into `formatInline`; update `utils.test.js` (currently locks in unsafe behavior)
+- [ ] Vendor DOMPurify — sanitize rich text: community chapter `content.text` (`community/app.js:332`), homebrew `desc`/`feature`, card `feature` in `cards.js` and `character-detail.js`
+- [ ] Escape all community chapter fields — `disposition`, NPC/music fields (`community/app.js:324-340`); `environment`/`difficulty`/`duration` already enum-constrained in DB but escape anyway
+- [ ] Escape music cue `href` and avatar `src` attributes (`community/app.js:351`, `dashboard.js:446,503`)
+- [ ] Escape creature/card/gear names rendered via `innerHTML` (`tracker.js:523,535`, `vault.js:131,170`, `cards.js:165,199-212`, `gear.js` input values)
+- [ ] `showConfirm` / `showAlert` use `textContent` only (`auth.js:298`); callers passing markup switch to plain text
+- [ ] Chronicle load via `quill.clipboard.dangerouslyPasteHTML(DOMPurify.sanitize(html))` instead of `quill.root.innerHTML` (`chronicle.js:132`)
+- [ ] Remove data interpolation inside inline `onclick="fn('${x}')"` — party deny/kick (`party.js:68,70`) is exploitable by a player's character name; migrate to `data-*` + delegated listeners
+- [ ] Pin third-party script versions + `integrity` (SRI); add `/_headers` with CSP (`connect-src 'self' *.supabase.co`)
+
+**P0 — Supabase RLS / DB** _(SQL in `supabase/migrations/` — run manually in SQL Editor)_
+- [ ] **Run `001_security_hardening.sql`** — safe before app deploy:
+  - Rating triggers `SECURITY DEFINER` (chapter/adversary averages never updated for non-author ratings) + backfill
+  - `import_count` maintained by trigger on `*_imports` (client increment blocked by RLS) + backfill
+  - Guard trigger: clients can't write `avg_rating` / `rating_count` / `import_count`
+  - `characters` guard: owner can't self-approve; DM can only change `table_approved` (was able to rewrite player `data` and `user_id`)
+  - `get_table_names(ids)` RPC for players
+- [ ] **Run `002_close_dm_tables_read.sql`** — ONLY after app using `get_table_names()` is live on main. Closes `dm_tables` SELECT `using(true)` (all campaigns readable with anon key) + removes duplicate policies
+- [ ] `author_nickname` set server-side from `profiles` (prevents impersonation)
+- [ ] `*_imports` / `*_ratings` public read exposes who imported/rated what — restrict to own rows if counts are enough
+- [ ] `characters.table_approved` is `text` with values `null/'false'/'true'/'denied'/'kicked'` — convert to enum or add CHECK
+- [ ] Drop `_backup_*_autosave` tables + `autosave_data`/`autosave_at`/`is_autosave` columns once confirmed unneeded
+- [ ] Policies: wrap `auth.uid()` as `(select auth.uid())` (Supabase perf recommendation)
+- [ ] Full schema dump into repo (`supabase/schema.sql`)
+- [x] Verified: RLS enabled on all tables (backups have no policies → inaccessible); `profiles` owner-only; rating CHECK 1–5 exists; chapter environment/difficulty/duration enum CHECKs exist
+
+**P0 — Cloudflare Functions**
+- [ ] `/api/report` — rate limit (Cloudflare rule or Turnstile), `type` allowlist, truncate fields, reject bodies > 4KB (protects KV free-tier writes)
+- [ ] `/api/reports` — admin key via header (not query string) + constant-time compare, or put behind Cloudflare Access
+- [ ] `delete-account.js` — check intermediate fetch results before deleting the auth user
+
+**P1 — Data loss / correctness**
+- [ ] Save conflict detection — update with `.eq('updated_at', loadedTs)`; 0 rows → "cloud is newer: keep mine / take theirs"
+- [ ] Autosave snapshot set only after successful save (`char-auth.js:98`, `dm-auth.js:94`) — failed saves currently never retry
+- [ ] In-flight save lock — double-click Save before row exists creates duplicate rows
+- [ ] DM autosave drops `partyMembers` that manual save includes (`dm-auth.js:109-148`)
+- [ ] Deleting the currently loaded row from cloud picker leaves stale row ID → silent data loss
+- [ ] `safeJson(key, fallback)` helper — corrupt `dh_sheet` bricks the character sheet (`save.js:146`)
+- [ ] Character `app.js` — register `DOMContentLoaded` before `await requireAuth()` (init can be missed)
+- [ ] DM gear menu throws on every click — `#authMenu` doesn't exist (`dm-auth.js:240`); remove ~130 dead lines (190-318, 372-401)
+- [ ] Rate-limit cooldown shows raw HTML and never ticks (`auth.js:310` → `showAlert` uses `textContent`)
+- [ ] Dashboard archive/unarchive/delete update UI even when write fails (`dashboard.js:333-350`)
+- [ ] Community imports write directly to other pages' localStorage keys with hardcoded strings — use constants + `storage` listener or pending-import queue
+- [ ] Global `unhandledrejection` + `onerror` reporting on all pages (currently only support page)
+- [ ] Define `window._markCloudDirty` (called in `vault.js:26`, `chronicle.js:16`, never defined) — or replace with dirty flag in CloudSync
+
+**P1 — Supabase egress / free tier**
+- [ ] Single Supabase client via `getSupabase()` — 4 clients today (`auth.js`, `auth-gate.js`, `index.html`, `community/app.js`) race on token refresh → random sign-outs
+- [ ] `setUser` — no-op when user id unchanged; merge multiple `onAuthChange` registrations per page
+- [ ] Community `onAuthStateChange` — ignore `INITIAL_SESSION` / `TOKEN_REFRESHED` (currently loads everything twice + hourly)
+- [ ] Cloud picker — `select('id, updated_at, name')`, fetch `data` only for the picked row (`auth.js:276`)
+- [ ] Community lists — select card columns only, fetch full content on open
+- [ ] DM save — `select('character_name, class, level')` instead of full `data` (`dm-auth.js:144`); `.insert().select('id, campaign_name')`
+- [ ] `setCurrentTable` — persist `{id, campaign_name}` only, not full row (`party.js:9`)
+- [ ] Dashboard — `Promise.all` independent queries; reuse `getProfile()`
+- [ ] Adversaries cache — add TTL/version (never refreshes today); build SRD name `Set` once (`vault.js:166`)
+- [ ] `cards.js` — reuse compendium's in-memory data instead of refetching GitHub files
+- [ ] Save on `visibilitychange → hidden` when dirty (phones rarely fire `beforeunload`); `pagehide` instead of `beforeunload` for bfcache
+
+**P1 — Mobile performance**
+- [ ] Debounce `autoCache` 300–500ms; skip search inputs; remove duplicate per-field calls (`character/app.js:124`, `gear.js:174`)
+- [ ] Debounce chronicle/tracker notes caching; chronicle re-renders only the changed chapter, keeps Quill instances
+- [ ] Tracker dot click — toggle classes instead of re-rendering whole card
+- [ ] `gear.js` `autoResizeTextareas` — listeners added on every expand (leak); bind once or use `field-sizing: content`
+- [ ] Vault drag-scroll — `requestAnimationFrame` loop instead of 16ms `setInterval` per `dragover`
+- [ ] Touch reorder — HTML5 drag & drop doesn't work on phones; pointer events or up/down buttons
+- [ ] Remove `backdrop-blur` on nav and modal overlay (or desktop-only)
+- [ ] `.domain-card-selected` infinite `box-shadow` animation → animate `opacity` on pseudo-element
+- [ ] Fantasy mode `filter: drop-shadow` on every dot → single cheap shadow
+- [ ] Replace fixed full-screen `feTurbulence` noise with tiny tiled PNG/WebP
+- [ ] `defer` supabase-js; Quill 2 on both DM + community (community uses 1.3.7 — HTML incompatibility); lazy-load Quill on first chronicle/share open
+- [ ] `/_headers` cache rules (images/fonts long, js/css short + revalidate); service worker stale-while-revalidate for same-origin assets
+- [ ] Fix stale Cinzel preload (`v23` → current); drop unused Inter 300/800 weights; consistent `display=swap`
+- [ ] Compress `icon-512` / `logo.png` PNGs (~300KB each)
+
+**P1 — SRD data source migration** _(to discuss)_
+- [ ] Current sources: compendium + cards use `daggersearch/daggerheart-data` (last updated 2025-08 — stale); adversaries use `seansbox/daggerheart-srd` (last updated 2026-01)
+- [ ] Evaluate new, better-maintained source (more structured data); confirm license/terms (SRD is under the Darrington Press Community Gaming License)
+- [ ] Single data adapter module (`js/core/srd.js`) — one place maps source format → app format, so swapping sources doesn't touch compendium/cards/tracker
+- [ ] Pin source to a commit/tag instead of `main` (upstream changes can't silently break the app); cache-first with version key
+- [ ] Decide: fetch from third party at runtime vs. mirror to `/data/` on Pages
+
+**P2 — Structure & cleanliness**
+- [ ] `core/cloud-sync.js` — `createCloudSync({ table, nameColumn, gather, apply, toRow })` replaces duplicated logic in `dm-auth.js` / `char-auth.js` (~180 lines); home for P1 save fixes
+- [ ] `core/dialog.js` (native `<dialog>`, Promise-based confirm/alert/prompt) + `core/toast.js` — replaces ~8 dialog and 4 toast implementations
+- [ ] `data-action` event delegation module-by-module — removes 229 `window.*` globals and ~350 inline handlers
+- [ ] `community/app.js` — `communityResource()` factory for chapters/adversaries/homebrew; split files; use core auth
+- [ ] `dm/creature-card.js` — shared card rendering for tracker + vault
+- [ ] Split `dashboard.js` (cards / save-picker / account / menus) and `tracker.js`
+- [ ] Break circular imports (`tracker.js` / `dm-auth.js` ↔ `dm/app.js`) — move keys to `constants.js`
+- [ ] Move character modals into `<template>` / render on first open; shared SVG sprite for save icons
+- [ ] CSS tokens — ~15-20 custom properties per mode (`--surface-*`, `--text-*`, `--border`); target `themes.css` 80KB → ~20KB, drop `!important`; replace hardcoded `#d4a017` with `var(--accent-1)`
+- [ ] Delete `js/character/theme.js` re-export; stop saving `theme` in `gatherData`; `signOut` shouldn't clear `dh_theme`
+- [ ] Remove unused exports/globals (`cloudSaveRow`, `hasConsent`, DM `saveSession`/`loadSession`/`newCampaign`/`clearAll`)
+- [ ] `cloud-picker.js` — show load errors as errors, not "No saves found"
+- [ ] README — autosave interval says 5 min, code is 15 min
+
+**P3 — Tests**
+- [ ] Escaper tests with quote/apostrophe/attribute payloads
+- [ ] CloudSync tests with fake Supabase (stale `updated_at`, failed save stays dirty, no double insert)
+- [ ] `safeJson` tests; Pages Functions tests with mocked `fetch`/env
+- [ ] Static check: every inline `on*=` handler name is defined and every `getElementById` id exists on the page
+
+---
+
 ## ⚡ Performance & Optimization (Backlog)
 
 _Identified improvements — not urgent at current scale (~30 users), but good practice to address as the app grows._
