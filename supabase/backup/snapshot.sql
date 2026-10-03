@@ -30,7 +30,7 @@ end $$;
 
 -- Verify: live vs newest backup row counts
 with latest as (
-  select nspname as s from pg_namespace where nspname like 'backup\_%' order by nspname desc limit 1
+  select nspname as s from pg_namespace where nspname like 'backup\_%' order by oid desc limit 1
 )
 select (select s from latest) as backup_schema, t.tablename,
        (xpath('/row/c/text()', query_to_xml(format('select count(*) as c from public.%I', t.tablename), false, true, '')))[1]::text::int as live,
