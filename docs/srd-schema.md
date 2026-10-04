@@ -1,6 +1,6 @@
 # Duality Forge — SRD data schema (proposal, for review)
 
-Status: **draft for review** · Branch: `feature/srd-data`
+Status: **approved 2026-10-04** (decisions in §9) · Branch: `feature/srd-data` · Implemented in `tools/srd/` (schemaVersion 2)
 
 Goal: one data format that is **good** (complete, consistent, easy to work with), **fast** (small, cacheable,
 quick to search on a phone) and **safe** (no HTML in data, validated, can't break the app). We control it,
@@ -119,8 +119,8 @@ role, "Passive / Action / Reaction" chips on features, no string parsing.
 ## 5. Files, speed and caching
 
 ```
-data/srd/<dataVersion>/          e.g. data/srd/2026-10-04.1/
-  index.json                     ~15 KB: every record's id, kind, name, srd.version, tags, tier/level → search & lists
+data/srd/<dataVersion>/          content hash, e.g. data/srd/4eb879d924/
+  index.json                     ~21 KB gzipped: every record's id, kind, name, srd.version, tags, tier/level → search & lists
   domain-card.json  weapon.json  adversary.json  …   full records, one file per kind
   manifest.json                  sources, commits, counts
 data/srd/current.json            → { "dataVersion": "2026-10-04.1" }   (tiny, short cache)
@@ -130,7 +130,7 @@ data/srd/current.json            → { "dataVersion": "2026-10-04.1" }   (tiny, 
   The phone downloads a kind once; a new import = new folder = automatic refresh.
 - **Index first**: search/browse lists load ~15 KB; full kind files load when you open a category or a card.
 - **IndexedDB cache** on the device (not localStorage — no 5 MB limit, not blocking the UI).
-- Estimated sizes (gzipped): index ~15 KB, domain cards ~30 KB, adversaries ~60 KB, everything ~250 KB.
+- Sizes (gzipped, first build): index 21 KB, domain cards 24 KB, weapons 13 KB, adversaries 79 KB, everything ~320 KB.
 
 ---
 
@@ -179,11 +179,11 @@ Rough effort: pipeline 0.5 day · loader + renderer 0.5–1 day · compendium 1 
 
 ---
 
-## 9. Decisions needed
+## 9. Decisions (2026-10-04)
 
-1. **Localisation**: drop `{ "en-US": … }` wrappers (English only now; translations later as separate files)? *Proposed: yes.*
-2. **Enums lowercase-kebab** (`very-close`) instead of `VERY_CLOSE`? *Proposed: yes.*
-3. **Feature `kind`/`value` parsing** from names like `"Relentless (3) - Passive"`? *Proposed: yes (unparsed names stay as-is).*
-4. **Saved cards as `ref + snapshot`** with automatic migration of old saves? *Proposed: yes.*
-5. **Provenance**: keep only `srd.source` + `srd.ref` (not page/line numbers — our sources don't have them)? *Proposed: yes.*
-6. **Rules/campaign text with tables** rendered as real tables? *Proposed: yes.*
+1. **Localisation**: English only, no `{ "en-US": … }` wrappers — keep the door open for translation files keyed by id later. ✔
+2. **Enums lowercase-kebab** (`very-close`). ✔
+3. **Feature `kind`/`value`** parsed only when the name matches the standard `Name (N) - Kind` pattern; anything else stays unchanged. ✔
+4. **Saved cards = `ref` + small `snapshot`**; existing saves converted automatically on open, matched cards marked v1, unmatched kept as custom. ✔
+5. **Provenance** = `srd.source` + `srd.ref` only (internal). ✔
+6. **Tables** in rules/campaign text rendered as real tables. ✔
