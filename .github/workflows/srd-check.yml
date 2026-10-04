@@ -1,0 +1,40 @@
+# Weekly: is there new SRD 2.0 data upstream since our pinned commit?
+# If yes, opens (or updates) an issue labelled "srd-update" with what changed.
+# Nothing is imported automatically — run `npm run srd:build` after bumping the commit.
+name: SRD upstream check
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'   # Mondays 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Compare pinned commit with upstream
+        id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          node tools/srd/check.js > check.txt 2>&1
+          echo "code=$?" >> "$GITHUB_OUTPUT"
+          cat check.txt
+      - name: Open or update issue
+        if: steps.check.outputs.code == '10'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create srd-update --color 7B2FA8 --description "New upstream SRD data" 2>/dev/null || true
+          body=$(printf 'New SRD data is available upstream.\n\n```\n%s\n```\n\nTo import: bump `commit` in `tools/srd/sources.json`, run `npm run srd:build`, review `data/srd/REPORT.md`, commit to `dev`.' "$(cat check.txt)")
+          num=$(gh issue list --label srd-update --state open --json number --jq '.[0].number')
+          if [ -n "$num" ]; then gh issue comment "$num" --body "$body"; else gh issue create --title "SRD data update available" --label srd-update --body "$body"; fi

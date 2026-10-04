@@ -1,0 +1,132 @@
+{
+  "version": "v1@505153a+v2@16de765",
+  "generated": "2026-10-04T02:49:08.408Z",
+  "sources": {
+    "daggersearch": {
+      "repo": "daggersearch/daggerheart-data",
+      "commit": "505153afc0fc6daf79575d088fc3138c4f3097f0",
+      "path": "core",
+      "srd": "1.0",
+      "attribution": "Daggerheart System Reference Document 1.0"
+    },
+    "seansbox": {
+      "repo": "seansbox/daggerheart-srd",
+      "commit": "c84b20b9b7c237d832eda7e64df46440eb983ed1",
+      "path": ".build/03_json",
+      "srd": "1.0",
+      "attribution": "Daggerheart System Reference Document 1.0"
+    },
+    "srd2": {
+      "repo": "JHerrin00/daggerheart-srd-2.0",
+      "branch": "main",
+      "commit": "16de765667cfe091bd0870d80507be77df9dd996",
+      "path": ".build/03_json",
+      "srd": "2.0",
+      "attribution": "Daggerheart System Reference Document 2.0"
+    }
+  },
+  "categories": {
+    "ancestries": {
+      "file": "ancestries.json",
+      "v1": 18,
+      "v2": 7,
+      "total": 25
+    },
+    "armors": {
+      "file": "armors.json",
+      "v1": 34,
+      "v2": 35,
+      "total": 69
+    },
+    "classes": {
+      "file": "classes.json",
+      "v1": 9,
+      "v2": 4,
+      "total": 13
+    },
+    "communities": {
+      "file": "communities.json",
+      "v1": 9,
+      "v2": 6,
+      "total": 15
+    },
+    "consumables": {
+      "file": "consumables.json",
+      "v1": 60,
+      "v2": 60,
+      "total": 120
+    },
+    "domain-cards": {
+      "file": "domain-cards.json",
+      "v1": 189,
+      "v2": 21,
+      "total": 210
+    },
+    "items": {
+      "file": "items.json",
+      "v1": 60,
+      "v2": 60,
+      "total": 120
+    },
+    "rules": {
+      "file": "rules.json",
+      "v1": 14,
+      "v2": 17,
+      "total": 31
+    },
+    "subclasses": {
+      "file": "subclasses.json",
+      "v1": 18,
+      "v2": 8,
+      "total": 26
+    },
+    "weapons": {
+      "file": "weapons.json",
+      "v1": 192,
+      "v2": 132,
+      "total": 324
+    },
+    "adversaries": {
+      "file": "adversaries.json",
+      "v1": 129,
+      "v2": 141,
+      "total": 270
+    },
+    "transformations": {
+      "file": "transformations.json",
+      "v1": 0,
+      "v2": 6,
+      "total": 6
+    },
+    "environments": {
+      "file": "environments.json",
+      "v1": 0,
+      "v2": 47,
+      "total": 47
+    },
+    "beastforms": {
+      "file": "beastforms.json",
+      "v1": 0,
+      "v2": 24,
+      "total": 24
+    },
+    "domains": {
+      "file": "domains.json",
+      "v1": 0,
+      "v2": 10,
+      "total": 10
+    },
+    "campaign-frames": {
+      "file": "campaign-frames.json",
+      "v1": 0,
+      "v2": 1,
+      "total": 1
+    },
+    "ancestry-rules": {
+      "file": "ancestry-rules.json",
+      "v1": 0,
+      "v2": 1,
+      "total": 1
+    }
+  }
+}

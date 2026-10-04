@@ -1,0 +1,29 @@
+{
+  "_comment": "Pinned upstream sources. v1 is frozen (never re-imported with new content). To update v2: run `npm run srd:check`, then bump `commit` and run `npm run srd:build`.",
+  "v1": {
+    "daggersearch": {
+      "repo": "daggersearch/daggerheart-data",
+      "commit": "505153afc0fc6daf79575d088fc3138c4f3097f0",
+      "path": "core",
+      "srd": "1.0",
+      "attribution": "Daggerheart System Reference Document 1.0"
+    },
+    "seansbox": {
+      "repo": "seansbox/daggerheart-srd",
+      "commit": "c84b20b9b7c237d832eda7e64df46440eb983ed1",
+      "path": ".build/03_json",
+      "srd": "1.0",
+      "attribution": "Daggerheart System Reference Document 1.0"
+    }
+  },
+  "v2": {
+    "srd2": {
+      "repo": "JHerrin00/daggerheart-srd-2.0",
+      "branch": "main",
+      "commit": "16de765667cfe091bd0870d80507be77df9dd996",
+      "path": ".build/03_json",
+      "srd": "2.0",
+      "attribution": "Daggerheart System Reference Document 2.0"
+    }
+  }
+}

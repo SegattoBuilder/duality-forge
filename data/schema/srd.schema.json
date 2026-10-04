@@ -1,0 +1,2301 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://duality-forge.pages.dev/data/schema/srd.schema.json",
+  "title": "Duality Forge SRD data",
+  "description": "One file per category in data/srd/ — each is an array of records matching $defs[category].",
+  "$defs": {
+    "domain-cards": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "type": "object",
+          "properties": {
+            "en-US": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "en-US"
+          ],
+          "additionalProperties": false
+        },
+        "domain": {
+          "enum": [
+            "ARCANA",
+            "BLADE",
+            "BONE",
+            "CODEX",
+            "DREAD",
+            "GRACE",
+            "MIDNIGHT",
+            "SAGE",
+            "SPLENDOR",
+            "VALOR"
+          ]
+        },
+        "type": {
+          "enum": [
+            "ABILITY",
+            "SPELL",
+            "GRIMOIRE"
+          ]
+        },
+        "level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "recallCost": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "object",
+                "properties": {
+                  "en-US": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "en-US"
+                ],
+                "additionalProperties": false
+              },
+              "description": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "paragraph": {
+                      "type": "object",
+                      "properties": {
+                        "en-US": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "en-US"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "list": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "en-US": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "en-US"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "oneOf": [
+                    {
+                      "required": [
+                        "paragraph"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "list"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name",
+        "domain",
+        "type",
+        "level",
+        "recallCost",
+        "features"
+      ],
+      "additionalProperties": false
+    },
+    "weapons": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "type": "object",
+          "properties": {
+            "en-US": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "en-US"
+          ],
+          "additionalProperties": false
+        },
+        "type": {
+          "enum": [
+            "PRIMARY_PHYSICAL",
+            "PRIMARY_MAGIC",
+            "SECONDARY"
+          ]
+        },
+        "tier": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "trait": {
+          "enum": [
+            "AGILITY",
+            "STRENGTH",
+            "FINESSE",
+            "INSTINCT",
+            "PRESENCE",
+            "KNOWLEDGE",
+            "SPELLCAST"
+          ]
+        },
+        "range": {
+          "enum": [
+            "MELEE",
+            "VERY_CLOSE",
+            "CLOSE",
+            "FAR",
+            "VERY_FAR"
+          ]
+        },
+        "damage": {
+          "type": "object",
+          "properties": {
+            "dice": {
+              "enum": [
+                "D4",
+                "D6",
+                "D8",
+                "D10",
+                "D12",
+                "D20"
+              ]
+            },
+            "modifier": {
+              "type": "integer"
+            },
+            "type": {
+              "enum": [
+                "PHYSICAL",
+                "MAGICAL",
+                "PHYSICAL_OR_MAGICAL"
+              ]
+            }
+          },
+          "required": [
+            "dice",
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        "burden": {
+          "enum": [
+            "ONE_HANDED",
+            "TWO_HANDED"
+          ]
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "object",
+                "properties": {
+                  "en-US": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "en-US"
+                ],
+                "additionalProperties": false
+              },
+              "description": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "paragraph": {
+                      "type": "object",
+                      "properties": {
+                        "en-US": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "en-US"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "list": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "en-US": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "en-US"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "oneOf": [
+                    {
+                      "required": [
+                        "paragraph"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "list"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name",
+        "type",
+        "tier",
+        "trait",
+        "range",
+        "damage",
+        "burden"
+      ],
+      "additionalProperties": false
+    },
+    "armors": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "type": "object",
+          "properties": {
+            "en-US": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "en-US"
+          ],
+          "additionalProperties": false
+        },
+        "tier": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "baseMajorThreshold": {
+          "type": "integer"
+        },
+        "baseSevereThreshold": {
+          "type": "integer"
+        },
+        "baseScore": {
+          "type": "integer"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "object",
+                "properties": {
+                  "en-US": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "en-US"
+                ],
+                "additionalProperties": false
+              },
+              "description": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "paragraph": {
+                      "type": "object",
+                      "properties": {
+                        "en-US": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "en-US"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "list": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "en-US": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "en-US"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "oneOf": [
+                    {
+                      "required": [
+                        "paragraph"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "list"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name",
+        "tier",
+        "baseMajorThreshold",
+        "baseSevereThreshold",
+        "baseScore"
+      ],
+      "additionalProperties": false
+    },
+    "classes": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "enum": [
+            "ASSASSIN",
+            "BARD",
+            "BRAWLER",
+            "DRUID",
+            "GUARDIAN",
+            "RANGER",
+            "ROGUE",
+            "SERAPH",
+            "SORCERER",
+            "WARLOCK",
+            "WARRIOR",
+            "WITCH",
+            "WIZARD"
+          ]
+        },
+        "description": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "paragraph": {
+                "type": "object",
+                "properties": {
+                  "en-US": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "en-US"
+                ],
+                "additionalProperties": false
+              },
+              "list": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "en-US": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "en-US"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1
+              }
+            },
+            "oneOf": [
+              {
+                "required": [
+                  "paragraph"
+                ]
+              },
+              {
+                "required": [
+                  "list"
+                ]
+              }
+            ]
+          }
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "ARCANA",
+              "BLADE",
+              "BONE",
+              "CODEX",
+              "DREAD",
+              "GRACE",
+              "MIDNIGHT",
+              "SAGE",
+              "SPLENDOR",
+              "VALOR"
+            ]
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "startingEvasion": {
+          "type": "integer"
+        },
+        "startingHitPoints": {
+          "type": "integer"
+        },
+        "hopeFeature": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "object",
+              "properties": {
+                "en-US": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "en-US"
+              ],
+              "additionalProperties": false
+            },
+            "description": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "paragraph": {
+                    "type": "object",
+                    "properties": {
+                      "en-US": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "en-US"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "list": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "en-US": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "en-US"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1
+                  }
+                },
+                "oneOf": [
+                  {
+                    "required": [
+                      "paragraph"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "list"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "description"
+          ],
+          "additionalProperties": false
+        },
+        "classFeatures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "object",
+                "properties": {
+                  "en-US": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "en-US"
+                ],
+                "additionalProperties": false
+              },
+              "description": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "paragraph": {
+                      "type": "object",
+                      "properties": {
+                        "en-US": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "en-US"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "list": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "en-US": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "en-US"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "oneOf": [
+                    {
+                      "required": [
+                        "paragraph"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "list"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "classItems": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "en-US": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "en-US"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "backgroundQuestions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "en-US": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "en-US"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "connectionQuestions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "en-US": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "en-US"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name",
+        "description",
+        "domains",
+        "startingEvasion",
+        "startingHitPoints",
+        "hopeFeature",
+        "classFeatures",
+        "classItems"
+      ],
+      "additionalProperties": false
+    },
+    "subclasses": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "type": "object",
+          "properties": {
+            "en-US": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "en-US"
+          ],
+          "additionalProperties": false
+        },
+        "class": {
+          "enum": [
+            "ASSASSIN",
+            "BARD",
+            "BRAWLER",
+            "DRUID",
+            "GUARDIAN",
+            "RANGER",
+            "ROGUE",
+            "SERAPH",
+            "SORCERER",
+            "WARLOCK",
+            "WARRIOR",
+            "WITCH",
+            "WIZARD"
+          ]
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "ARCANA",
+              "BLADE",
+              "BONE",
+              "CODEX",
+              "DREAD",
+              "GRACE",
+              "MIDNIGHT",
+              "SAGE",
+              "SPLENDOR",
+              "VALOR"
+            ]
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "spellcastTrait": {
+          "enum": [
+            "AGILITY",
+            "STRENGTH",
+            "FINESSE",
+            "INSTINCT",
+            "PRESENCE",
+            "KNOWLEDGE",
+            "SPELLCAST"
+          ]
+        },
+        "description": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "paragraph": {
+                "type": "object",
+                "properties": {
+                  "en-US": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "en-US"
+                ],
+                "additionalProperties": false
+              },
+              "list": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "en-US": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "en-US"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1
+              }
+            },
+            "oneOf": [
+              {
+                "required": [
+                  "paragraph"
+                ]
+              },
+              {
+                "required": [
+                  "list"
+                ]
+              }
+            ]
+          }
+        },
+        "foundation": {
+          "type": "object",
+          "properties": {
+            "features": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "object",
+                    "properties": {
+                      "en-US": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "en-US"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "paragraph": {
+                          "type": "object",
+                          "properties": {
+                            "en-US": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "en-US"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "list": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "en-US": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "en-US"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "minItems": 1
+                        }
+                      },
+                      "oneOf": [
+                        {
+                          "required": [
+                            "paragraph"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "list"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "description"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "features"
+          ],
+          "additionalProperties": false
+        },
+        "specialization": {
+          "type": "object",
+          "properties": {
+            "features": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "object",
+                    "properties": {
+                      "en-US": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "en-US"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "paragraph": {
+                          "type": "object",
+                          "properties": {
+                            "en-US": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "en-US"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "list": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "en-US": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "en-US"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "minItems": 1
+                        }
+                      },
+                      "oneOf": [
+                        {
+                          "required": [
+                            "paragraph"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "list"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "description"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "features"
+          ],
+          "additionalProperties": false
+        },
+        "mastery": {
+          "type": "object",
+          "properties": {
+            "features": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "object",
+                    "properties": {
+                      "en-US": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "en-US"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "paragraph": {
+                          "type": "object",
+                          "properties": {
+                            "en-US": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "en-US"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "list": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "en-US": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "en-US"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "minItems": 1
+                        }
+                      },
+                      "oneOf": [
+                        {
+                          "required": [
+                            "paragraph"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "list"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "description"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "features"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name",
+        "class",
+        "domains",
+        "foundation",
+        "specialization",
+        "mastery"
+      ],
+      "additionalProperties": false
+    },
+    "ancestries": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "type": "object",
+          "properties": {
+            "en-US": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "en-US"
+          ],
+          "additionalProperties": false
+        },
+        "description": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "paragraph": {
+                "type": "object",
+                "properties": {
+                  "en-US": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "en-US"
+                ],
+                "additionalProperties": false
+              },
+              "list": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "en-US": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "en-US"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1
+              }
+            },
+            "oneOf": [
+              {
+                "required": [
+                  "paragraph"
+                ]
+              },
+              {
+                "required": [
+                  "list"
+                ]
+              }
+            ]
+          }
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "object",
+                "properties": {
+                  "en-US": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "en-US"
+                ],
+                "additionalProperties": false
+              },
+              "description": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "paragraph": {
+                      "type": "object",
+                      "properties": {
+                        "en-US": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "en-US"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "list": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "en-US": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "en-US"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "oneOf": [
+                    {
+                      "required": [
+                        "paragraph"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "list"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name",
+        "description",
+        "features"
+      ],
+      "additionalProperties": false
+    },
+    "communities": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "type": "object",
+          "properties": {
+            "en-US": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "en-US"
+          ],
+          "additionalProperties": false
+        },
+        "description": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "paragraph": {
+                "type": "object",
+                "properties": {
+                  "en-US": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "en-US"
+                ],
+                "additionalProperties": false
+              },
+              "list": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "en-US": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "en-US"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1
+              }
+            },
+            "oneOf": [
+              {
+                "required": [
+                  "paragraph"
+                ]
+              },
+              {
+                "required": [
+                  "list"
+                ]
+              }
+            ]
+          }
+        },
+        "personalities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "en-US": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "en-US"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "object",
+                "properties": {
+                  "en-US": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "en-US"
+                ],
+                "additionalProperties": false
+              },
+              "description": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "paragraph": {
+                      "type": "object",
+                      "properties": {
+                        "en-US": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "en-US"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "list": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "en-US": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "en-US"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "oneOf": [
+                    {
+                      "required": [
+                        "paragraph"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "list"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name",
+        "description",
+        "personalities",
+        "features"
+      ],
+      "additionalProperties": false
+    },
+    "consumables": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "type": "object",
+          "properties": {
+            "en-US": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "en-US"
+          ],
+          "additionalProperties": false
+        },
+        "roll": {
+          "type": "string"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "object",
+                "properties": {
+                  "en-US": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "en-US"
+                ],
+                "additionalProperties": false
+              },
+              "description": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "paragraph": {
+                      "type": "object",
+                      "properties": {
+                        "en-US": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "en-US"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "list": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "en-US": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "en-US"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "oneOf": [
+                    {
+                      "required": [
+                        "paragraph"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "list"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name",
+        "features"
+      ],
+      "additionalProperties": false
+    },
+    "items": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "type": "object",
+          "properties": {
+            "en-US": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "en-US"
+          ],
+          "additionalProperties": false
+        },
+        "roll": {
+          "type": "string"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "object",
+                "properties": {
+                  "en-US": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "en-US"
+                ],
+                "additionalProperties": false
+              },
+              "description": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "paragraph": {
+                      "type": "object",
+                      "properties": {
+                        "en-US": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "en-US"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "list": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "en-US": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "en-US"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "oneOf": [
+                    {
+                      "required": [
+                        "paragraph"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "list"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name",
+        "features"
+      ],
+      "additionalProperties": false
+    },
+    "rules": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "type": "object",
+          "properties": {
+            "en-US": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "en-US"
+          ],
+          "additionalProperties": false
+        },
+        "description": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "paragraph": {
+                "type": "object",
+                "properties": {
+                  "en-US": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "en-US"
+                ],
+                "additionalProperties": false
+              },
+              "list": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "en-US": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "en-US"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1
+              }
+            },
+            "oneOf": [
+              {
+                "required": [
+                  "paragraph"
+                ]
+              },
+              {
+                "required": [
+                  "list"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "transformations": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "type": "object",
+          "properties": {
+            "en-US": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "en-US"
+          ],
+          "additionalProperties": false
+        },
+        "description": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "paragraph": {
+                "type": "object",
+                "properties": {
+                  "en-US": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "en-US"
+                ],
+                "additionalProperties": false
+              },
+              "list": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "en-US": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "en-US"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1
+              }
+            },
+            "oneOf": [
+              {
+                "required": [
+                  "paragraph"
+                ]
+              },
+              {
+                "required": [
+                  "list"
+                ]
+              }
+            ]
+          }
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "object",
+                "properties": {
+                  "en-US": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "en-US"
+                ],
+                "additionalProperties": false
+              },
+              "description": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "paragraph": {
+                      "type": "object",
+                      "properties": {
+                        "en-US": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "en-US"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "list": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "en-US": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "en-US"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "oneOf": [
+                    {
+                      "required": [
+                        "paragraph"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "list"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name",
+        "description",
+        "features"
+      ],
+      "additionalProperties": false
+    },
+    "adversaries": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "tier": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "motives_and_tactics": {
+          "type": "string"
+        },
+        "difficulty": {
+          "type": "string"
+        },
+        "thresholds": {
+          "type": "string"
+        },
+        "hp": {
+          "type": "string"
+        },
+        "stress": {
+          "type": "string"
+        },
+        "atk": {
+          "type": "string"
+        },
+        "attack": {
+          "type": "string"
+        },
+        "range": {
+          "type": "string"
+        },
+        "damage": {
+          "type": "string"
+        },
+        "experience": {
+          "type": "string"
+        },
+        "feature": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name"
+      ],
+      "additionalProperties": true
+    },
+    "environments": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name"
+      ],
+      "additionalProperties": true
+    },
+    "beastforms": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name"
+      ],
+      "additionalProperties": true
+    },
+    "domains": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name"
+      ],
+      "additionalProperties": true
+    },
+    "campaign-frames": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name",
+        "text"
+      ],
+      "additionalProperties": true
+    },
+    "ancestry-rules": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "srdVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "source": {
+          "enum": [
+            "daggersearch",
+            "seansbox",
+            "srd2"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "srdVersion",
+        "source",
+        "name",
+        "text"
+      ],
+      "additionalProperties": true
+    }
+  }
+}
