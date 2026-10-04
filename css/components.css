@@ -670,6 +670,29 @@
 .cat-communities { background: #3b3b1a; color: #e8e040; border-top: 2px solid #e8e040; }
 .cat-domain-cards { background: #1a3b3b; color: #40e8e8; border-top: 2px solid #40e8e8; }
 .cat-rules { background: #2a2a2a; color: #a0a0a0; border-top: 2px solid #a0a0a0; }
+.cat-transformations { background: #2e1a3b; color: #c080f0; border-top: 2px solid #c080f0; }
+.cat-beastforms { background: #1f2e1a; color: #8fd06a; border-top: 2px solid #8fd06a; }
+.cat-environments { background: #1a2e2e; color: #6ac8c0; border-top: 2px solid #6ac8c0; }
+
+/* SRD version badge (only v2 is marked) */
+.srd-badge { display: inline-block; vertical-align: middle; margin: 0 6px 0 4px; flex-shrink: 0; font: 700 9px/1 Inter, sans-serif; letter-spacing: .04em; padding: 2px 5px; border-radius: 4px; text-transform: uppercase; }
+.srd-v2 { color: #f5efe6; background: color-mix(in srgb, var(--accent-1) 35%, transparent); border: 1px solid color-mix(in srgb, var(--accent-1) 60%, transparent); }
+
+/* Feature kind chips (Passive / Action / Reaction …) */
+.feature-kind { display: inline-block; margin-left: 4px; padding: 0 5px; border-radius: 9999px; font: 600 9px/14px Inter, sans-serif; text-transform: uppercase; letter-spacing: .03em; vertical-align: middle; border: 1px solid; }
+.feature-kind-passive { color: #9ca3af; border-color: #4b5563; }
+.feature-kind-action { color: #fbbf24; border-color: #92400e; }
+.feature-kind-reaction { color: #60a5fa; border-color: #1e40af; }
+.feature-kind-evolution { color: #c084fc; border-color: #6b21a8; }
+
+/* Markdown-lite text */
+.md-text p, .md-list { margin: 0 0 .4em; }
+.md-list { list-style: disc; padding-left: 1.1em; }
+.md-heading { margin-top: .6em; }
+.md-table-wrap { overflow-x: auto; margin: .4em 0; }
+.md-table { border-collapse: collapse; font-size: 11px; }
+.md-table th, .md-table td { border: 1px solid #3d362a; padding: 2px 6px; text-align: left; vertical-align: top; }
+.md-table th { background: #2a2418; }
 
 /* Card modal scaled text */
 .modal-scaled * { font-size: inherit !important; line-height: 1.7 !important; }

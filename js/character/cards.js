@@ -1,10 +1,38 @@
-import { GITHUB_RAW, DOMAIN_COLORS, CATEGORY_LABELS, currentData, setCurrentData, addedCards, selectedDomainCards, savedCardsData, setSavedCardsData } from './state.js';
+import { DOMAIN_COLORS, CATEGORY_LABELS, currentData, setCurrentData, addedCards, selectedDomainCards, savedCardsData, setSavedCardsData } from './state.js';
 import { autoCache } from './save.js';
 import { toggleCard } from './ui.js';
 import { showConfirm, showAlert, getSupabase, getUser, getProfile } from '../core/auth.js';
 import { TABLE_COMMUNITY_HOMEBREW } from '../core/constants.js';
-import { escHtml, escHtmlAttr, sanitizeHtml } from '../core/utils.js';
-import { t, domainColor as _domainColor, parseItem, escAttr, buildFeatureHtml, validateShareFields, validateDomainCardFields, validateGeneralCardFields, cardSortComparator, flattenClasses, flattenSubclasses } from './cards-logic.js';
+import { escHtml, escHtmlAttr } from '../core/utils.js';
+import { domainColor as _domainColor, escAttr, validateShareFields, validateDomainCardFields, validateGeneralCardFields, cardSortComparator } from './cards-logic.js';
+import { loadKind, loadKinds, nameKey, versionBadge } from '../core/srd.js';
+import { renderText, renderFeatures } from '../core/text.js';
+import { cardFromDomainCard, cardFromAncestryOrCommunity, cardsFromClass, cardsFromSubclass, upgradeSheetCard } from '../core/srd-legacy.js';
+
+// Card browser categories → SRD kind + how records become sheet cards
+const BROWSER = {
+    'domain-cards.json': { kind: 'domain-card', toCards: r => [cardFromDomainCard(r)] },
+    'ancestries.json': { kind: 'ancestry', toCards: r => [cardFromAncestryOrCommunity(r)] },
+    'communities.json': { kind: 'community', toCards: r => [cardFromAncestryOrCommunity(r)] },
+    'classes.json': { kind: 'class', toCards: cardsFromClass },
+    'subclasses.json': { kind: 'subclass', toCards: cardsFromSubclass },
+};
+
+// Catalog used to link old saved cards to SRD entries (filled by linkSheetCards)
+let _catalog = {};
+
+// Link cards saved before the SRD catalog existed (ref: null) to their catalog entry — runs once after load
+export async function linkSheetCards() {
+    const pending = savedCardsData.filter(c => c.v === 2 && !c.ref && !c._homebrew);
+    if (!pending.length) return;
+    try { _catalog = await loadKinds(['domain-card', 'ancestry', 'community', 'class', 'subclass']); } catch { return; }
+    let changed = false;
+    for (const card of pending) {
+        const linked = upgradeSheetCard({ ...card, v: undefined, desc: '', feature: '' }, _catalog);
+        if (linked.ref) { card.ref = linked.ref; card.srdVersion = linked.srdVersion; changed = true; }
+    }
+    if (changed) autoCache();
+}
 
 export function openCardDetail(id) {
     const el = document.getElementById(id);
@@ -45,7 +73,7 @@ export function closeDatabase() {
 
 export async function fetchData() {
     const file = document.getElementById('dataType').value;
-    if (!file) return;
+    if (!file || !BROWSER[file]) return;
     document.getElementById('cardSearch').value = '';
     document.getElementById('cardSearch').classList.remove('hidden');
 
@@ -61,28 +89,13 @@ export async function fetchData() {
     container.innerHTML = '<div class="text-center py-10 text-[10px] text-zinc-500 animate-pulse uppercase">Fetching Data...</div>';
 
     try {
-        const response = await fetch(GITHUB_RAW + file);
-        const json = await response.json();
-
-        let data;
-        if (Array.isArray(json)) {
-            data = json;
-        } else {
-            const key = Object.keys(json).find(k => Array.isArray(json[k]));
-            data = key ? json[key] : [];
-        }
-
-        if (file === 'domain-cards.json') {
-            data.sort((a, b) => (a.level || 0) - (b.level || 0));
-        }
-
-        if (file === 'classes.json') data = flattenClasses(data);
-        if (file === 'subclasses.json') data = flattenSubclasses(data);
-
+        const { kind, toCards } = BROWSER[file];
+        let data = (await loadKind(kind)).flatMap(toCards);
+        if (isDomainCards) data.sort((a, b) => (a.level || 0) - (b.level || 0));
         setCurrentData(data);
         displayResults(data);
     } catch (e) {
-        container.innerHTML = `<div class="text-red-500 text-center p-4">Error: ${e.message}</div>`;
+        container.innerHTML = `<div class="text-red-500 text-center p-4">Error: ${escHtml(e.message)}</div>`;
     }
 }
 
@@ -91,8 +104,8 @@ export function filterCards() {
     const domainVal = document.getElementById('domainFilter')?.value || '';
     const levelVal = document.getElementById('levelFilter')?.value || '';
     const filtered = currentData.filter(c => {
-        const n = t(c.name || c.title || '').toLowerCase();
-        const label = (c._display || '').toLowerCase();
+        const n = (c.name || '').toLowerCase();
+        const label = (c.label || '').toLowerCase();
         const domain = (c.domain || '').toLowerCase();
         if (query && !n.includes(query) && !label.includes(query) && !domain.includes(query)) return false;
         if (domainVal && (c.domain || '') !== domainVal) return false;
@@ -111,18 +124,12 @@ function displayResults(data) {
         return;
     }
 
-    const category = document.getElementById('dataType').value;
-    const isDomainCards = category === 'domain-cards.json';
-
-    data.forEach((item) => {
-        const { name, desc, feature } = parseItem(item);
-        const label = item._display || '';
-        const tierColors = { foundation: 'text-green-400', specialization: 'text-yellow-400', mastery: 'text-red-400' };
-        const tierColor = tierColors[item._tier] || '';
-        const dc = isDomainCards ? domainColor(item.domain) : null;
-
-        const cardKey = (label ? `${label}: ${name}` : name).toLowerCase();
-        const alreadyAdded = addedCards.has(cardKey);
+    const tierColors = { foundation: 'text-green-400', specialization: 'text-yellow-400', mastery: 'text-red-400' };
+    data.forEach((card) => {
+        const isDomainCards = card.category === 'domain-cards.json';
+        const dc = isDomainCards ? domainColor(card.domain) : null;
+        const alreadyAdded = addedCards.has(card.name.toLowerCase());
+        const shown = card.label ? card.name.slice(card.label.length + 2) : card.name;
 
         const div = document.createElement('div');
         div.className = `p-4 bg-black/60 border rounded-lg mb-2 transition-all ${alreadyAdded ? 'opacity-40 cursor-default' : 'cursor-pointer hover:scale-[1.01]'}`;
@@ -133,48 +140,33 @@ function displayResults(data) {
             div.classList.add('border-zinc-800');
             if (!alreadyAdded) div.classList.add('hover:border-indigo-500');
         }
-
-        if (!alreadyAdded) {
-            div.onclick = () => {
-                const skipDesc = ['communities.json','ancestries.json','classes.json'].includes(category);
-                addCardToSheet({
-                    name: label ? `${label}: ${name}` : name,
-                    desc: skipDesc ? '' : desc,
-                    feature, category,
-                    domain: item.domain || '',
-                    type: item.type || '',
-                    level: item.level,
-                    recallCost: item.recallCost,
-                    classInfo: item._classInfo || ''
-                });
-                closeDatabase();
-            };
-        }
+        if (!alreadyAdded) div.onclick = () => { addCardToSheet({ ...card }); closeDatabase(); };
 
         const addedBadge = alreadyAdded ? '<span class="text-[9px] bg-zinc-700 text-zinc-400 px-2 py-0.5 rounded">✓ Added</span>' : '';
         const domainBadge = isDomainCards
-            ? `<img src="${dc.icon}" class="domain-icon-badge" alt="${escHtml(item.domain)}">
-               <span class="text-[10px] font-bold uppercase px-1 rounded" style="color:${dc.text}">${escHtml(item.domain)}</span>
-               <span class="text-[10px] text-zinc-500">Lvl ${escHtml(item.level)} · Recall ${escHtml(item.recallCost)}</span>`
+            ? `<img src="${dc.icon}" class="domain-icon-badge" alt="${escHtml(card.domain)}">
+               <span class="text-[10px] font-bold uppercase px-1 rounded" style="color:${dc.text}">${escHtml(card.domain)}</span>
+               <span class="text-[10px] text-zinc-500">Lvl ${escHtml(card.level)} · Recall ${escHtml(card.recallCost)}</span>`
             : '';
-        const showDesc = !['communities.json','ancestries.json','classes.json'].includes(category);
 
         div.innerHTML = `
-            ${label ? `<div class="text-xs font-bold uppercase ${tierColor} mb-1">${label}${item._classInfo ? ` <span class="text-zinc-500 text-[10px] normal-case">(${escHtml(item._classInfo)})</span>` : ''}</div>` : ''}
+            ${card.label ? `<div class="text-xs font-bold uppercase ${tierColors[card.tier] || ''} mb-1">${escHtml(card.label)}${card.classInfo ? ` <span class="text-zinc-500 text-[10px] normal-case">(${escHtml(card.classInfo)})</span>` : ''}</div>` : ''}
             ${domainBadge ? `<div class="flex gap-2 items-center mb-1">${domainBadge}</div>` : ''}
             <div class="flex items-center gap-2 mb-1">
-                <span class="text-sm font-black uppercase" ${dc ? `style="color:${dc.text}"` : 'class="text-indigo-300"'}>${escHtml(name)}</span>
+                <span class="text-sm font-black uppercase" ${dc ? `style="color:${dc.text}"` : 'class="text-indigo-300"'}>${escHtml(shown)}</span>
+                ${versionBadge(card.srdVersion)}
                 ${addedBadge}
             </div>
-            ${showDesc ? `<p class="text-xs text-zinc-400 line-clamp-3 leading-relaxed">${sanitizeHtml(desc)}</p>` : ''}
-            ${feature ? `<p class="text-xs text-zinc-300 mt-1 leading-relaxed">${feature}</p>` : ''}
+            ${card.text ? `<div class="text-xs text-zinc-400 line-clamp-3 leading-relaxed md-text">${renderText(card.text)}</div>` : ''}
+            ${card.features?.length ? `<div class="text-xs text-zinc-300 mt-1 leading-relaxed">${renderFeatures(card.features)}</div>` : ''}
         `;
         container.appendChild(div);
     });
 }
 
-export function addCardToSheet(opts) {
-    const { name, desc, feature, category, domain, type, level, recallCost } = opts;
+export function addCardToSheet(input) {
+    const opts = upgradeSheetCard(input, _catalog);    // old saves (HTML) → v2 card
+    const { name, text, features, category, domain, level, recallCost } = opts;
     const isDomain = category === 'domain-cards.json';
     const container = document.getElementById(isDomain ? 'domainCards' : 'generalCards');
     if (container.innerText.trim() === 'None') container.innerHTML = '';
@@ -199,6 +191,7 @@ export function addCardToSheet(opts) {
                 ${isDomain ? `<button class="text-zinc-600 hover:text-yellow-400 text-base leading-none domain-sel-btn" data-id="${id}" id="${id}-sel" title="Select for loadout">☆</button>` : ''}
                 ${dc ? `<img src="${dc.icon}" class="domain-icon-badge" alt="${escHtml(domain)}">` : ''}
                 <span class="text-xs font-black uppercase" ${dc ? `style="color:${dc.text}"` : ''}>${escHtml(name)}</span>
+                ${versionBadge(opts.srdVersion)}
             </div>
             <div class="flex items-center gap-2">
                 ${isDomain ? `<span class="text-[10px] font-bold uppercase" style="color:${dc.text}">${escHtml(domain)}</span>` : ''}
@@ -210,8 +203,8 @@ export function addCardToSheet(opts) {
         </div>
         <div id="${id}-body" class="mt-2" ${collapsed ? 'style="display:none"' : ''}>
             ${opts.classInfo ? `<div class="flex flex-wrap gap-1.5 mb-2">${opts.classInfo.split(' / ').map(d => `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-400">${escHtml(d)}</span>`).join('')}</div>` : ''}
-            ${desc ? `<div class="text-xs text-zinc-500 leading-relaxed">${sanitizeHtml(desc)}</div>` : ''}
-            ${feature ? `<div class="leading-relaxed mb-1 text-xs">${sanitizeHtml(feature).replace(/text-zinc-200/g, 'text-amber-400')}</div>` : ''}
+            ${text ? `<div class="text-xs text-zinc-500 leading-relaxed md-text">${renderText(text)}</div>` : ''}
+            ${features?.length ? `<div class="leading-relaxed mb-1 text-xs">${renderFeatures(features)}</div>` : ''}
         </div>
     </div>
     `;
@@ -394,14 +387,15 @@ export function validateCreateCard() {
 
 export function submitCreateCard() {
     const type = document.getElementById('createCardType').value;
-    const featureHtml = buildFeatureHtml(createCardFeatures);
+    const features = createCardFeatures.filter(f => f.name.trim() || f.text.trim()).map(f => ({ name: f.name.trim(), text: f.text.trim() }));
 
     let cardData;
     if (type === 'domain-card') {
         cardData = {
+            v: 2, ref: null, srdVersion: null,
             name: document.getElementById('createCardDomainName').value.trim(),
-            desc: escAttr(document.getElementById('createCardDomainDesc').value.trim()),
-            feature: featureHtml,
+            text: document.getElementById('createCardDomainDesc').value.trim(),
+            features,
             category: 'domain-cards.json',
             domain: document.getElementById('createCardDomain').value,
             type: document.getElementById('createCardDomainType').value,
@@ -412,9 +406,10 @@ export function submitCreateCard() {
     } else {
         const cat = document.getElementById('createCardCategory').value;
         cardData = {
+            v: 2, ref: null, srdVersion: null,
             name: document.getElementById('createCardGeneralName').value.trim(),
-            desc: escAttr(document.getElementById('createCardGeneralDesc').value.trim()),
-            feature: featureHtml,
+            text: document.getElementById('createCardGeneralDesc').value.trim(),
+            features,
             category: cat + '.json',
             domain: '',
             type: '',
@@ -442,20 +437,7 @@ export function openEditCard(id) {
 
     const isDomain = cd.category === 'domain-cards.json';
 
-    // Parse features from HTML
-    editCardFeatures = [];
-    if (cd.feature) {
-        const tmp = document.createElement('div');
-        tmp.innerHTML = cd.feature;
-        const bolds = tmp.querySelectorAll('[class*="text-amber"]');
-        const descs = tmp.querySelectorAll('[class*="text-zinc-400"]');
-        bolds.forEach((b, i) => {
-            editCardFeatures.push({ name: b.textContent || '', text: descs[i]?.textContent || '' });
-        });
-    }
-    if (!editCardFeatures.length && cd.feature) {
-        editCardFeatures.push({ name: '', text: cd.feature.replace(/<[^>]*>/g, '') });
-    }
+    editCardFeatures = (cd.features || []).map(f => ({ name: f.name || '', text: f.text || '' }));
 
     const fieldsEl = document.getElementById('editCardFields');
     if (isDomain) {
@@ -463,21 +445,21 @@ export function openEditCard(id) {
             <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Card Name</label><input id="editCardName" type="text" maxlength="80" class="w-full input-field" value="${escAttr(cd.name || '')}"></div>
             <div class="grid grid-cols-2 gap-3">
                 <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Domain</label>
-                    <select id="editCardDomain" class="w-full select-field">${['ARCANA','BLADE','BONE','CODEX','GRACE','MIDNIGHT','SAGE','SPLENDOR','VALOR'].map(d => `<option${cd.domain===d?' selected':''}>${d}</option>`).join('')}</select>
+                    <select id="editCardDomain" class="w-full select-field">${['ARCANA','BLADE','BONE','CODEX','DREAD','GRACE','MIDNIGHT','SAGE','SPLENDOR','VALOR'].map(d => `<option${cd.domain===d?' selected':''}>${d}</option>`).join('')}</select>
                 </div>
                 <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Type</label>
-                    <select id="editCardDomainType" class="w-full select-field"><option${cd.type==='ABILITY'?' selected':''}>ABILITY</option><option${cd.type==='SPELL'?' selected':''}>SPELL</option></select>
+                    <select id="editCardDomainType" class="w-full select-field"><option${cd.type==='ABILITY'?' selected':''}>ABILITY</option><option${cd.type==='SPELL'?' selected':''}>SPELL</option><option${cd.type==='GRIMOIRE'?' selected':''}>GRIMOIRE</option></select>
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Level</label><input id="editCardLevel" type="number" min="1" max="10" class="w-full input-field" value="${escHtmlAttr(cd.level)}"></div>
                 <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Recall Cost</label><input id="editCardRecall" type="number" min="0" max="10" class="w-full input-field" value="${escHtmlAttr(cd.recallCost)}"></div>
             </div>
-            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Description</label><textarea id="editCardDesc" rows="3" class="w-full input-field resize-y">${escAttr(cd.desc ? cd.desc.replace(/<[^>]*>/g, '') : '')}</textarea></div>`;
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Description</label><textarea id="editCardDesc" rows="3" class="w-full input-field resize-y">${escAttr(cd.text || '')}</textarea></div>`;
     } else {
         fieldsEl.innerHTML = `
             <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Card Name</label><input id="editCardName" type="text" maxlength="80" class="w-full input-field" value="${escAttr(cd.name || '')}"></div>
-            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Description</label><textarea id="editCardDesc" rows="3" class="w-full input-field resize-y">${escAttr(cd.desc ? cd.desc.replace(/<[^>]*>/g, '') : '')}</textarea></div>`;
+            <div><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Description</label><textarea id="editCardDesc" rows="3" class="w-full input-field resize-y">${escAttr(cd.text || '')}</textarea></div>`;
     }
 
     renderEditCardFeatures();
@@ -512,7 +494,6 @@ export function saveEditCard() {
     if (!cd) return;
 
     const isDomain = cd.category === 'domain-cards.json';
-    const featureHtml = buildFeatureHtml(editCardFeatures);
 
     const newName = document.getElementById('editCardName').value.trim();
     if (!newName) { showAlert('Card name is required.'); return; }
@@ -520,7 +501,7 @@ export function saveEditCard() {
     // Update savedCardsData
     const oldKey = cd.name.toLowerCase();
     cd.name = newName;
-    cd.feature = featureHtml;
+    cd.features = editCardFeatures.filter(f => f.name.trim() || f.text.trim()).map(f => ({ name: f.name.trim(), text: f.text.trim() }));
     if (isDomain) {
         cd.domain = document.getElementById('editCardDomain').value;
         cd.type = document.getElementById('editCardDomainType').value;
@@ -528,7 +509,7 @@ export function saveEditCard() {
         cd.recallCost = parseInt(document.getElementById('editCardRecall').value) || 0;
     }
     const descEl = document.getElementById('editCardDesc');
-    if (descEl) cd.desc = escAttr(descEl.value.trim());
+    if (descEl) cd.text = descEl.value.trim();
 
     // Update addedCards set
     addedCards.delete(oldKey);

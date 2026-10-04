@@ -1,6 +1,7 @@
 import { escHtml, escHtmlAttr, escJs, generateId } from '../core/utils.js';
 import { getNextName, switchTab } from './app.js';
-import { creatures, autoCache, renderGrid, editCharacterCard, editCustomCard, editEnemyCard, renderCard, adversariesData } from './tracker.js';
+import { versionBadge } from '../core/srd.js';
+import { creatures, autoCache, renderGrid, editCharacterCard, editCustomCard, editEnemyCard, renderCard, adversariesData, featureNameHtml } from './tracker.js';
 import { showConfirm, getUser, getProfile, getSupabase, showAlert, showPrompt } from '../core/auth.js';
 import { TABLE_COMMUNITY_ADVERSARIES } from '../core/constants.js';
 import { LS_DM_VAULT, LS_DM_VAULT_GROUPS, LS_DM_VAULT_COLLAPSED } from '../core/constants.js';
@@ -156,7 +157,7 @@ function buildVaultCardInner(creature) {
             ${ed.motives_and_tactics ? `<div class="text-xs text-[#e8e0d4]">🎯 ${escHtml(ed.motives_and_tactics)}</div>` : ''}
             ${ed.ability ? `<div class="text-xs text-[#e8e0d4]">✨ ${escHtml(ed.ability)}</div>` : ''}
             ${ed.description ? `<div class="text-xs text-zinc-400 italic">${escHtml(ed.description)}</div>` : ''}
-            ${features.length ? `<div class="space-y-1.5 mt-2">${features.map(f => `<div><div class="text-xs font-bold text-amber-200">${escHtml(f.name || '')}</div><div class="text-xs text-[#e8e0d4]">${escHtml(f.text || '')}</div></div>`).join('')}</div>` : ''}</div>`;
+            ${features.length ? `<div class="space-y-1.5 mt-2">${features.map(f => `<div><div class="text-xs font-bold text-amber-200">${featureNameHtml(f.name || '')}</div><div class="text-xs text-[#e8e0d4]">${escHtml(f.text || '')}</div></div>`).join('')}</div>` : ''}</div>`;
     }
     let editBtn = '';
     if (ed && (ed.type === 'Custom' || ed.type === 'Enemy (Edited)')) editBtn = `<button onclick="window._editVaultCustomCard('${escJs(creature.id)}')" class="btn-icon" title="Edit">✏️</button>`;
@@ -167,7 +168,7 @@ function buildVaultCardInner(creature) {
     const isSrd = ed && adversariesData.some(a => a.name === creature.name);
     const shareBtn = getUser() && ed && !isSrd ? `<button onclick="window._shareVaultCreature('${escJs(creature.id)}')" class="text-emerald-500 hover:text-emerald-300 transition-colors text-sm" title="Share to Community">↪</button>` : '';
 
-    return `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2">${dead ? '<span class="text-red-500 text-sm">💀</span>' : '<span class="text-zinc-600 text-sm">📦</span>'}<span class="font-black text-sm uppercase font-[Cinzel] ${dead ? 'text-zinc-600 line-through' : 'text-[#f5efe6]'}">${escHtml(creature.name)}</span></div>
+    return `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2">${dead ? '<span class="text-red-500 text-sm">💀</span>' : '<span class="text-zinc-600 text-sm">📦</span>'}<span class="font-black text-sm uppercase font-[Cinzel] ${dead ? 'text-zinc-600 line-through' : 'text-[#f5efe6]'}">${escHtml(creature.name)}</span>${creature.enemyData?.srdVersion === 2 ? ' ' + versionBadge(2) : ''}</div>
         <div class="flex items-center gap-2">${shareBtn}<button onclick="window._copyVaultCreature('${escJs(creature.id)}')" class="btn-icon" title="Duplicate">➕</button>${editBtn}<button onclick="window._flipVaultCard('${escJs(creature.id)}')" class="btn-icon" title="Notes">📝</button><button onclick="window._removeVaultCreature('${escJs(creature.id)}', event)" class="btn-remove" title="Remove">✕</button></div></div>
         ${evasion > 0 && !ed ? `<div class="flex flex-wrap gap-1.5 mb-3 pb-2.5 border-b border-[#2a2418]"><span class="text-[10px] bg-[#1a2a3b] border border-[#2a3d5a] rounded px-1.5 py-0.5 text-blue-300">Evasion ${evasion}</span></div>` : ''}
         ${dotRow('hp', 'HP', 'text-red-400')}${dotRow('stress', 'Stress', 'text-purple-400')}${dotRow('hope', 'Hope', 'text-amber-400')}${dotRow('armor', 'Armor', 'text-blue-400')}${enemyInfo}

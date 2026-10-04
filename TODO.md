@@ -313,8 +313,8 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 - [x] DM save — `select('character_name, class, level')` instead of full `data` (`dm-auth.js:144`); `.insert().select('id, campaign_name')`
 - [x] `setCurrentTable` — persist `{id, campaign_name}` only, not full row (`party.js:9`)
 - [ ] Dashboard — `Promise.all` independent queries; reuse `getProfile()`
-- [ ] Adversaries cache — add TTL/version (never refreshes today); build SRD name `Set` once (`vault.js:166`)
-- [ ] `cards.js` — reuse compendium's in-memory data instead of refetching GitHub files
+- [x] Adversaries cache — add TTL/version (never refreshes today); build SRD name `Set` once (`vault.js:166`)
+- [x] `cards.js` — reuse compendium's in-memory data instead of refetching GitHub files
 - [x] Save on `visibilitychange → hidden` when dirty (phones rarely fire `beforeunload`); `pagehide` instead of `beforeunload` for bfcache
 
 **P1 — Mobile performance**
@@ -334,14 +334,17 @@ _Full review of security, correctness, performance and structure. Ordered by pri
 - [x] Fix stale Cinzel preload (`v23` → current); drop unused Inter 300/800 weights; consistent `display=swap`
 - [ ] Compress `icon-512` / `logo.png` PNGs (~300KB each)
 
-**P1 — SRD data source migration** _(to discuss)_
+**P1 — SRD data source migration** _(done on `feature/srd-data` — own catalog, see docs/srd-schema.md)_
+- [x] Own catalog `data/srd/` — v1 (SRD 1.0, frozen) + v2 (SRD 2.0 entries not in v1), schema v2, validated build, weekly upstream check
+- [ ] Review 2.0 rule chapters / v1 vs v2 overlaps visually (owner)
+- [ ] Owner confirms DPCGL attribution wording (terms page + footers)
 - [ ] Current sources: compendium + cards use `daggersearch/daggerheart-data` (last updated 2025-08 — stale); adversaries use `seansbox/daggerheart-srd` (last updated 2026-01)
-- [ ] Evaluate new, better-maintained source (more structured data); confirm license/terms (SRD is under the Darrington Press Community Gaming License)
-- [ ] Single data adapter module (`js/core/srd.js`) — one place maps source format → app format, so swapping sources doesn't touch compendium/cards/tracker
-- [ ] Pin source to a commit/tag instead of `main` (upstream changes can't silently break the app); cache-first with version key
-- [ ] Decide: fetch from third party at runtime vs. own copy (Cloudflare Pages `/data/` preferred over Supabase Storage — unlimited free bandwidth, edge-cached; Supabase egress is shared with auth/saves). ~560KB raw / ~100KB gzipped
+- [x] Evaluate new, better-maintained source (more structured data); confirm license/terms (SRD is under the Darrington Press Community Gaming License)
+- [x] Single data adapter module (`js/core/srd.js`) — one place maps source format → app format, so swapping sources doesn't touch compendium/cards/tracker
+- [x] Pin source to a commit/tag instead of `main` (upstream changes can't silently break the app); cache-first with version key
+- [x] Decide: fetch from third party at runtime vs. own copy (Cloudflare Pages `/data/` preferred over Supabase Storage — unlimited free bandwidth, edge-cached; Supabase egress is shared with auth/saves). ~560KB raw / ~100KB gzipped
 - [ ] Owner to check Darrington Press Community Gaming License terms before hosting a copy — **deferred, dedicated branch** (decided 2026-10-03)
-- [ ] Interim (perf batch): pin current sources to a commit SHA + cache-first on device
+- [x] Interim (perf batch): pin current sources to a commit SHA + cache-first on device
 
 **P2 — Structure & cleanliness**
 - [ ] `core/cloud-sync.js` — `createCloudSync({ table, nameColumn, gather, apply, toRow })` replaces duplicated logic in `dm-auth.js` / `char-auth.js` (~180 lines); home for P1 save fixes
@@ -379,8 +382,8 @@ _Identified improvements — not urgent at current scale (~30 users), but good p
 - [x] Compendium card index — stable `_idx` assigned during preprocessing; no more `indexOf()` O(n²) lookups
 - [ ] Community pagination — `select('*')` loads all chapters/adversaries/homebrew unbounded; add `range()`/pagination and server-side filtering
 - [x] Dashboard metadata-only fetch — promoted columns (`class`, `level`, `creature_count`, etc.) replace full `data` blob fetch
-- [ ] Compendium cache-first loading — read localStorage/IndexedDB cache before fetching 10 remote JSON files; add version + expiration
-- [ ] Combine compendium JSON — merge 10 separate category files into a single compressed asset
+- [x] Compendium cache-first loading — read localStorage/IndexedDB cache before fetching 10 remote JSON files; add version + expiration
+- [x] Combine compendium JSON — merge 10 separate category files into a single compressed asset
 - [ ] Event delegation — replace per-card click handlers (dashboard cards, carousel arrows) with delegated container handlers using `data-*` attributes
 
 **Dashboard**

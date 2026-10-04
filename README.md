@@ -59,5 +59,12 @@ developing, run `npm run build:css` (or `npx tailwindcss -c tailwind.config.js -
 
 **Tests:** `npm test`
 
+## SRD data
+The compendium, card library and adversaries read our own catalog in `data/srd/` (never a third-party
+site at runtime). v1 = SRD 1.0 (frozen), v2 = SRD 2.0 entries not in v1. Format: `docs/srd-schema.md`.
+- `npm run srd:check` — anything new upstream? (also runs weekly as a GitHub Action and opens an issue)
+- `npm run srd:build` — rebuild from the pinned commits in `tools/srd/sources.json`, validate, write
+  `data/srd/<version>/` and `data/srd/REPORT.md` (review it before committing)
+
 ## License
 Fan-made tool for tabletop RPGs. Not affiliated with or endorsed by Darrington Press or Critical Role.

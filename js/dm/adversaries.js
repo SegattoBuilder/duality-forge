@@ -1,6 +1,10 @@
 import { escHtml, generateId } from '../core/utils.js';
 import { getNextName } from './app.js';
-import { adversariesData, loadAdversaries, creatures, autoCache, renderGrid } from './tracker.js';
+import { adversariesData, loadAdversaries, creatures, autoCache, renderGrid, featureNameHtml } from './tracker.js';
+import { versionBadge } from '../core/srd.js';
+
+// "Horde (3/HP)" → "Horde" for the Type filter
+const baseType = (t) => String(t || '').replace(/\s*\(.*$/, '');
 
 let advSearchTimeout = null;
 
@@ -16,10 +20,11 @@ export function initAdversariesTab() {
         document.getElementById(id).addEventListener('input', () => { clearTimeout(advSearchTimeout); advSearchTimeout = setTimeout(runAdvSearch, 200); });
     });
     document.getElementById('advType').addEventListener('change', runAdvSearch);
+    document.getElementById('advVersion')?.addEventListener('change', runAdvSearch);
 }
 
 function populateAdvTypeFilter() {
-    const types = [...new Set(adversariesData.map(a => a.type).filter(Boolean))].sort();
+    const types = [...new Set(adversariesData.map(a => baseType(a.type)).filter(Boolean))].sort();
     document.getElementById('advType').innerHTML = '<option value="">All</option>' + types.map(t => `<option value="${escHtml(t)}">${escHtml(t)}</option>`).join('');
 }
 
@@ -30,8 +35,9 @@ function runAdvSearch() {
     const tierMin = document.getElementById('advTierMin').value ? parseInt(document.getElementById('advTierMin').value) : null;
     const tierMax = document.getElementById('advTierMax').value ? parseInt(document.getElementById('advTierMax').value) : null;
     const type = document.getElementById('advType').value;
+    const version = document.getElementById('advVersion')?.value || '';
     const statusEl = document.getElementById('advStatus'), resultsEl = document.getElementById('advResults');
-    const hasFilters = diffMin !== null || diffMax !== null || tierMin !== null || tierMax !== null || !!type;
+    const hasFilters = diffMin !== null || diffMax !== null || tierMin !== null || tierMax !== null || !!type || !!version;
     if (!query && !hasFilters) { resultsEl.innerHTML = ''; statusEl.textContent = `${adversariesData.length} adversaries loaded. Search by name or filter by difficulty.`; return; }
     if (!hasFilters && query.length < 3) { resultsEl.innerHTML = ''; statusEl.textContent = 'Type at least 3 characters to search.'; return; }
     let filtered = adversariesData;
@@ -40,7 +46,8 @@ function runAdvSearch() {
     if (diffMax !== null) filtered = filtered.filter(a => (parseInt(a.difficulty) || 0) <= diffMax);
     if (tierMin !== null) filtered = filtered.filter(a => (parseInt(a.tier) || 0) >= tierMin);
     if (tierMax !== null) filtered = filtered.filter(a => (parseInt(a.tier) || 0) <= tierMax);
-    if (type) filtered = filtered.filter(a => a.type === type);
+    if (type) filtered = filtered.filter(a => baseType(a.type) === type);
+    if (version) filtered = filtered.filter(a => String(a.srdVersion) === version);
     if (filtered.length === 0) { resultsEl.innerHTML = ''; statusEl.textContent = 'No adversaries found.'; return; }
     const limited = filtered.slice(0, 60);
     statusEl.textContent = filtered.length > 60 ? `Showing 60 of ${filtered.length} results.` : `${filtered.length} result${filtered.length > 1 ? 's' : ''}.`;
@@ -52,7 +59,7 @@ function renderAdvCard(a) {
     const features = a.feature || [];
     const idx = adversariesData.indexOf(a);
     return `<div class="creature-card" style="border-top-color: #e84040;">
-        <div class="flex items-start justify-between mb-2"><span class="font-black text-sm font-[Cinzel] text-[#f5efe6]">${escHtml(a.name)}</span><button onclick="window._addAdvToTracker(${idx}, event)" class="btn-outline text-[9px] px-2 py-1 whitespace-nowrap" title="Add to Tracker">+ Add</button></div>
+        <div class="flex items-start justify-between mb-2"><span class="font-black text-sm font-[Cinzel] text-[#f5efe6]">${escHtml(a.name)} ${versionBadge(a.srdVersion)}</span><button onclick="window._addAdvToTracker(${idx}, event)" class="btn-outline text-[9px] px-2 py-1 whitespace-nowrap" title="Add to Tracker">+ Add</button></div>
         <div class="flex flex-wrap gap-1.5 mb-2">
             <span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">${escHtml(a.type || '')}</span>
             ${a.tier ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-300">Tier ${escHtml(a.tier)}</span>` : ''}
@@ -67,7 +74,7 @@ function renderAdvCard(a) {
         ${a.motives_and_tactics ? `<div class="text-xs text-[#e8e0d4] mb-1">🎯 ${escHtml(a.motives_and_tactics)}</div>` : ''}
         ${a.ability ? `<div class="text-xs text-[#e8e0d4] mb-1">✨ ${escHtml(a.ability)}</div>` : ''}
         ${a.description ? `<div class="text-xs text-zinc-400 italic mb-1">${escHtml(a.description)}</div>` : ''}
-        ${features.length ? `<div class="space-y-1 mt-2">${features.map(f => `<div><span class="text-[10px] font-bold text-amber-200">${escHtml(f.name || '')}</span> <span class="text-xs text-[#e8e0d4]">${escHtml(f.text || '')}</span></div>`).join('')}</div>` : ''}
+        ${features.length ? `<div class="space-y-1 mt-2">${features.map(f => `<div><span class="text-[10px] font-bold text-amber-200">${featureNameHtml(f.name || '')}</span> <span class="text-xs text-[#e8e0d4]">${escHtml(f.text || '')}</span></div>`).join('')}</div>` : ''}
     </div>`;
 }
 
@@ -95,6 +102,7 @@ function addAdvToTracker(index, event) {
 function clearAdvSearch() {
     ['advSearch','advDiffMin','advDiffMax','advTierMin','advTierMax'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('advType').value = '';
+    const v = document.getElementById('advVersion'); if (v) v.value = '';
     runAdvSearch();
 }
 

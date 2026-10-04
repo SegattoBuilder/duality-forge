@@ -7,7 +7,7 @@ import { initMode, setMode, toggleMode, applyTheme, renderThemePicker } from '..
 import { initTracker, renderGrid, renderFearDots, autoCache, creatures, setCreatures, actionCounters, setActionCounters, fearFilled, setFearFilled } from './tracker.js';
 import { initVault, renderVaultGrid, autoCacheVault, vaultCreatures, setVaultCreatures, vaultGroups, setVaultGroups } from './vault.js';
 import { initChronicle, renderChronicle, autoCacheChronicle, chronicleEntries, setChronicleEntries } from './chronicle.js';
-import { loadCompendium, getLocStr as _getLocStr } from '../core/compendium.js';
+import { loadCompendium } from '../core/compendium.js';
 import { initAdversariesTab } from './adversaries.js';
 import { initDmAuth } from './dm-auth.js';
 import { initParty, renderParty, setCurrentTable } from './party.js';
@@ -22,7 +22,6 @@ export const CAMPAIGN_KEY = LS_DM_CAMPAIGN;
 export { escHtml, escHtmlAttr } from '../core/utils.js';
 
 // ========== HELPERS ==========
-export function getLocStr(obj) { return _getLocStr(obj); }
 
 export function getNextName(baseName) {
     const all = [...creatures(), ...vaultCreatures()];

@@ -1,6 +1,8 @@
 import { TABLE_COMMUNITY_CHAPTERS, TABLE_COMMUNITY_CHAPTER_RATINGS, TABLE_COMMUNITY_CHAPTER_IMPORTS, TABLE_COMMUNITY_ADVERSARIES, TABLE_COMMUNITY_ADVERSARY_RATINGS, TABLE_COMMUNITY_ADVERSARY_IMPORTS, TABLE_COMMUNITY_HOMEBREW, TABLE_COMMUNITY_HOMEBREW_RATINGS, TABLE_COMMUNITY_HOMEBREW_IMPORTS, LS_THEME } from '../core/constants.js';
 import { initMode, applyTheme } from '../core/theme.js';
 import { generateId, escHtml as esc, sanitizeHtml } from '../core/utils.js';
+import { renderText, renderFeatures } from '../core/text.js';
+import { upgradeSheetCard } from '../core/srd-legacy.js';
 import { renderStars, parseFeatureText, filterChapters, filterAdversaries, filterHomebrew } from './community-logic.js';
 import { requireAuth } from '../core/auth-gate.js';
 import { getSupabase } from '../core/auth.js';
@@ -851,20 +853,9 @@ function openEditHb(id) {
     document.getElementById('editHbTitle').value = hb.title || '';
     document.getElementById('editHbDesc').value = hb.description || '';
 
-    // Parse features back from HTML
-    editHbFeatures = [];
-    if (cd.feature) {
-        const tmp = document.createElement('div');
-        tmp.innerHTML = cd.feature;
-        const bolds = tmp.querySelectorAll('.text-amber-400, [class*="text-amber"]');
-        const descs = tmp.querySelectorAll('.text-zinc-400, [class*="text-zinc-400"]');
-        bolds.forEach((b, i) => {
-            editHbFeatures.push({ name: b.textContent || '', text: descs[i]?.textContent || '' });
-        });
-    }
-    if (!editHbFeatures.length && cd.feature) {
-        editHbFeatures.push({ name: '', text: cd.feature.replace(/<[^>]*>/g, '') });
-    }
+    // Cards shared before v2 store HTML — upgrade to text + features
+    const card = upgradeSheetCard({ ...cd, _homebrew: true });
+    editHbFeatures = (card.features || []).map(f => ({ name: f.name || '', text: f.text || '' }));
 
     // Render type-specific editable fields
     const fieldsEl = document.getElementById('editHbCardFields');
@@ -889,7 +880,7 @@ function openEditHb(id) {
                 <select id="editHbCategory" class="w-full select-field">${['ancestries','communities','classes','subclasses','homebrew'].map(c => `<option value="${c}"${hb.card_category===c?' selected':''}>${c.charAt(0).toUpperCase()+c.slice(1)}</option>`).join('')}</select>
             </div>
             <div class="mt-3"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Card Name</label><input id="editHbCardName" type="text" maxlength="80" class="w-full input-field" value="${esc(cd.name || '')}"></div>
-            <div class="mt-3"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Card Description</label><textarea id="editHbCardDesc" rows="3" class="w-full input-field resize-y">${esc(cd.desc ? cd.desc.replace(/<[^>]*>/g, '') : '')}</textarea></div>`;
+            <div class="mt-3"><label class="text-[10px] text-zinc-500 uppercase tracking-wide font-bold block mb-1">Card Description</label><textarea id="editHbCardDesc" rows="3" class="w-full input-field resize-y">${esc(card.text || '')}</textarea></div>`;
     }
 
     renderEditHbFeatures();
@@ -922,9 +913,7 @@ async function saveEditHb() {
     const title = document.getElementById('editHbTitle').value.trim();
     if (!title) { showToast('Title is required.', 'error'); return; }
 
-    const featureHtml = editHbFeatures.filter(f => f.name || f.text).map(f =>
-        `<div class="text-[11px] font-bold text-amber-400 mt-1">${esc(f.name)}</div><div class="text-[11px] text-zinc-400 leading-relaxed">${esc(f.text)}</div>`
-    ).join('');
+    const features = editHbFeatures.filter(f => f.name.trim() || f.text.trim()).map(f => ({ name: f.name.trim(), text: f.text.trim() }));
 
     const cardName = document.getElementById('editHbCardName').value.trim();
     let cardData, cardCategory = hb.card_category;
@@ -933,11 +922,11 @@ async function saveEditHb() {
         const dtype = document.getElementById('editHbDomainType').value;
         const level = parseInt(document.getElementById('editHbLevel').value) || 1;
         const recallCost = parseInt(document.getElementById('editHbRecall').value) || 0;
-        cardData = { name: cardName, desc: '', feature: featureHtml, category: 'domain-cards.json', domain, type: dtype, level, recallCost };
+        cardData = { v: 2, ref: null, srdVersion: null, name: cardName, text: '', features, category: 'domain-cards.json', domain, type: dtype, level, recallCost };
     } else {
         cardCategory = document.getElementById('editHbCategory').value;
         const desc = document.getElementById('editHbCardDesc').value.trim();
-        cardData = { name: cardName, desc: esc(desc), feature: featureHtml, category: cardCategory + '.json', domain: '', type: '', level: undefined, recallCost: undefined };
+        cardData = { v: 2, ref: null, srdVersion: null, name: cardName, text: desc, features, category: cardCategory + '.json', domain: '', type: '', level: undefined, recallCost: undefined };
     }
 
     const updates = {
@@ -972,6 +961,7 @@ function openHbPreview(id) {
     if (!hb) return;
     previewHb = hb;
     const cd = hb.card_data || {};
+    const card = upgradeSheetCard({ ...cd, _homebrew: true });   // old shares store HTML
     const isDomain = hb.card_type === 'domain-card';
     const myRating = userHbRatings[hb.id] || 0;
 
@@ -990,8 +980,8 @@ function openHbPreview(id) {
         </div>
         <div class="border-t border-[#3d362a] pt-4">
             <div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-2">Card: ${esc(cd.name || '')}</div>
-            ${cd.desc ? `<div class="text-xs text-zinc-400 mb-2">${sanitizeHtml(cd.desc)}</div>` : ''}
-            ${cd.feature ? `<div class="text-xs text-[#e8e0d4] leading-relaxed">${sanitizeHtml(cd.feature)}</div>` : ''}
+            ${card.text ? `<div class="text-xs text-zinc-400 mb-2 md-text">${renderText(card.text)}</div>` : ''}
+            ${card.features?.length ? `<div class="text-xs text-[#e8e0d4] leading-relaxed">${renderFeatures(card.features)}</div>` : ''}
         </div>
         <div class="border-t border-[#3d362a] pt-4 flex items-center justify-between">
             <div><span class="text-[10px] text-zinc-500 uppercase font-bold">Your Rating:</span> <span id="hbPreviewStars">${renderInteractiveHbStars(hb.id, myRating)}</span></div>
@@ -1056,7 +1046,7 @@ async function importHomebrew(id) {
         const key = 'dh_sheet';
         const sheet = JSON.parse(localStorage.getItem(key) || '{}');
         const cards = sheet.cards || [];
-        const importedCard = { ...cd };
+        const importedCard = upgradeSheetCard({ ...cd, _homebrew: true });   // v2 shape (text + features)
         delete importedCard._homebrew;
         cards.push(importedCard);
         sheet.cards = cards;

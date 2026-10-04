@@ -1,6 +1,6 @@
 import { SAVE_KEY, EXPORT_KEY, THEME_KEY, FIELD_IDS, TEXTAREA_IDS, TIER2_CHECKBOX_IDS, TIER3_CHECKBOX_IDS, TIER4_CHECKBOX_IDS, _restoring, setRestoring, addedCards, selectedDomainCards, savedCardsData, setSavedCardsData } from './state.js';
 import { getDotStates, setDotStates, renderDots, updateThresholds, updateAttackBonus } from './trackers.js';
-import { addCardToSheet, updateDomainSelection, reorderDomainCards } from './cards.js';
+import { addCardToSheet, updateDomainSelection, reorderDomainCards, linkSheetCards } from './cards.js';
 import { addExperience, getExperienceData } from './experience.js';
 import { addInventoryItem, getInventoryData } from './inventory.js';
 import { addGearItem, getGearData, addWeapon, getWeaponData, addArmor, getArmorData, addItem, getItemData, addConsumable, getConsumableData } from './gear.js';
@@ -67,8 +67,10 @@ export function applyData(data) {
         document.getElementById('domainCards').innerHTML = '<div class="text-center text-[10px] text-zinc-600 italic">None</div>';
         document.getElementById('generalCards').innerHTML = '<div class="text-center text-[10px] text-zinc-600 italic">None</div>';
         addedCards.clear();
-        setSavedCardsData(data.cards || []);
-        savedCardsData.forEach(c => addCardToSheet(c));
+        // Rebuild from the saved list: addCardToSheet upgrades old (HTML) cards to v2 and records them
+        setSavedCardsData([]);
+        (data.cards || []).forEach(c => addCardToSheet(c));
+        linkSheetCards();
         document.getElementById('experienceList').innerHTML = '<div class="text-center text-[10px] text-zinc-600 italic">None</div>';
         if (data.experience && data.experience.length) {
             data.experience.forEach(e => addExperience(e.name, e.value, e.desc));

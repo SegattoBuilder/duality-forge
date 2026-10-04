@@ -3,6 +3,10 @@ import { autoCache } from './save.js';
 import { showConfirm } from '../core/auth.js';
 import { TRAIT_OPTIONS, resolveEquipped, equipStar, equipOpacity, normalizeGearInput } from './gear-logic.js';
 
+// Gear added from the compendium remembers its catalog entry (ref) and SRD version
+const srdAttrs = (d) => (d?.ref ? ` data-ref="${escHtmlAttr(d.ref)}" data-srd-version="${escHtmlAttr(d.srdVersion)}"` : '');
+const srdOf = (el) => (el.dataset.ref ? { ref: el.dataset.ref, srdVersion: +el.dataset.srdVersion || null } : {});
+
 function clearEmpty(container) {
     if (container.innerText.trim() === 'None') container.innerHTML = '';
 }
@@ -64,7 +68,7 @@ export function addWeapon(data) {
     const id = 'wep-' + Math.random().toString(36).substr(2, 9);
     const equipped = resolveEquipped(data?.equipped, container.children.length === 0);
     const html = `
-    <div class="gear-slot" id="${id}" data-equipped="${equipped}" data-collapsed="false">
+    <div class="gear-slot" id="${id}"${srdAttrs(data)} data-equipped="${equipped}" data-collapsed="false">
         <div class="flex items-center gap-2">
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <button class="equip-star text-lg leading-none cursor-pointer" title="Equip">${equipStar(equipped)}</button>
@@ -91,7 +95,7 @@ export function addWeapon(data) {
     el.querySelector('.equip-star').addEventListener('click', () => toggleEquipWeapon(id));
     el.querySelector('.wep-remove').addEventListener('click', () => removeWeapon(id));
     el.querySelector('.wep-trait').addEventListener('change', () => { window.updateAttackBonus(); autoCache(); });
-    if (!data) autoCache();
+    autoCache();   // ignored while a sheet is being restored (_restoring)
 }
 
 function toggleEquipWeapon(id) {
@@ -127,7 +131,8 @@ export function getWeaponData() {
             name: inputs[0].value, trait: el.querySelector('.wep-trait').value,
             range: inputs[1].value, dmg: inputs[2].value, feature: textarea ? textarea.value : '',
             equipped: el.dataset.equipped === 'true',
-            collapsed: el.dataset.collapsed === 'true'
+            collapsed: el.dataset.collapsed === 'true',
+            ...srdOf(el)
         });
     });
     return items;
@@ -148,7 +153,7 @@ export function addArmor(data) {
     const id = 'arm-' + Math.random().toString(36).substr(2, 9);
     const equipped = resolveEquipped(data?.equipped, container.children.length === 0);
     const html = `
-    <div class="gear-slot" id="${id}" data-equipped="${equipped}" data-collapsed="false">
+    <div class="gear-slot" id="${id}"${srdAttrs(data)} data-equipped="${equipped}" data-collapsed="false">
         <div class="flex items-center gap-2">
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <button class="equip-star text-lg leading-none cursor-pointer" title="Equip">${equipStar(equipped)}</button>
@@ -174,7 +179,7 @@ export function addArmor(data) {
     el.querySelector('.arm-remove').addEventListener('click', () => removeArmor(id));
     el.querySelector('.arm-major').addEventListener('input', () => { window.updateThresholds(); autoCache(); });
     el.querySelector('.arm-severe').addEventListener('input', () => { window.updateThresholds(); autoCache(); });
-    if (!data) autoCache();
+    autoCache();   // ignored while a sheet is being restored (_restoring)
 }
 
 function toggleEquipArmor(id) {
@@ -210,7 +215,8 @@ export function getArmorData() {
             name: inputs[0].value, major: inputs[1].value, severe: inputs[2].value,
             score: inputs[3].value, feature: textarea ? textarea.value : '',
             equipped: el.dataset.equipped === 'true',
-            collapsed: el.dataset.collapsed === 'true'
+            collapsed: el.dataset.collapsed === 'true',
+            ...srdOf(el)
         });
     });
     return items;
@@ -233,7 +239,7 @@ export function addItem(data) {
     clearEmpty(container);
     const id = 'item-' + Math.random().toString(36).substr(2, 9);
     const html = `
-    <div class="gear-slot" id="${id}" data-collapsed="false">
+    <div class="gear-slot" id="${id}"${srdAttrs(data)} data-collapsed="false">
         <div class="flex items-center gap-2">
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <input type="text" value="${escHtmlAttr(d.name)}" placeholder="Item name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
@@ -247,7 +253,7 @@ export function addItem(data) {
     autoResizeTextareas(el);
     el.querySelector('.collapse-btn').addEventListener('click', () => toggleCollapse(id));
     el.querySelector('.item-remove').addEventListener('click', () => removeItem(id));
-    if (!data) autoCache();
+    autoCache();   // ignored while a sheet is being restored (_restoring)
 }
 
 function removeItem(id) {
@@ -263,7 +269,7 @@ export function getItemData() {
     document.querySelectorAll('#itemList > div[id^="item-"]').forEach(el => {
         const nameInput = el.querySelector('.flex input[type="text"]');
         const textarea = el.querySelector('.gear-details textarea');
-        items.push({ name: nameInput.value, desc: textarea ? textarea.value : '', collapsed: el.dataset.collapsed === 'true' });
+        items.push({ name: nameInput.value, desc: textarea ? textarea.value : '', collapsed: el.dataset.collapsed === 'true', ...srdOf(el) });
     });
     return items;
 }
@@ -276,7 +282,7 @@ export function addConsumable(data) {
     clearEmpty(container);
     const id = 'cons-' + Math.random().toString(36).substr(2, 9);
     const html = `
-    <div class="gear-slot" id="${id}" data-collapsed="false">
+    <div class="gear-slot" id="${id}"${srdAttrs(data)} data-collapsed="false">
         <div class="flex items-center gap-2">
             <span class="collapse-btn text-zinc-500 text-xs" title="Collapse">▼</span>
             <input type="text" value="${escHtmlAttr(d.name)}" placeholder="Consumable name..." class="flex-1 bg-transparent text-sm font-bold outline-none" data-autocache>
@@ -291,7 +297,7 @@ export function addConsumable(data) {
     autoResizeTextareas(el);
     el.querySelector('.collapse-btn').addEventListener('click', () => toggleCollapse(id));
     el.querySelector('.cons-remove').addEventListener('click', () => removeConsumable(id));
-    if (!data) autoCache();
+    autoCache();   // ignored while a sheet is being restored (_restoring)
 }
 
 function removeConsumable(id) {
@@ -308,7 +314,7 @@ export function getConsumableData() {
         const nameInput = el.querySelectorAll('.flex input[type="text"]')[0];
         const qtyInput = el.querySelectorAll('.flex input[type="text"]')[1];
         const textarea = el.querySelector('.gear-details textarea');
-        items.push({ name: nameInput.value, qty: qtyInput.value, desc: textarea ? textarea.value : '', collapsed: el.dataset.collapsed === 'true' });
+        items.push({ name: nameInput.value, qty: qtyInput.value, desc: textarea ? textarea.value : '', collapsed: el.dataset.collapsed === 'true', ...srdOf(el) });
     });
     return items;
 }
@@ -335,7 +341,7 @@ export function addGearItem(name, bonus, desc, collapsed) {
     if (collapsed) applyCollapsed(el, true);
     el.querySelector('.collapse-btn').addEventListener('click', () => toggleCollapse(id));
     el.querySelector('.gear-remove').addEventListener('click', () => removeGearItem(id));
-    if (!name && !bonus && !desc) autoCache();
+    autoCache();   // ignored while a sheet is being restored (_restoring)
 }
 
 export function removeGearItem(id) {
@@ -351,7 +357,7 @@ export function getGearData() {
     document.querySelectorAll('#gearItemList > div[id^="gear-"]').forEach(el => {
         const inputs = el.querySelectorAll('input');
         const textarea = el.querySelector('textarea');
-        items.push({ name: inputs[0].value, bonus: inputs[1].value, desc: textarea.value, collapsed: el.dataset.collapsed === 'true' });
+        items.push({ name: inputs[0].value, bonus: inputs[1].value, desc: textarea.value, collapsed: el.dataset.collapsed === 'true', ...srdOf(el) });
     });
     return items;
 }

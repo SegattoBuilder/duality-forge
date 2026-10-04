@@ -35,7 +35,7 @@ export function initTracker() {
             container.innerHTML = results.map(a => {
                 const idx = adversariesData.indexOf(a);
                 return `<div onclick="window._selectEnemy(${idx})" class="px-4 py-2 text-sm hover:bg-[#2a2418] cursor-pointer border-b border-[#3d362a] last:border-0">
-                    <span class="text-[#f5efe6]">${escHtml(a.name)}</span>
+                    <span class="text-[#f5efe6]">${escHtml(a.name)}</span> ${versionBadge(a.srdVersion)}
                     <span class="text-[10px] text-zinc-500 ml-2">${escHtml(a.type || '')}${a.tier ? ' • Tier ' + escHtml(a.tier) : ''}</span>
                 </div>`;
             }).join('');
@@ -121,20 +121,22 @@ export function resetFear() {
 }
 
 // ========== ADVERSARIES DATA (for enemy search) ==========
-const ADVERSARIES_URL = 'https://raw.githubusercontent.com/seansbox/daggerheart-srd/main/.build/03_json/adversaries.json';
 import { LS_DM_ADVERSARIES_CACHE } from '../core/constants.js';
-const ADVERSARIES_CACHE_KEY = LS_DM_ADVERSARIES_CACHE;
+import { loadKind, versionBadge } from '../core/srd.js';
+import { toEnemyData, splitFeatureName } from '../core/srd-legacy.js';
+// SRD adversaries (v1 + v2) in the enemyData shape the tracker/vault use, plus ref + srdVersion
 export let adversariesData = [];
 let selectedEnemy = null;
 
 export async function loadAdversaries() {
-    const cached = localStorage.getItem(ADVERSARIES_CACHE_KEY);
-    if (cached) { try { adversariesData = JSON.parse(cached); return; } catch {} }
-    try {
-        const r = await fetch(ADVERSARIES_URL);
-        adversariesData = await r.json();
-        localStorage.setItem(ADVERSARIES_CACHE_KEY, JSON.stringify(adversariesData));
-    } catch { adversariesData = []; }
+    localStorage.removeItem(LS_DM_ADVERSARIES_CACHE);   // old 160 KB localStorage copy — now cached in IndexedDB by srd.js
+    try { adversariesData = (await loadKind('adversary')).map(toEnemyData); } catch { adversariesData = []; }
+}
+
+// Feature name with a Passive / Action / Reaction chip (works for creatures saved before the new data too)
+export function featureNameHtml(raw) {
+    const f = splitFeatureName(raw);
+    return `${escHtml(f.name)}${f.kind ? ` <span class="feature-kind feature-kind-${f.kind}">${f.kind}${f.value !== undefined ? ' ' + escHtml(f.value) : ''}</span>` : ''}`;
 }
 
 function searchEnemies(query) {
@@ -218,7 +220,7 @@ function selectEnemy(index) {
     document.getElementById('enemyPreview').classList.remove('hidden');
     document.getElementById('enemyPreview').innerHTML = `
         <div class="flex items-center justify-between mb-2">
-            <span class="font-black text-sm font-[Cinzel] text-[#f5efe6]">${escHtml(selectedEnemy.name)}</span>
+            <span class="font-black text-sm font-[Cinzel] text-[#f5efe6]">${escHtml(selectedEnemy.name)}</span> ${versionBadge(selectedEnemy.srdVersion)}
             <span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-400">${escHtml(selectedEnemy.type || '')}</span>
             ${selectedEnemy.tier ? `<span class="text-[9px] bg-[#2a2418] border border-[#3d362a] rounded px-1.5 py-0.5 text-zinc-400">Tier ${escHtml(selectedEnemy.tier)}</span>` : ''}
         </div>
@@ -514,13 +516,13 @@ function buildCardInner(creature, dead) {
             ${ed.motives_and_tactics ? `<div class="text-xs text-[#e8e0d4]">🎯 ${escHtml(ed.motives_and_tactics)}</div>` : ''}
             ${ed.ability ? `<div class="text-xs text-[#e8e0d4]">✨ ${escHtml(ed.ability)}</div>` : ''}
             ${ed.description ? `<div class="text-xs text-zinc-400 italic">${escHtml(ed.description)}</div>` : ''}
-            ${features.length ? `<div class="space-y-1.5 mt-2">${features.map(f => `<div><div class="text-xs font-bold text-amber-200">${escHtml(f.name || '')}</div><div class="text-xs text-[#e8e0d4]">${escHtml(f.text || '')}</div></div>`).join('')}</div>` : ''}
+            ${features.length ? `<div class="space-y-1.5 mt-2">${features.map(f => `<div><div class="text-xs font-bold text-amber-200">${featureNameHtml(f.name || '')}</div><div class="text-xs text-[#e8e0d4]">${escHtml(f.text || '')}</div></div>`).join('')}</div>` : ''}
         </div>`;
     }
     const typeIcon = dead ? '<span class="text-red-500 text-sm">💀</span>' : (ed ? (ed.type === 'Custom' ? '<span class="text-zinc-600 text-sm">⚙️</span>' : ed.type === 'Enemy (Edited)' ? '<span class="text-zinc-600 text-sm">👹⚙️</span>' : ed.type === 'Character' ? '<span class="text-zinc-600 text-sm">⚔️</span>' : '<span class="text-zinc-600 text-sm">👹</span>') : '<span class="text-zinc-600 text-sm">⚔️</span>');
     const editBtn = ed && (ed.type === 'Custom' || ed.type === 'Enemy (Edited)') ? `<button onclick="window._editCustomCard('${escJs(creature.id)}')" class="btn-icon" title="Edit">✏️</button>` : (ed && ed.type !== 'Character' ? `<button onclick="window._editEnemyCard('${escJs(creature.id)}')" class="btn-icon" title="Edit">✏️</button>` : `<button onclick="window._editCharacterCard('${escJs(creature.id)}')" class="btn-icon" title="Edit">✏️</button>`);
 
-    return `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2">${typeIcon}<span class="font-black text-sm uppercase font-[Cinzel] ${dead ? 'text-zinc-600 line-through' : 'text-[#f5efe6]'}">${escHtml(creature.name)}</span></div>
+    return `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2">${typeIcon}<span class="font-black text-sm uppercase font-[Cinzel] ${dead ? 'text-zinc-600 line-through' : 'text-[#f5efe6]'}">${escHtml(creature.name)}</span>${creature.enemyData?.srdVersion === 2 ? ' ' + versionBadge(2) : ''}</div>
         <div class="flex items-center gap-2"><button onclick="window._copyCreature('${escJs(creature.id)}')" class="btn-icon" title="Duplicate">➕</button><button onclick="window._stashToVault('${escJs(creature.id)}')" class="btn-icon" title="Stash to Vault">📦</button>${editBtn}<button onclick="window._flipCard('${escJs(creature.id)}')" class="btn-icon" title="Notes">📝</button><button onclick="window._removeCreature('${escJs(creature.id)}', event)" class="btn-remove" title="Remove">✕</button></div></div>
         ${evasion > 0 && !ed ? `<div class="flex flex-wrap gap-1.5 mb-3 pb-2.5 border-b border-[#2a2418]"><span class="text-[10px] bg-[#1a2a3b] border border-[#2a3d5a] rounded px-1.5 py-0.5 text-blue-300">Evasion ${evasion}</span></div>` : ''}
         ${dotRow('hp', 'HP', 'text-red-400')}${dotRow('stress', 'Stress', 'text-purple-400')}${dotRow('hope', 'Hope', 'text-amber-400')}${dotRow('armor', 'Armor', 'text-blue-400')}${enemyInfo}`;
